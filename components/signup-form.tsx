@@ -16,35 +16,57 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function LoginForm() {
+export function SignUpForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
-  const { signIn } = useAuth()
+  const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setLoading(false)
+      return
+    }
+
     try {
-      await signIn(email, password)
-      router.push("/home")
+      await signUp(email, password)
+      setSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in")
+      setError(err instanceof Error ? err.message : "Failed to sign up")
     } finally {
       setLoading(false)
     }
   }
 
+  if (success) {
+    return (
+      <Card className="mx-auto max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">Check your email</CardTitle>
+          <CardDescription>
+            We've sent you a confirmation email. Please check your inbox and follow
+            the instructions to complete your registration.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
+        <CardTitle className="text-2xl">Create an account</CardTitle>
         <CardDescription>
-          Enter your email below to login to your account
+          Enter your email below to create your account
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -61,17 +83,22 @@ export function LoginForm() {
             />
           </div>
           <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
-              <Link href="#" className="ml-auto inline-block text-sm underline">
-                Forgot your password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="confirm-password">Confirm Password</Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
@@ -81,27 +108,16 @@ export function LoginForm() {
             </div>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={loading}
-            onClick={() => {
-              // TODO: Implement Google sign-in
-            }}
-          >
-            Login with Google
+            {loading ? "Creating account..." : "Create account"}
           </Button>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className="underline">
+              Sign in
             </Link>
           </div>
         </form>
       </CardContent>
     </Card>
   )
-}
+} 
