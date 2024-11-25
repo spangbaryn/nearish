@@ -31,6 +31,8 @@ const validateAdminAccess = async (supabase: ReturnType<typeof createRouteHandle
   }
 
   const userRole = session.user.user_metadata?.role
+  console.log('Current user role:', userRole)
+  
   if (userRole !== 'admin') {
     throw new Error('Insufficient permissions')
   }
@@ -47,6 +49,7 @@ export async function GET() {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers()
     
     if (error) {
+      console.error('Error from Supabase:', error)
       throw new Error('Failed to load users')
     }
 
@@ -54,7 +57,28 @@ export async function GET() {
       throw new Error('No users data received')
     }
 
-    return NextResponse.json({ users: data.users })
+    // Log complete data for the first user
+    if (data.users.length > 0) {
+      const firstUser = data.users[0]
+      console.log('First user complete data:', JSON.stringify({
+        id: firstUser.id,
+        email: firstUser.email,
+        user_metadata: firstUser.user_metadata,
+        app_metadata: firstUser.app_metadata,
+        created_at: firstUser.created_at,
+      }, null, 2))
+    }
+
+    // Transform the data to ensure we're using the correct metadata
+    const transformedUsers = data.users.map(user => ({
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+      user_metadata: user.user_metadata || {},
+      raw_user_meta_data: user.user_metadata || {}
+    }))
+
+    return NextResponse.json({ users: transformedUsers })
   } catch (error) {
     console.error('Error in users API route:', error)
     const message = error instanceof Error ? error.message : 'Internal server error'

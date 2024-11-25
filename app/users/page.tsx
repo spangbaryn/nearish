@@ -12,18 +12,24 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 interface User {
   id: string
   email: string
   created_at: string
-  raw_user_meta_data: {
-    roles?: UserRole[]
+  user_metadata: {
+    role?: UserRole
   }
 }
 
 interface UserTableProps {
   users: User[]
+}
+
+// Helper function to get role from user data
+function getUserRole(user: User): UserRole | undefined {
+  return user.user_metadata?.role
 }
 
 // Separate table component for better organization
@@ -34,26 +40,35 @@ function UserTable({ users }: UserTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Email</TableHead>
-          <TableHead>Roles</TableHead>
+          <TableHead>Role</TableHead>
           <TableHead>Created At</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>
-              {user.raw_user_meta_data?.roles?.join(', ') || 'No roles'}
-            </TableCell>
-            <TableCell>
-              {new Date(user.created_at).toLocaleDateString()}
-            </TableCell>
-            <TableCell>
-              {/* Add actions here */}
-            </TableCell>
-          </TableRow>
-        ))}
+        {users.map((user) => {
+          const role = getUserRole(user)
+          return (
+            <TableRow key={user.id}>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                {role ? (
+                  <Badge variant={role === 'admin' ? 'destructive' : 'secondary'}>
+                    {role}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground">No role</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {new Date(user.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                {/* Add actions here */}
+              </TableCell>
+            </TableRow>
+          )
+        })}
       </TableBody>
     </Table>
   )
@@ -95,6 +110,15 @@ export default function UsersPage() {
 
       if (!Array.isArray(data?.users)) {
         throw new Error('Invalid response format')
+      }
+
+      // Log the first user's data for debugging
+      if (data.users.length > 0) {
+        console.log('First user client-side:', {
+          id: data.users[0].id,
+          email: data.users[0].email,
+          metadata: data.users[0].user_metadata,
+        })
       }
 
       setUsers(data.users)

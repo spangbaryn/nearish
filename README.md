@@ -12,8 +12,7 @@ A modern web application with authentication and navigation, built with Next.js 
   - Persistent Authentication State
   - Role-Based Access Control (RBAC)
   - Admin User Management
-    - View All Users
-    - User Role Management
+    - View All Users with Role Badges
     - User Creation Dates
     - Secure Admin API
     - Type-Safe Database Access
@@ -27,6 +26,7 @@ A modern web application with authentication and navigation, built with Next.js 
   - Mobile-Responsive Layout
   - Custom Logo Integration
   - Accessible Components
+  - Role-Based Badges
 
 - 📱 Navigation
   - Protected Routes
@@ -80,7 +80,12 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    - Create a public bucket named 'assets'
    - Add storage policy for public read access
    - Upload your logo to the 'logo' folder
-   - Set up user roles in user metadata (e.g., `{ "role": "admin" }`)
+   - Set up user roles in metadata:
+     ```json
+     {
+       "role": "admin"
+     }
+     ```
 
 5. (Optional) Generate TypeScript types for your Supabase database:
 ```bash
