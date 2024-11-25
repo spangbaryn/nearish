@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nearish
+
+A modern authentication system built with Next.js 14, Supabase, and shadcn/ui.
+
+## Features
+
+- 🔐 Authentication with Supabase
+  - Email/Password Sign Up
+  - Email Verification
+  - Secure Password Reset
+  - Protected Routes
+
+- 💅 Modern UI with shadcn/ui
+  - Custom Yellow & Blue Theme
+  - Dark Mode Support
+  - Responsive Design
+  - Beautiful Form Components
+
+- 🚀 Tech Stack
+  - Next.js 14 with App Router
+  - TypeScript for Type Safety
+  - Supabase for Authentication & Database
+  - Tailwind CSS for Styling
+  - shadcn/ui Components
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ 
+- npm or yarn
+- A Supabase account
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/spangbaryn/nearish.git
+cd nearish
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_JWT_SECRET=your_supabase_jwt_secret
+```
+
+4. Run the development server:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+nearish/
+├── app/                    # Next.js app directory
+│   ├── auth/              # Auth-related routes
+│   ├── home/              # Protected home page
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   ├── login-form.tsx    # Login form component
+│   └── signup-form.tsx   # Signup form component
+└── lib/                  # Utility functions
+    ├── auth-context.tsx  # Authentication context
+    └── supabase.ts      # Supabase client
+```
 
-## Learn More
+## Authentication Flow
 
-To learn more about Next.js, take a look at the following resources:
+1. **Sign Up**
+   - User enters email and password
+   - Email verification is sent
+   - User confirms email
+   - Redirected to home page
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Login**
+   - User enters credentials
+   - Redirected to home page
+   - Protected routes are accessible
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Protection**
+   - Middleware checks auth status
+   - Unauthenticated users redirected to login
+   - Authenticated users can't access auth pages
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The project is deployed on Vercel. For deployment, ensure these environment variables are set in your Vercel project:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_JWT_SECRET`
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
