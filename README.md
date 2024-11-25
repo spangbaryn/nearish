@@ -1,6 +1,6 @@
 # Nearish
 
-A modern authentication system built with Next.js 14, Supabase, and shadcn/ui.
+A modern web application with authentication and navigation, built with Next.js 14, Supabase, and shadcn/ui.
 
 ## Features
 
@@ -8,13 +8,23 @@ A modern authentication system built with Next.js 14, Supabase, and shadcn/ui.
   - Email/Password Sign Up
   - Email Verification
   - Secure Password Reset
-  - Protected Routes
+  - Protected Routes with Auth Checks
+  - Persistent Authentication State
 
-- 💅 Modern UI with shadcn/ui
+- 🎨 Modern UI with shadcn/ui
   - Custom Yellow & Blue Theme
   - Dark Mode Support
   - Responsive Design
   - Beautiful Form Components
+  - Clean Navigation
+  - Mobile-Responsive Layout
+
+- 📱 Navigation
+  - Protected Routes
+  - Persistent Sidebar
+  - Users Section
+  - Mobile-Responsive Design
+  - Secure Sign Out
 
 - 🚀 Tech Stack
   - Next.js 14 with App Router
@@ -22,6 +32,8 @@ A modern authentication system built with Next.js 14, Supabase, and shadcn/ui.
   - Supabase for Authentication & Database
   - Tailwind CSS for Styling
   - shadcn/ui Components
+  - Custom React Hooks
+  - Client-Side Authentication
 
 ## Getting Started
 
@@ -64,13 +76,20 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 nearish/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Auth-related routes
-│   ├── home/              # Protected home page
+│   ├── home/              # Protected home page with layout
 │   └── layout.tsx         # Root layout
 ├── components/            # React components
 │   ├── ui/               # shadcn/ui components
+│   ├── layouts/          # Layout components
+│   │   └── authenticated-layout.tsx  # Auth wrapper
+│   ├── hooks/            # Custom React hooks
+│   │   └── use-mobile.ts # Mobile detection
+│   ├── lib/              # Utility functions
+│   │   └── utils.ts      # Helper functions
+│   ├── sidebar-01.tsx    # Sidebar navigation component
 │   ├── login-form.tsx    # Login form component
 │   └── signup-form.tsx   # Signup form component
-└── lib/                  # Utility functions
+└── lib/                  # Core utilities
     ├── auth-context.tsx  # Authentication context
     └── supabase.ts      # Supabase client
 ```
@@ -86,12 +105,22 @@ nearish/
 2. **Login**
    - User enters credentials
    - Redirected to home page
-   - Protected routes are accessible
+   - Protected routes and sidebar become accessible
 
 3. **Protection**
-   - Middleware checks auth status
-   - Unauthenticated users redirected to login
-   - Authenticated users can't access auth pages
+   - Layout-level authentication checks
+   - Automatic redirect for unauthenticated users
+   - Protected routes
+   - Secure sign out through sidebar
+
+## Styling
+
+The project uses a custom theme with:
+- Tailwind CSS for utility classes
+- CSS variables for theme customization
+- Custom sidebar theming
+- Mobile-responsive design
+- Geist font family integration
 
 ## Deployment
 

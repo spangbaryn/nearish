@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { GalleryVerticalEnd, LogOut } from "lucide-react"
+import { GalleryVerticalEnd, LogOut, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 
+import { Protected } from "@/components/auth/protected"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,25 +30,36 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { ROLES } from "@/lib/roles"
 
 interface SidebarComponentProps {
   children: React.ReactNode
 }
 
-const data = {
-  navMain: [
-    {
-      title: "Admin",
-      url: "#",
-      items: [
-        {
-          title: "Users",
-          url: "/users",
-        },
-      ],
-    },
-  ],
-}
+const navigationItems = [
+  {
+    title: "General",
+    items: [
+      {
+        title: "Home",
+        url: "/home",
+        icon: <GalleryVerticalEnd className="h-4 w-4" />,
+        requiredRoles: [ROLES.USER],
+      },
+    ],
+  },
+  {
+    title: "Admin",
+    items: [
+      {
+        title: "Users",
+        url: "/users",
+        icon: <Users className="h-4 w-4" />,
+        requiredRoles: [ROLES.ADMIN],
+      },
+    ],
+  },
+]
 
 export default function SidebarComponent({ children }: SidebarComponentProps) {
   const router = useRouter()
@@ -79,21 +92,31 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
         </SidebarHeader>
         <SidebarContent className="flex flex-col justify-between">
           <div>
-            {data.navMain.map((item) => (
-              <SidebarGroup key={item.title}>
-                <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {item.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <a href={item.url}>{item.title}</a>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
+            {navigationItems.map((section) => (
+              <Protected 
+                key={section.title} 
+                requiredRoles={section.items.map(item => item.requiredRoles).flat()}
+              >
+                <SidebarGroup>
+                  <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {section.items.map((item) => (
+                        <Protected key={item.title} requiredRoles={item.requiredRoles}>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                              <Link href={item.url} className="flex items-center gap-2">
+                                {item.icon}
+                                {item.title}
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        </Protected>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </Protected>
             ))}
           </div>
           <div className="px-2 pb-4">
@@ -116,7 +139,7 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Admin</BreadcrumbPage>
+                <BreadcrumbPage>Home</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
