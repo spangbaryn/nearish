@@ -2,10 +2,11 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { Database } from '@/lib/database.types'
 
 // Create a type-safe admin client
 const createAdminClient = () => {
-  return createClient(
+  return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
@@ -18,7 +19,7 @@ const createAdminClient = () => {
 }
 
 // Validate user has admin access
-const validateAdminAccess = async (supabase: ReturnType<typeof createRouteHandlerClient>) => {
+const validateAdminAccess = async (supabase: ReturnType<typeof createRouteHandlerClient<Database>>) => {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession()
   
   if (sessionError) {
@@ -38,7 +39,7 @@ const validateAdminAccess = async (supabase: ReturnType<typeof createRouteHandle
 export async function GET() {
   try {
     // Validate admin access
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
     await validateAdminAccess(supabase)
 
     // Get users list
