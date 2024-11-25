@@ -16,6 +16,7 @@ A modern web application with authentication and navigation, built with Next.js 
     - User Role Management
     - User Creation Dates
     - Secure Admin API
+    - Type-Safe Database Access
 
 - 🎨 Modern UI with shadcn/ui
   - Custom Yellow & Blue Theme
@@ -53,6 +54,7 @@ A modern web application with authentication and navigation, built with Next.js 
 - Node.js 18+ 
 - npm or yarn
 - A Supabase account
+- Supabase CLI (optional, for type generation)
 
 ### Installation
 
@@ -80,7 +82,19 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    - Upload your logo to the 'logo' folder
    - Set up user roles in user metadata (e.g., `{ "role": "admin" }`)
 
-5. Run the development server:
+5. (Optional) Generate TypeScript types for your Supabase database:
+```bash
+# Install Supabase CLI if you haven't already
+npm install -g supabase
+
+# Login to Supabase CLI
+supabase login
+
+# Generate types
+supabase gen types typescript --project-id your-project-id > lib/database.types.ts
+```
+
+6. Run the development server:
 ```bash
 npm run dev
 ```
@@ -115,9 +129,24 @@ nearish/
 │   └── signup-form.tsx   # Signup form component
 └── lib/                  # Core utilities
     ├── auth-context.tsx  # Authentication context
+    ├── database.types.ts # Generated Supabase types
     ├── roles.ts         # Role definitions
     ├── storage.ts       # Storage utilities
     └── supabase.ts      # Supabase client
+```
+
+## Type Safety
+
+The project uses TypeScript throughout and includes:
+- Generated Supabase database types
+- Type-safe API routes
+- Type-safe authentication
+- Type-safe components
+- Type-safe hooks
+
+To update database types after schema changes:
+```bash
+supabase gen types typescript --project-id your-project-id > lib/database.types.ts
 ```
 
 ## Authentication Flow
