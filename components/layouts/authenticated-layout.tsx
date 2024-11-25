@@ -20,12 +20,5 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     redirect('/login')
   }
 
-  return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
-  )
+  return <Sidebar>{children}</Sidebar>
 } 
