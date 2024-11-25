@@ -31,7 +31,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { ROLES } from "@/lib/roles"
+import { ROLES, UserRole } from "@/lib/roles"
 
 interface SidebarComponentProps {
   children: React.ReactNode
@@ -41,7 +41,7 @@ interface NavigationItem {
   title: string
   url: string
   icon?: React.ReactNode
-  requiredRoles: string[]
+  requiredRoles: UserRole[]
 }
 
 interface NavigationSection {
@@ -105,7 +105,7 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
             {navigationItems.map((section) => (
               <Protected 
                 key={section.title} 
-                requiredRoles={section.items.map(item => item.requiredRoles).flat()}
+                requiredRoles={section.items.map(item => item.requiredRoles).flat() as UserRole[]}
               >
                 <SidebarGroup>
                   <SidebarGroupLabel className="text-base font-medium px-2 py-2">
