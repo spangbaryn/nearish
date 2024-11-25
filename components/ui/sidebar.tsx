@@ -1,16 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import { Slot } from "@radix-ui/react-slot"
 
 import { useIsMobile } from "@/components/hooks/use-mobile"
 import { cn } from "@/components/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -175,7 +175,8 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { state, openMobile, setOpenMobile } = useSidebar()
+    const isMobile = useIsMobile()
 
     if (collapsible === "none") {
       return (
@@ -194,19 +195,23 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
             side={side}
+            className={cn(
+              "p-0 w-[var(--sidebar-width)]",
+              "bg-sidebar text-sidebar-foreground",
+              "border-r",
+              "[&>button]:hidden"
+            )}
+            style={{
+              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+            } as React.CSSProperties}
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <div className="flex h-full w-full flex-col bg-sidebar">
+              {children}
+            </div>
           </SheetContent>
         </Sheet>
       )
@@ -244,6 +249,10 @@ const Sidebar = React.forwardRef<
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
+          style={{
+            "--sidebar-width": SIDEBAR_WIDTH,
+            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+          } as React.CSSProperties}
           {...props}
         >
           <div

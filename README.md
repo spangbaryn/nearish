@@ -10,6 +10,8 @@ A modern web application with authentication and navigation, built with Next.js 
   - Secure Password Reset
   - Protected Routes with Auth Checks
   - Persistent Authentication State
+  - Role-Based Access Control (RBAC)
+  - Admin User Management
 
 - 🎨 Modern UI with shadcn/ui
   - Custom Yellow & Blue Theme
@@ -18,6 +20,8 @@ A modern web application with authentication and navigation, built with Next.js 
   - Beautiful Form Components
   - Clean Navigation
   - Mobile-Responsive Layout
+  - Custom Logo Integration
+  - Accessible Components
 
 - 📱 Navigation
   - Protected Routes
@@ -25,11 +29,14 @@ A modern web application with authentication and navigation, built with Next.js 
   - Users Section
   - Mobile-Responsive Design
   - Secure Sign Out
+  - Role-Protected Navigation Items
+  - Improved Mobile Sidebar
 
 - 🚀 Tech Stack
   - Next.js 14 with App Router
   - TypeScript for Type Safety
   - Supabase for Authentication & Database
+  - Supabase Storage for Assets
   - Tailwind CSS for Styling
   - shadcn/ui Components
   - Custom React Hooks
@@ -63,7 +70,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_JWT_SECRET=your_supabase_jwt_secret
 ```
 
-4. Run the development server:
+4. Set up Supabase storage:
+   - Create a public bucket named 'assets'
+   - Add storage policy for public read access
+   - Upload your logo to the 'logo' folder
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
@@ -77,20 +89,27 @@ nearish/
 ├── app/                    # Next.js app directory
 │   ├── auth/              # Auth-related routes
 │   ├── home/              # Protected home page with layout
+│   ├── users/             # Admin user management
 │   └── layout.tsx         # Root layout
 ├── components/            # React components
 │   ├── ui/               # shadcn/ui components
+│   │   └── logo.tsx     # Logo component
 │   ├── layouts/          # Layout components
 │   │   └── authenticated-layout.tsx  # Auth wrapper
 │   ├── hooks/            # Custom React hooks
-│   │   └── use-mobile.ts # Mobile detection
+│   │   ├── use-mobile.ts # Mobile detection
+│   │   └── use-authorization.ts # RBAC hook
 │   ├── lib/              # Utility functions
 │   │   └── utils.ts      # Helper functions
+│   ├── auth/             # Auth components
+│   │   └── protected.tsx # Role protection
 │   ├── sidebar-01.tsx    # Sidebar navigation component
 │   ├── login-form.tsx    # Login form component
 │   └── signup-form.tsx   # Signup form component
 └── lib/                  # Core utilities
     ├── auth-context.tsx  # Authentication context
+    ├── roles.ts         # Role definitions
+    ├── storage.ts       # Storage utilities
     └── supabase.ts      # Supabase client
 ```
 
@@ -109,9 +128,26 @@ nearish/
 
 3. **Protection**
    - Layout-level authentication checks
+   - Role-based access control
    - Automatic redirect for unauthenticated users
-   - Protected routes
+   - Protected routes and components
    - Secure sign out through sidebar
+
+## Role-Based Access Control
+
+The application implements RBAC with:
+- Predefined user roles (USER, ADMIN)
+- Protected components and routes
+- Role-based navigation items
+- Admin-only sections
+- User role management
+
+## Asset Management
+
+- Logo storage in Supabase
+- Public bucket with access policies
+- Custom Logo component
+- Responsive image handling
 
 ## Styling
 
@@ -121,6 +157,7 @@ The project uses a custom theme with:
 - Custom sidebar theming
 - Mobile-responsive design
 - Geist font family integration
+- Improved mobile sidebar layout
 
 ## Deployment
 
