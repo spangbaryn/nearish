@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 
 import { Button } from "@/components/ui/button"
@@ -23,7 +22,6 @@ export function SignUpForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
   const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +51,7 @@ export function SignUpForm() {
         <CardHeader>
           <CardTitle className="text-2xl">Check your email</CardTitle>
           <CardDescription>
-            We've sent you a confirmation email. Please check your inbox and follow
+            We&apos;ve sent you a confirmation email. Please check your inbox and follow
             the instructions to complete your registration.
           </CardDescription>
         </CardHeader>

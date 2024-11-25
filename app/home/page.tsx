@@ -27,7 +27,7 @@ export default function HomePage() {
           <CardHeader>
             <CardTitle>Welcome to Nearish!</CardTitle>
             <CardDescription>
-              You're signed in as {user?.email}
+              You&apos;re signed in as {user?.email}
             </CardDescription>
           </CardHeader>
           <CardContent>
