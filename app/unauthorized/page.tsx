@@ -11,7 +11,7 @@ export default function UnauthorizedPage() {
       <div className="text-center">
         <h1 className="text-4xl font-bold">Unauthorized Access</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          You don't have permission to access this page.
+          You don&apos;t have permission to access this page.
         </p>
         <Button 
           className="mt-8" 
