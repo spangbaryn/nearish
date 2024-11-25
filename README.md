@@ -12,6 +12,10 @@ A modern web application with authentication and navigation, built with Next.js 
   - Persistent Authentication State
   - Role-Based Access Control (RBAC)
   - Admin User Management
+    - View All Users
+    - User Role Management
+    - User Creation Dates
+    - Secure Admin API
 
 - 🎨 Modern UI with shadcn/ui
   - Custom Yellow & Blue Theme
@@ -67,13 +71,14 @@ npm install
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_JWT_SECRET=your_supabase_jwt_secret
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
-4. Set up Supabase storage:
+4. Set up Supabase:
    - Create a public bucket named 'assets'
    - Add storage policy for public read access
    - Upload your logo to the 'logo' folder
+   - Set up user roles in user metadata (e.g., `{ "role": "admin" }`)
 
 5. Run the development server:
 ```bash
@@ -87,6 +92,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ```
 nearish/
 ├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   │   └── users/        # User management API
 │   ├── auth/              # Auth-related routes
 │   ├── home/              # Protected home page with layout
 │   ├── users/             # Admin user management
@@ -142,6 +149,24 @@ The application implements RBAC with:
 - Admin-only sections
 - User role management
 
+### Admin Features
+
+The admin section includes:
+- Secure user listing with service role API
+- User role visualization
+- User creation date tracking
+- Protected admin routes
+- Server-side role validation
+
+### Setting Up Admin Access
+
+1. Get your Supabase service role key from Project Settings > API
+2. Add it to `.env.local` as `SUPABASE_SERVICE_ROLE_KEY`
+3. Set admin role for users in Supabase:
+   - Go to Authentication > Users
+   - Select a user
+   - Add custom metadata: `{ "role": "admin" }`
+
 ## Asset Management
 
 - Logo storage in Supabase
@@ -165,7 +190,7 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_JWT_SECRET`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Contributing
 
