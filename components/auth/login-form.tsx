@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/ui/icons"
+import { Logo } from "@/components/ui/logo"
 import { AuthCard } from "./auth-card"
 import { AuthForm } from "./auth-form"
 
@@ -31,14 +32,19 @@ export function LoginForm() {
       await signIn(target.email.value, target.password.value)
       router.push('/home')
     } catch {
-      setError("Invalid email or password")
+      setError("Failed to sign in. Please check your credentials.")
       setIsLoading(false)
     }
   }
 
   return (
     <AuthCard
-      title="Welcome back"
+      title={
+        <div className="flex flex-col items-center space-y-3">
+          <Logo size="lg" />
+          <h2>Welcome back</h2>
+        </div>
+      }
       description="Enter your email to sign in to your account"
     >
       <AuthForm onSubmit={onSubmit} loading={isLoading} error={error}>
@@ -71,12 +77,6 @@ export function LoginForm() {
               disabled={isLoading}
             />
           </div>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            Sign In
-          </Button>
         </div>
       </AuthForm>
 
