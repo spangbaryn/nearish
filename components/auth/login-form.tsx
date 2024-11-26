@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/ui/icons"
+import { Logo } from "@/components/ui/logo"
 import { AuthCard } from "./auth-card"
 import { AuthForm } from "./auth-form"
 
@@ -38,7 +39,12 @@ export function LoginForm() {
 
   return (
     <AuthCard
-      title="Welcome back"
+      title={
+        <div className="flex flex-col items-center space-y-3">
+          <Logo size="lg" />
+          <h2>Welcome back</h2>
+        </div>
+      }
       description="Enter your email to sign in to your account"
     >
       <AuthForm onSubmit={onSubmit} loading={isLoading} error={error}>

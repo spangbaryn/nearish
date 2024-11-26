@@ -23,7 +23,6 @@ export function Logo({ size = 'md', className, ...props }: LogoProps) {
   useEffect(() => {
     async function fetchLogo() {
       try {
-        // First check if logo exists
         const { data: files, error: listError } = await supabase
           .storage
           .from('assets')
@@ -40,7 +39,6 @@ export function Logo({ size = 'md', className, ...props }: LogoProps) {
           return
         }
 
-        // Get public URL
         const { data: { publicUrl } } = supabase
           .storage
           .from('assets')
@@ -58,7 +56,7 @@ export function Logo({ size = 'md', className, ...props }: LogoProps) {
   return (
     <div
       className={cn(
-        'relative flex shrink-0 overflow-hidden rounded-md bg-primary',
+        'relative flex shrink-0 overflow-hidden',
         sizeClasses[size],
         className
       )}
@@ -74,7 +72,7 @@ export function Logo({ size = 'md', className, ...props }: LogoProps) {
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center">
-          <span className="text-lg font-bold text-primary-foreground">N</span>
+          <span className="text-lg font-bold text-primary">N</span>
         </div>
       )}
     </div>
