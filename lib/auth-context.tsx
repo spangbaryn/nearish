@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { User as SupabaseUser } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 
 export interface User {
   id: string
@@ -37,7 +37,7 @@ export function useAuth() {
 
 interface AuthProviderProps {
   children: React.ReactNode
-  serverSession?: any // This should match your Supabase session type
+  serverSession?: Session | null
 }
 
 export function AuthProvider({ children, serverSession }: AuthProviderProps) {

@@ -11,11 +11,10 @@ export default function HomePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">
-          Welcome back{displayName ? `, ${displayName}` : ''}
-        </h1>
-        <p className="text-muted-foreground">Here's what's happening with your account.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen py-2">
+        <h1 className="text-4xl font-bold mb-8">Welcome to Nearish</h1>
+        <p className="text-xl mb-4">You&apos;re signed in!</p>
+        <p className="text-lg mb-8">Let&apos;s get started.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
