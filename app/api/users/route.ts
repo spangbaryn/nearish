@@ -18,7 +18,7 @@ const createAdminClient = () => {
   )
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient<Database>({ 
