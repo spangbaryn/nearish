@@ -1,8 +1,21 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import * as React from "react"
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { User as SupabaseUser } from '@supabase/supabase-js'
+
+export interface User {
+  id: string
+  email: string
+  name?: string
+  emailVerified?: boolean
+  user_metadata?: {
+    role?: string
+  }
+  raw_user_meta_data?: {
+    role?: string
+  }
+}
 
 interface AuthContextType {
   user: User | null
@@ -12,56 +25,70 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
-})
+const AuthContext = React.createContext<AuthContextType | null>(null)
 
-export function AuthProvider({ 
-  children,
-  serverSession
-}: { 
+export function useAuth() {
+  const context = React.useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
+
+interface AuthProviderProps {
   children: React.ReactNode
-  serverSession: Session | null
-}) {
-  const [user, setUser] = useState<User | null>(serverSession?.user || null)
-  const [loading, setLoading] = useState(true)
+  serverSession?: any // This should match your Supabase session type
+}
+
+export function AuthProvider({ children, serverSession }: AuthProviderProps) {
+  const [user, setUser] = React.useState<User | null>(serverSession?.user || null)
+  const [loading, setLoading] = React.useState(!serverSession)
   const supabase = createClientComponentClient()
 
-  useEffect(() => {
+  React.useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        const supabaseUser = session?.user
+        setUser(supabaseUser ? {
+          ...supabaseUser,
+          email: supabaseUser.email || '',
+        } : null)
         setLoading(false)
       }
     )
 
-    setLoading(false)
     return () => {
       subscription.unsubscribe()
     }
   }, [supabase.auth])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    if (error) throw error
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) throw error
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signOut = async () => {
@@ -74,12 +101,4 @@ export function AuthProvider({
       {children}
     </AuthContext.Provider>
   )
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 } 

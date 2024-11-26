@@ -77,15 +77,24 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
 4. Set up Supabase:
-   - Create a public bucket named 'assets'
-   - Add storage policy for public read access
-   - Upload your logo to the 'logo' folder
-   - Set up user roles in metadata:
-     ```json
-     {
-       "role": "admin"
-     }
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Enable Email Auth in Authentication settings
+   - Set up storage buckets:
      ```
+     assets/
+     └── logo/
+         └── logo.svg    # Your application logo
+     ```
+   - Set up storage policies:
+     ```sql
+     CREATE POLICY "Public Access" 
+     ON storage.objects FOR SELECT 
+     USING (bucket_id = 'assets' AND path LIKE 'logo/%');
+     ```
+   - Set up user roles:
+     - Go to Authentication > Users
+     - Select a user
+     - Add custom metadata: `{ "role": "admin" }` for admin users
 
 5. (Optional) Generate TypeScript types for your Supabase database:
 ```bash
@@ -113,31 +122,33 @@ nearish/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
 │   │   └── users/        # User management API
-│   ├── auth/              # Auth-related routes
-│   ├── home/              # Protected home page with layout
-│   ├── users/             # Admin user management
-│   └── layout.tsx         # Root layout
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   │   └── logo.tsx     # Logo component
-│   ├── layouts/          # Layout components
-│   │   └── authenticated-layout.tsx  # Auth wrapper
+│   ├── auth/             # Auth-related routes
+│   ├── home/             # Protected home page
+│   └── users/            # Admin user management
+├── components/
+│   ├── auth/             # Authentication components
+│   │   ├── auth-card.tsx    # Shared auth card
+│   │   ├── auth-form.tsx    # Shared form components
+│   │   ├── auth-layout.tsx  # Auth page layout
+│   │   ├── login-form.tsx   # Login form
+│   │   ├── protected.tsx    # RBAC protection
+│   │   └── signup-form.tsx  # Signup form
 │   ├── hooks/            # Custom React hooks
-│   │   ├── use-mobile.ts # Mobile detection
+│   │   ├── use-mobile.ts       # Mobile detection
 │   │   └── use-authorization.ts # RBAC hook
-│   ├── lib/              # Utility functions
-│   │   └── utils.ts      # Helper functions
-│   ├── auth/             # Auth components
-│   │   └── protected.tsx # Role protection
-│   ├── sidebar-01.tsx    # Sidebar navigation component
-│   ├── login-form.tsx    # Login form component
-│   └── signup-form.tsx   # Signup form component
-└── lib/                  # Core utilities
-    ├── auth-context.tsx  # Authentication context
-    ├── database.types.ts # Generated Supabase types
-    ├── roles.ts         # Role definitions
-    ├── storage.ts       # Storage utilities
-    └── supabase.ts      # Supabase client
+│   ├── layouts/          # Layout components
+│   │   └── main-sidebar.tsx    # Main navigation
+│   └── ui/              # UI components
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── logo.tsx     # Logo with Supabase storage
+│       └── ...
+├── lib/                 # Core utilities
+│   ├── auth-context.tsx # Authentication context
+│   ├── roles.ts        # Role definitions & logic
+│   ├── database.types.ts # Generated Supabase types
+│   └── utils.ts        # Shared utilities
+└── public/             # Static assets
 ```
 
 ## Type Safety
@@ -182,14 +193,16 @@ The application implements RBAC with:
 - Role-based navigation items
 - Admin-only sections
 - User role management
+- Type-safe role checking
 
 ### Admin Features
 
 The admin section includes:
-- Secure user listing with service role API
-- User role visualization
+- User management dashboard
+- Role visualization with badges
 - User creation date tracking
-- Protected admin routes
+- Protected admin API
+- Service role security
 - Server-side role validation
 
 ### Setting Up Admin Access
@@ -230,4 +243,6 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
--
+## License
+
+MIT

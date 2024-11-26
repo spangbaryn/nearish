@@ -112,15 +112,6 @@ export default function UsersPage() {
         throw new Error('Invalid response format')
       }
 
-      // Log the first user's data for debugging
-      if (data.users.length > 0) {
-        console.log('First user client-side:', {
-          id: data.users[0].id,
-          email: data.users[0].email,
-          metadata: data.users[0].user_metadata,
-        })
-      }
-
       setUsers(data.users)
     } catch (error) {
       console.error('Error loading users:', error)

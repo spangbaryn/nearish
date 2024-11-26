@@ -132,14 +132,14 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
             ))}
           </div>
           <div className="px-2 pb-4">
-              <Button
+            <Button
               variant="ghost" 
               className="w-full justify-start gap-2 text-base" 
               onClick={handleSignOut}
-              >
+            >
               <LogOut className="h-5 w-5" />
               Sign Out
-              </Button>
+            </Button>
           </div>
         </SidebarContent>
         <SidebarRail />

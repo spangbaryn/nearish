@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import Sidebar from "@/components/sidebar-01"
+import MainSidebar from "@/components/layouts/main-sidebar"
 
 export default function HomeLayout({
   children,
@@ -23,5 +23,5 @@ export default function HomeLayout({
     return null
   }
 
-  return <Sidebar>{children}</Sidebar>
+  return <MainSidebar>{children}</MainSidebar>
 } 

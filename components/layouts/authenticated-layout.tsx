@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context"
 import { redirect } from "next/navigation"
-import Sidebar from "@/components/sidebar-01"
+import MainSidebar from "@/components/layouts/main-sidebar"
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode
@@ -20,5 +20,5 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     redirect('/login')
   }
 
-  return <Sidebar>{children}</Sidebar>
+  return <MainSidebar>{children}</MainSidebar>
 } 

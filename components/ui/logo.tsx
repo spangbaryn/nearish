@@ -1,31 +1,27 @@
 'use client'
 
+import * as React from 'react'
 import Image from 'next/image'
-import { cn } from '@/components/lib/utils'
+import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-interface LogoProps {
-  className?: string
+interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const sizes = {
-  sm: 'h-8 w-8',
-  md: 'h-10 w-10',
-  lg: 'h-12 w-12'
+const sizeClasses = {
+  sm: 'size-6',
+  md: 'size-8',
+  lg: 'size-10',
 }
 
-export function Logo({ 
-  className,
-  size = 'md'
-}: LogoProps) {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
-  const [error, setError] = useState(false)
+export function Logo({ size = 'md', className, ...props }: LogoProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    async function getLogoUrl() {
+    async function fetchLogo() {
       try {
         // First check if logo exists
         const { data: files, error: listError } = await supabase
@@ -35,58 +31,50 @@ export function Logo({
 
         if (listError) {
           console.error('Error listing files:', listError)
-          setError(true)
           return
         }
-
-        console.log('Files in logo folder:', files)
 
         const logoFile = files.find(file => file.name === 'logo.svg')
         if (!logoFile) {
           console.log('Logo file not found')
-          setError(true)
           return
         }
 
-        // Get public URL with correct path
+        // Get public URL
         const { data: { publicUrl } } = supabase
           .storage
           .from('assets')
           .getPublicUrl('logo/logo.svg')
 
-        console.log('Logo URL:', publicUrl)
-        setLogoUrl(publicUrl)
-        setError(false)
+        setImageUrl(publicUrl)
       } catch (err) {
         console.error('Error fetching logo:', err)
-        setError(true)
       }
     }
 
-    getLogoUrl()
+    fetchLogo()
   }, [supabase])
 
   return (
-    <div className={cn(
-      "flex aspect-square items-center justify-center rounded-lg bg-primary",
-      sizes[size],
-      className
-    )}>
-      {logoUrl ? (
+    <div
+      className={cn(
+        'relative flex shrink-0 overflow-hidden rounded-md bg-primary',
+        sizeClasses[size],
+        className
+      )}
+      {...props}
+    >
+      {imageUrl ? (
         <Image
-          src={logoUrl}
+          src={imageUrl}
           alt="Logo"
-          width={size === 'lg' ? 48 : size === 'md' ? 40 : 32}
-          height={size === 'lg' ? 48 : size === 'md' ? 40 : 32}
-          className="object-contain p-1"
-          onError={(e) => {
-            console.error('Error loading image:', e)
-            setError(true)
-          }}
+          className="aspect-square h-full w-full"
+          width={40}
+          height={40}
         />
       ) : (
-        <div className="text-primary-foreground font-semibold">
-          {error ? 'N' : '...'}
+        <div className="flex h-full w-full items-center justify-center">
+          <span className="text-lg font-bold text-primary-foreground">N</span>
         </div>
       )}
     </div>

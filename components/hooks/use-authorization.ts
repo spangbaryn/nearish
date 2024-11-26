@@ -4,8 +4,12 @@ import { UserRole, canAccess } from "@/lib/roles"
 export function useAuthorization() {
   const { user } = useAuth()
   
-  // Get user's role from metadata or default to 'user'
-  const userRole = (user?.user_metadata?.role as UserRole) ?? 'user'
+  // Get user's role from either metadata location or default to 'user'
+  const userRole = (
+    user?.user_metadata?.role || 
+    user?.raw_user_meta_data?.role || 
+    'user'
+  ) as UserRole
 
   return {
     userRole,

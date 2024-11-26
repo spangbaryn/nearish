@@ -57,18 +57,6 @@ export async function GET() {
       throw new Error('No users data received')
     }
 
-    // Log complete data for the first user
-    if (data.users.length > 0) {
-      const firstUser = data.users[0]
-      console.log('First user complete data:', JSON.stringify({
-        id: firstUser.id,
-        email: firstUser.email,
-        user_metadata: firstUser.user_metadata,
-        app_metadata: firstUser.app_metadata,
-        created_at: firstUser.created_at,
-      }, null, 2))
-    }
-
     // Transform the data to ensure we're using the correct metadata
     const transformedUsers = data.users.map(user => ({
       id: user.id,
