@@ -41,7 +41,13 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children, serverSession }: AuthProviderProps) {
-  const [user, setUser] = React.useState<User | null>(serverSession?.user || null)
+  const [user, setUser] = React.useState<User | null>(() => {
+    const supabaseUser = serverSession?.user
+    return supabaseUser ? {
+      ...supabaseUser,
+      email: supabaseUser.email || '',
+    } : null
+  })
   const [loading, setLoading] = React.useState(!serverSession)
   const supabase = createClientComponentClient()
 

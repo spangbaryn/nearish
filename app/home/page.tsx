@@ -6,9 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function HomePage() {
   const { user } = useAuth()
 
-  // Get display name from email if name is not available
-  const displayName = user?.name || user?.email?.split('@')[0] || ''
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col items-center justify-center min-h-screen py-2">
