@@ -1,11 +1,8 @@
 'use client'
 
-import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function HomePage() {
-  const { user } = useAuth()
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col items-center justify-center min-h-screen py-2">
