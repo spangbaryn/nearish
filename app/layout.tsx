@@ -30,8 +30,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = createServerComponentClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
+  const cookieStore = cookies()
+  const supabase = createServerComponentClient({ 
+    cookies: () => cookieStore 
+  });
+  
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
   return (
     <html lang="en" suppressHydrationWarning>

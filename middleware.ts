@@ -4,10 +4,36 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  const supabase = createMiddlewareClient({ 
+    req, 
+    res,
+  })
 
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  // If there's no session and the user is trying to access a protected route
+  if (!session && (
+    req.nextUrl.pathname.startsWith('/home') ||
+    req.nextUrl.pathname.startsWith('/users')
+  )) {
+    const redirectUrl = new URL('/login', req.url)
+    return NextResponse.redirect(redirectUrl)
+  }
 
   return res
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
 } 

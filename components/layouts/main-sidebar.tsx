@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { LogOut, Users } from "lucide-react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
+import * as React from "react";
+import { LogOut, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 
-import { Protected } from "@/components/auth/protected"
+import { Protected } from "@/components/auth/protected";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
-import { Logo } from "@/components/ui/logo"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -30,23 +30,23 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { ROLES, UserRole } from "@/lib/roles"
+} from "@/components/ui/sidebar";
+import { ROLES, UserRole } from "@/lib/roles";
 
 interface SidebarComponentProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 interface NavigationItem {
-  title: string
-  url: string
-  icon?: React.ReactNode
-  requiredRoles: UserRole[]
+  title: string;
+  url: string;
+  icon?: React.ReactNode;
+  requiredRoles: UserRole[];
 }
 
 interface NavigationSection {
-  title: string
-  items: NavigationItem[]
+  title: string;
+  items: NavigationItem[];
 }
 
 const navigationItems: NavigationSection[] = [
@@ -71,16 +71,16 @@ const navigationItems: NavigationSection[] = [
       },
     ],
   },
-]
+];
 
 export default function SidebarComponent({ children }: SidebarComponentProps) {
-  const router = useRouter()
-  const { signOut } = useAuth()
+  const router = useRouter();
+  const { signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push('/login')
-  }
+    await signOut();
+    router.push("/login");
+  };
 
   return (
     <SidebarProvider>
@@ -92,7 +92,10 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Logo size="md" className="bg-sidebar-primary text-sidebar-primary-foreground" />
+                <Logo
+                  size="md"
+                  className="bg-sidebar-primary text-sidebar-primary-foreground"
+                />
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold text-lg">Nearish</span>
                 </div>
@@ -103,9 +106,13 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
         <SidebarContent className="flex flex-col justify-between">
           <div>
             {navigationItems.map((section) => (
-              <Protected 
-                key={section.title} 
-                requiredRoles={section.items.map(item => item.requiredRoles).flat() as UserRole[]}
+              <Protected
+                key={section.title}
+                requiredRoles={
+                  section.items
+                    .map((item) => item.requiredRoles)
+                    .flat() as UserRole[]
+                }
               >
                 <SidebarGroup>
                   {section.title && (
@@ -116,10 +123,16 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {section.items.map((item) => (
-                        <Protected key={item.title} requiredRoles={item.requiredRoles}>
+                        <Protected
+                          key={item.title}
+                          requiredRoles={item.requiredRoles}
+                        >
                           <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                              <Link href={item.url} className="flex items-center gap-2 text-base">
+                              <Link
+                                href={item.url}
+                                className="flex items-center gap-2 text-base"
+                              >
                                 {item.icon}
                                 {item.title}
                               </Link>
@@ -135,8 +148,8 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
           </div>
           <div className="px-2 pb-4">
             <Button
-              variant="ghost" 
-              className="w-full justify-start gap-2 text-base" 
+              variant="ghost"
+              className="w-full justify-start gap-2 text-base"
               onClick={handleSignOut}
             >
               <LogOut className="h-5 w-5" />
@@ -158,11 +171,8 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex-1">
-          {children}
-        </div>
+        <div className="flex-1">{children}</div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
-

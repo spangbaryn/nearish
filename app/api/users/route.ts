@@ -18,33 +18,26 @@ const createAdminClient = () => {
   )
 }
 
-// Validate user has admin access
-const validateAdminAccess = async (supabase: ReturnType<typeof createRouteHandlerClient<Database>>) => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  
-  if (sessionError) {
-    throw new Error('Authentication error')
-  }
-  
-  if (!session) {
-    throw new Error('Not authenticated')
-  }
-
-  const userRole = session.user.user_metadata?.role
-  console.log('Current user role:', userRole)
-  
-  if (userRole !== 'admin') {
-    throw new Error('Insufficient permissions')
-  }
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Validate admin access
-    const supabase = createRouteHandlerClient<Database>({ cookies })
-    await validateAdminAccess(supabase)
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient<Database>({ 
+      cookies: () => cookieStore 
+    })
+    
+    // Get the current user's session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError) throw new Error('Authentication error')
+    if (!session) throw new Error('Not authenticated')
 
-    // Get users list
+    const userRole = session.user.user_metadata?.role
+    console.log('Current user role:', userRole)
+    
+    if (userRole !== 'admin') {
+      throw new Error('Insufficient permissions')
+    }
+
+    // Get users list using admin client
     const supabaseAdmin = createAdminClient()
     const { data, error } = await supabaseAdmin.auth.admin.listUsers()
     
