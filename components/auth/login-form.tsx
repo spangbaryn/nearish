@@ -28,7 +28,7 @@ export function LoginForm() {
     try {
       await signIn(target.email.value, target.password.value)
       router.push('/home')
-    } catch (_) {
+    } catch {
       setIsLoading(false)
     }
   }
