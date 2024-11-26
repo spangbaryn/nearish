@@ -15,10 +15,12 @@ export function LoginForm() {
   const router = useRouter()
   const { signIn } = useAuth()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     const target = event.target as typeof event.target & {
       email: { value: string }
@@ -29,6 +31,7 @@ export function LoginForm() {
       await signIn(target.email.value, target.password.value)
       router.push('/home')
     } catch {
+      setError("Invalid email or password")
       setIsLoading(false)
     }
   }
@@ -38,7 +41,7 @@ export function LoginForm() {
       title="Welcome back"
       description="Enter your email to sign in to your account"
     >
-      <AuthForm onSubmit={onSubmit}>
+      <AuthForm onSubmit={onSubmit} loading={isLoading} error={error}>
         <div className="grid gap-2">
           <div className="grid gap-1">
             <Label className="sr-only" htmlFor="email">
