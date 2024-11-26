@@ -200,7 +200,7 @@ const Sidebar = React.forwardRef<
             side={side}
             className={cn(
               "p-0 w-[var(--sidebar-width)]",
-              "bg-sidebar text-sidebar-foreground",
+              "bg-background text-foreground",
               "border-r",
               "[&>button]:hidden"
             )}
@@ -209,7 +209,7 @@ const Sidebar = React.forwardRef<
             } as React.CSSProperties}
           >
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <div className="flex h-full w-full flex-col bg-sidebar">
+            <div className="flex h-full w-full flex-col bg-background">
               {children}
             </div>
           </SheetContent>
