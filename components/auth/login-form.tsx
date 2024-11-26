@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/ui/icons"
-import { Logo } from "@/components/ui/logo"
 import { AuthCard } from "./auth-card"
 import { AuthForm } from "./auth-form"
 
@@ -16,12 +15,10 @@ export function LoginForm() {
   const router = useRouter()
   const { signIn } = useAuth()
   const [isLoading, setIsLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault()
     setIsLoading(true)
-    setError(null)
 
     const target = event.target as typeof event.target & {
       email: { value: string }
@@ -31,23 +28,17 @@ export function LoginForm() {
     try {
       await signIn(target.email.value, target.password.value)
       router.push('/home')
-    } catch {
-      setError("Failed to sign in. Please check your credentials.")
+    } catch (error) {
       setIsLoading(false)
     }
   }
 
   return (
     <AuthCard
-      title={
-        <div className="flex flex-col items-center space-y-3">
-          <Logo size="lg" />
-          <h2>Welcome back</h2>
-        </div>
-      }
+      title="Welcome back"
       description="Enter your email to sign in to your account"
     >
-      <AuthForm onSubmit={onSubmit} loading={isLoading} error={error}>
+      <AuthForm onSubmit={onSubmit}>
         <div className="grid gap-2">
           <div className="grid gap-1">
             <Label className="sr-only" htmlFor="email">
@@ -77,6 +68,12 @@ export function LoginForm() {
               disabled={isLoading}
             />
           </div>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Sign In
+          </Button>
         </div>
       </AuthForm>
 

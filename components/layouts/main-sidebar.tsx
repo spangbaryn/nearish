@@ -51,7 +51,7 @@ interface NavigationSection {
 
 const navigationItems: NavigationSection[] = [
   {
-    title: "General",
+    title: "",
     items: [
       {
         title: "Home",
@@ -108,9 +108,11 @@ export default function SidebarComponent({ children }: SidebarComponentProps) {
                 requiredRoles={section.items.map(item => item.requiredRoles).flat() as UserRole[]}
               >
                 <SidebarGroup>
-                  <SidebarGroupLabel className="text-base font-medium px-2 py-2">
-                    {section.title}
-                  </SidebarGroupLabel>
+                  {section.title && (
+                    <SidebarGroupLabel className="text-base font-medium px-2 py-2">
+                      {section.title}
+                    </SidebarGroupLabel>
+                  )}
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {section.items.map((item) => (
