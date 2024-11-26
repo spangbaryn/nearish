@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card"
 
 interface AuthCardProps {
-  title: string
+  title: React.ReactNode
   description: string
   children: React.ReactNode
 }

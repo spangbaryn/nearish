@@ -1,62 +1,60 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import Image from 'next/image'
-import { cn } from '@/lib/utils'
-import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import * as React from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
-  size?: 'sm' | 'md' | 'lg'
+  size?: "sm" | "md" | "lg";
 }
 
 const sizeClasses = {
-  sm: 'size-6',
-  md: 'size-8',
-  lg: 'size-10',
-}
+  sm: "size-6",
+  md: "size-8",
+  lg: "size-10",
+};
 
-export function Logo({ size = 'md', className, ...props }: LogoProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
+export function Logo({ size = "md", className, ...props }: LogoProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
     async function fetchLogo() {
       try {
-        const { data: files, error: listError } = await supabase
-          .storage
-          .from('assets')
-          .list('logo')
+        const { data: files, error: listError } = await supabase.storage
+          .from("assets")
+          .list("logo");
 
         if (listError) {
-          console.error('Error listing files:', listError)
-          return
+          console.error("Error listing files:", listError);
+          return;
         }
 
-        const logoFile = files.find(file => file.name === 'logo.svg')
+        const logoFile = files.find((file) => file.name === "logo.svg");
         if (!logoFile) {
-          console.log('Logo file not found')
-          return
+          console.log("Logo file not found");
+          return;
         }
 
-        const { data: { publicUrl } } = supabase
-          .storage
-          .from('assets')
-          .getPublicUrl('logo/logo.svg')
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("assets").getPublicUrl("logo/logo.svg");
 
-        setImageUrl(publicUrl)
+        setImageUrl(publicUrl);
       } catch (err) {
-        console.error('Error fetching logo:', err)
+        console.error("Error fetching logo:", err);
       }
     }
 
-    fetchLogo()
-  }, [supabase])
+    fetchLogo();
+  }, [supabase]);
 
   return (
     <div
       className={cn(
-        'relative flex shrink-0 overflow-hidden',
+        "relative flex shrink-0 overflow-hidden",
         sizeClasses[size],
         className
       )}
@@ -76,5 +74,5 @@ export function Logo({ size = 'md', className, ...props }: LogoProps) {
         </div>
       )}
     </div>
-  )
-} 
+  );
+}
