@@ -1,5 +1,5 @@
 interface AuthLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function AuthLayout({ children }: AuthLayoutProps) {
@@ -7,5 +7,5 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     <div className="flex h-screen w-full items-center justify-center px-4">
       {children}
     </div>
-  )
-} 
+  );
+}
