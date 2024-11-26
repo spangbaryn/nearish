@@ -5,75 +5,101 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Icons } from "@/components/ui/icons"
 import { AuthCard } from "./auth-card"
-import { AuthForm, AuthFormField, AuthFormFooter } from "./auth-form"
+import { AuthForm } from "./auth-form"
 
 export function LoginForm() {
-  const [email, setEmail] = React.useState("")
-  const [password, setPassword] = React.useState("")
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
   const router = useRouter()
   const { signIn } = useAuth()
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  async function onSubmit(event: React.SyntheticEvent) {
+    event.preventDefault()
+    setIsLoading(true)
     setError(null)
 
+    const target = event.target as typeof event.target & {
+      email: { value: string }
+      password: { value: string }
+    }
+
     try {
-      await signIn(email, password)
-      router.push("/home")
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in")
-    } finally {
-      setLoading(false)
+      await signIn(target.email.value, target.password.value)
+      router.push('/home')
+    } catch {
+      setError("Failed to sign in. Please check your credentials.")
+      setIsLoading(false)
     }
   }
 
   return (
     <AuthCard
-      title="Login"
-      description="Enter your email below to login to your account"
+      title="Welcome back"
+      description="Enter your email to sign in to your account"
     >
-      <AuthForm onSubmit={handleSubmit} loading={loading} error={error}>
-        <AuthFormField
-          id="email"
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="m@example.com"
-        />
-        <AuthFormField
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          rightElement={
-            <Link href="#" className="ml-auto inline-block text-sm underline">
-              Forgot your password?
-            </Link>
-          }
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          disabled={loading}
-          onClick={() => {
-            // TODO: Implement Google sign-in
-          }}
-        >
-          Login with Google
-        </Button>
-        <AuthFormFooter
-          text="Don't have an account?"
-          linkText="Sign up"
-          linkHref="/signup"
-        />
+      <AuthForm onSubmit={onSubmit} loading={isLoading} error={error}>
+        <div className="grid gap-2">
+          <div className="grid gap-1">
+            <Label className="sr-only" htmlFor="email">
+              Email
+            </Label>
+            <Input
+              id="email"
+              placeholder="name@example.com"
+              type="email"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="grid gap-1">
+            <Label className="sr-only" htmlFor="password">
+              Password
+            </Label>
+            <Input
+              id="password"
+              placeholder="Password"
+              type="password"
+              autoCapitalize="none"
+              autoComplete="current-password"
+              autoCorrect="off"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
       </AuthForm>
+
+      <div className="mt-4 text-center text-sm">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="underline hover:text-primary">
+          Sign up
+        </Link>
+      </div>
+
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with
+          </span>
+        </div>
+      </div>
+
+      <Button variant="secondary" type="button" disabled={isLoading} className="w-full">
+        {isLoading ? (
+          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <Icons.google className="mr-2 h-4 w-4" />
+        )}{" "}
+        Google
+      </Button>
     </AuthCard>
   )
 }
