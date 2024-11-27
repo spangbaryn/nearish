@@ -179,11 +179,23 @@ supabase gen types typescript --project-id your-project-id > lib/database.types.
    - Protected routes and sidebar become accessible
 
 3. **Protection**
-   - Layout-level authentication checks
+   - Centralized authentication layout
+   - Automatic session refresh handling
+   - Loading states with skeleton UI
    - Role-based access control
-   - Automatic redirect for unauthenticated users
+   - Automatic redirect for:
+     - Unauthenticated users
+     - Invalid refresh tokens
+     - Insufficient permissions
    - Protected routes and components
    - Secure sign out through sidebar
+
+4. **Error Handling**
+   - Graceful handling of expired sessions
+   - Automatic sign out on invalid refresh tokens
+   - Proper loading states during authentication
+   - Type-safe error handling
+   - Consistent user experience
 
 ## Role-Based Access Control
 
@@ -194,6 +206,8 @@ The application implements RBAC with:
 - Admin-only sections
 - User role management
 - Type-safe role checking
+- Centralized role validation
+- Loading states during authorization checks
 
 ### Admin Features
 

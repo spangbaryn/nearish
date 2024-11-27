@@ -1,27 +1,15 @@
 'use client'
 
-import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import MainSidebar from "@/components/layouts/main-sidebar"
+import AuthenticatedLayout from "@/components/layouts/authenticated-layout"
 
 export default function UsersLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { user } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/login')
-    }
-  }, [user, router])
-
-  if (!user) {
-    return null
-  }
-
-  return <MainSidebar>{children}</MainSidebar>
+  return (
+    <AuthenticatedLayout requiredRoles={['admin']}>
+      {children}
+    </AuthenticatedLayout>
+  )
 } 
