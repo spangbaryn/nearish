@@ -6,7 +6,11 @@ export interface UserTableProps {
 }
 
 export interface UserRowProps {
-  user: User
+  user: User & {
+    user_metadata?: {
+      role?: UserRole
+    }
+  }
 }
 
 export interface UserActionsProps {
