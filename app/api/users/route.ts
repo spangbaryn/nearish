@@ -3,8 +3,22 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { Database } from '@/lib/database.types'
+import { 
+  ApiError, 
+  UsersResponse, 
+  API_ERROR_CODES 
+} from '@/types/api'
 
-// Create a type-safe admin client
+const createApiError = (
+  code: string,
+  message: string,
+  status = 400
+): ApiError => ({
+  code,
+  message,
+  status
+})
+
 const createAdminClient = () => {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,42 +32,63 @@ const createAdminClient = () => {
   )
 }
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<UsersResponse>> {
   try {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient<Database>({ 
       cookies: () => cookieStore 
     })
     
-    // Get the current user's session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    if (sessionError) throw new Error('Authentication error')
-    if (!session) throw new Error('Not authenticated')
-
-    const userRole = session.user.user_metadata?.role
-    console.log('Current user role:', userRole)
     
-    if (userRole !== 'admin') {
-      throw new Error('Insufficient permissions')
+    if (sessionError) {
+      throw createApiError(
+        API_ERROR_CODES.AUTHENTICATION,
+        'Authentication error',
+        401
+      )
+    }
+    
+    if (!session) {
+      throw createApiError(
+        API_ERROR_CODES.AUTHENTICATION,
+        'Not authenticated',
+        401
+      )
     }
 
-    // Get users list using admin client
+    const userRole = session.user.user_metadata?.role
+    
+    if (userRole !== 'admin') {
+      throw createApiError(
+        API_ERROR_CODES.AUTHORIZATION,
+        'Insufficient permissions',
+        403
+      )
+    }
+
     const supabaseAdmin = createAdminClient()
     const { data, error } = await supabaseAdmin.auth.admin.listUsers()
     
     if (error) {
-      console.error('Error from Supabase:', error)
-      throw new Error('Failed to load users')
+      throw createApiError(
+        API_ERROR_CODES.SERVER_ERROR,
+        'Failed to load users',
+        500
+      )
     }
 
     if (!data?.users) {
-      throw new Error('No users data received')
+      throw createApiError(
+        API_ERROR_CODES.NOT_FOUND,
+        'No users data received',
+        404
+      )
     }
 
-    // Transform the data to ensure we're using the correct metadata
     const transformedUsers = data.users.map(user => ({
       id: user.id,
-      email: user.email,
+      email: user.email || '',
       created_at: user.created_at,
       user_metadata: user.user_metadata || {},
       raw_user_meta_data: user.user_metadata || {}
@@ -61,13 +96,15 @@ export async function GET() {
 
     return NextResponse.json({ users: transformedUsers })
   } catch (error) {
-    console.error('Error in users API route:', error)
-    const message = error instanceof Error ? error.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { 
-      status: 
-        message === 'Not authenticated' ? 401 :
-        message === 'Insufficient permissions' ? 403 : 
-        500 
-    })
+    const apiError = error as ApiError
+    return NextResponse.json(
+      { error: { 
+          code: apiError.code || 'unknown_error',
+          message: apiError.message,
+          status: apiError.status || 500
+        } 
+      }, 
+      { status: apiError.status || 500 }
+    )
   }
 } 
