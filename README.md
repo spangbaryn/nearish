@@ -144,7 +144,7 @@ nearish/
 │   │   └── signup-form.tsx  # Signup form
 │   ├── hooks/            # Custom React hooks
 │   │   ├── use-mobile.ts       # Mobile detection
-│   │   └── use-authorization.ts # RBAC hook
+│   │   └���─ use-authorization.ts # RBAC hook
 │   ├── layouts/          # Layout components
 │   │   └── main-sidebar.tsx    # Main navigation
 │   └── ui/              # UI components
@@ -351,6 +351,61 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 - `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Development Guidelines
+
+### React Data Fetching Best Practices
+
+- Use custom hooks for data fetching logic:
+  ```typescript
+  // hooks/use-api.ts
+  export function useApi() {
+    const fetchApi = useCallback(async <T>(endpoint: string, options?: FetchOptions): Promise<ApiResponse<T>> => {
+      // Implementation
+    }, [])
+    return { fetchApi }
+  }
+
+  // hooks/use-users.ts
+  export function useUsers() {
+    const { fetchApi } = useApi()
+    const mountedRef = useRef(false)
+
+    const loadUsers = useCallback(async () => {
+      if (!mountedRef.current) return
+      // Implementation
+    }, [fetchApi])
+
+    useEffect(() => {
+      mountedRef.current = true
+      return () => { mountedRef.current = false }
+    }, [])
+
+    return { users, loading, error, loadUsers }
+  }
+  ```
+
+- Prevent memory leaks and race conditions:
+  - Use a mounted ref to track component lifecycle
+  - Cancel in-flight requests on unmount
+  - Check mounted state before setState calls
+  - Clean up subscriptions and intervals
+
+- Optimize re-renders:
+  - Memoize fetch functions with useCallback
+  - Stabilize hook dependencies
+  - Use proper dependency arrays in useEffect
+  - Avoid unnecessary state updates
+
+- Handle loading and error states:
+  - Maintain consistent loading indicators
+  - Provide clear error messages
+  - Include retry functionality
+  - Show appropriate empty states
+
+- Type safety:
+  - Define explicit types for API responses
+  - Use generics for reusable fetch utilities
+  - Implement proper error typing
+  - Validate response data structure
 
 ### Component Structure
 

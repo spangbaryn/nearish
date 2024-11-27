@@ -34,14 +34,11 @@ const createAdminClient = () => {
 
 export async function GET(): Promise<NextResponse<UsersResponse>> {
   try {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient<Database>({ 
-      cookies: () => cookieStore 
-    })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
     
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     
-    if (sessionError) {
+    if (userError) {
       throw createApiError(
         API_ERROR_CODES.AUTHENTICATION,
         'Authentication error',
@@ -49,7 +46,7 @@ export async function GET(): Promise<NextResponse<UsersResponse>> {
       )
     }
     
-    if (!session) {
+    if (!user) {
       throw createApiError(
         API_ERROR_CODES.AUTHENTICATION,
         'Not authenticated',
@@ -57,9 +54,11 @@ export async function GET(): Promise<NextResponse<UsersResponse>> {
       )
     }
 
-    const userRole = session.user.user_metadata?.role
+    const userRole = user.user_metadata?.role
+    console.log('User Role:', userRole)
     
     if (userRole !== 'admin') {
+      console.log('Not admin, role is:', userRole)
       throw createApiError(
         API_ERROR_CODES.AUTHORIZATION,
         'Insufficient permissions',
@@ -67,10 +66,12 @@ export async function GET(): Promise<NextResponse<UsersResponse>> {
       )
     }
 
+    console.log('Admin check passed, fetching users...')
     const supabaseAdmin = createAdminClient()
     const { data, error } = await supabaseAdmin.auth.admin.listUsers()
     
     if (error) {
+      console.log('Admin API Error:', error)
       throw createApiError(
         API_ERROR_CODES.SERVER_ERROR,
         'Failed to load users',
@@ -78,6 +79,8 @@ export async function GET(): Promise<NextResponse<UsersResponse>> {
       )
     }
 
+    console.log('Users data received:', data?.users?.length, 'users')
+    
     if (!data?.users) {
       throw createApiError(
         API_ERROR_CODES.NOT_FOUND,

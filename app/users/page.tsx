@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { UserRole } from '@/lib/roles'
 import {
   Table,
@@ -13,15 +13,8 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-
-interface User {
-  id: string
-  email: string
-  created_at: string
-  user_metadata: {
-    role?: UserRole
-  }
-}
+import { useUsers } from '@/lib/hooks/use-users'
+import { User } from '@/types/api'
 
 interface UserTableProps {
   users: User[]
@@ -92,45 +85,19 @@ function ErrorState({ error, onRetry }: { error: string, onRetry: () => void }) 
 }
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const loadUsers = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/users')
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`)
-      }
-
-      if (!Array.isArray(data?.users)) {
-        throw new Error('Invalid response format')
-      }
-
-      setUsers(data.users)
-    } catch (error) {
-      console.error('Error loading users:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load users')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { users, loading, error, loadUsers } = useUsers()
 
   useEffect(() => {
     loadUsers()
-  }, [])
+  }, [loadUsers])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState error={error} onRetry={loadUsers} />
+  if (!users?.length) return <div className="p-4">No users found</div>
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Users</h1>
+      <h1 className="text-2xl font-bold mb-6">Users ({users.length})</h1>
       <UserTable users={users} />
     </div>
   )
