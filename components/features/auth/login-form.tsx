@@ -24,7 +24,7 @@ export function LoginForm() {
     try {
       await signIn(email, password);
       router.push("/home");
-    } catch (error) {
+    } catch (_error) {
       setError("Invalid email or password");
     } finally {
       setLoading(false);
