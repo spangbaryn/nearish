@@ -63,7 +63,7 @@ export const AuthForm: FC<AuthFormProps> = ({
       <div className="text-center text-sm">
         {variant === 'login' ? (
           <>
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-muted-foreground">Don&apos;t have an account? </span>
             <Link href="/signup" className="text-secondary hover:text-secondary/80">
               Sign up
             </Link>

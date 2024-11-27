@@ -4,10 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Icons } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/logo";
 import { AuthCard } from "./auth-card";
 import { AuthForm, AuthFormField } from "./auth-form";
@@ -28,7 +24,7 @@ export function LoginForm() {
     try {
       await signIn(email, password);
       router.push("/home");
-    } catch (err) {
+    } catch (error) {
       setError("Invalid email or password");
     } finally {
       setLoading(false);
