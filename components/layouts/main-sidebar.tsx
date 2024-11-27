@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 
-import { Protected } from "@/components/auth/protected";
+import { Protected } from "@/components/features/auth/protected";
 import {
   Breadcrumb,
   BreadcrumbItem,

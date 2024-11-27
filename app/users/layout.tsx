@@ -1,6 +1,6 @@
 'use client'
 
-import AuthenticatedLayout from "@/components/layouts/authenticated-layout"
+import AuthenticatedLayout from "@/components/features/auth/authenticated-layout"
 
 export default function UsersLayout({
   children,
