@@ -23,7 +23,7 @@ export function SignUpForm() {
     try {
       await signUp(email, password);
       router.push("/home");
-    } catch (_error) {
+    } catch {
       setError("Error creating account");
     } finally {
       setLoading(false);
