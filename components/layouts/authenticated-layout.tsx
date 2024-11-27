@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/lib/auth-context"
-import { redirect, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import MainSidebar from "@/components/layouts/main-sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UserRole } from "@/lib/roles"
