@@ -128,37 +128,51 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ```
 nearish/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   └── users/        # User management API
-│   ├── auth/             # Auth-related routes
-│   ├── home/             # Protected home page
-│   └── users/            # Admin user management
+├── app/ # Next.js app directory
+│ ├── api/ # API routes
+│ │ └── users/ # User management API
+│ ├── auth/ # Auth routes
+│ │ ├── login/ # Login page
+│ │ └── signup/ # Signup page
+│ ├── home/ # Protected home page
+│ ├── users/ # Admin user management
+│ ├── layout.tsx # Root layout with auth provider
+│ └── globals.css # Global styles
 ├── components/
-│   ├── auth/             # Authentication components
-│   │   ├── auth-card.tsx    # Shared auth card
-│   │   ├── auth-form.tsx    # Shared form components
-│   │   ├── auth-layout.tsx  # Auth page layout
-│   │   ├── login-form.tsx   # Login form
-│   │   ├── protected.tsx    # RBAC protection
-│   │   └── signup-form.tsx  # Signup form
-│   ├── hooks/            # Custom React hooks
-│   │   ├── use-mobile.ts       # Mobile detection
-│   │   └���─ use-authorization.ts # RBAC hook
-│   ├── layouts/          # Layout components
-│   │   └── main-sidebar.tsx    # Main navigation
-│   └── ui/              # UI components
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── logo.tsx     # Logo with Supabase storage
-│       └── ...
-├── lib/                 # Core utilities
-│   ├── auth-context.tsx # Authentication context
-│   ├── roles.ts        # Role definitions & logic
-│   ├── database.types.ts # Generated Supabase types
-│   └── utils.ts        # Shared utilities
-└── public/             # Static assets
-```
+│ ├── features/ # Feature-specific components
+│ │ └── auth/ # Authentication components
+│ │ ├── auth-card.tsx # Shared auth card
+│ │ ├── auth-form.tsx # Form components
+│ │ ├── auth-layout.tsx # Public auth layout
+│ │ ├── authenticated-layout.tsx # Protected layout
+│ │ ├── login-form.tsx # Login implementation
+│ │ ├── protected.tsx # RBAC protection
+│ │ ├── signup-form.tsx # Signup implementation
+│ │ └── types.ts # Shared auth types
+│ ├── hooks/ # Custom React hooks
+│ │ ├── use-mobile.ts # Mobile detection
+│ │ └── use-authorization.ts # RBAC hook
+│ ├── layouts/ # Layout components
+│ │ └── main-sidebar.tsx # Main navigation
+│ └── ui/ # Shared UI components
+│ ├── breadcrumb.tsx
+│ ├── button.tsx
+│ ├── card.tsx
+│ ├── input.tsx
+│ ├── label.tsx
+│ ├── logo.tsx # Logo with storage
+│ ├── sidebar.tsx # Sidebar components
+│ ├── skeleton.tsx # Loading states
+│ └── ...
+├── lib/ # Core utilities
+│ ├── auth-context.tsx # Authentication context
+│ ├── roles.ts # Role definitions & logic
+│ ├── database.types.ts # Generated types
+│ └── utils.ts # Shared utilities
+└── public/ # Static assets
+└── fonts/ # Local font files
+├── GeistVF.woff
+└── GeistMonoVF.woff
 
 ## Type Safety
 
@@ -183,6 +197,7 @@ The project enforces strict type safety for all API interactions:
 ### Request/Response Types
 
 - Define explicit types for all API request and response objects:
+
   ```typescript
   type CreateUserRequest = {
     email: string;
@@ -191,7 +206,7 @@ The project enforces strict type safety for all API interactions:
   };
 
   type CreateUserResponse = {
-    user: Database['public']['Tables']['users']['Row'];
+    user: Database["public"]["Tables"]["users"]["Row"];
     error?: string;
   };
   ```
@@ -199,8 +214,9 @@ The project enforces strict type safety for all API interactions:
 ### API Route Types
 
 - Use TypeScript for all API routes with proper typing:
+
   ```typescript
-  import { NextRequest, NextResponse } from 'next/server';
+  import { NextRequest, NextResponse } from "next/server";
 
   export async function POST(
     req: NextRequest
@@ -212,6 +228,7 @@ The project enforces strict type safety for all API interactions:
 ### Error Handling
 
 - Type-safe error responses using discriminated unions:
+
   ```typescript
   type ApiError = {
     error: string;
@@ -219,7 +236,7 @@ The project enforces strict type safety for all API interactions:
     details?: Record<string, unknown>;
   };
 
-  type ApiResponse<T> = 
+  type ApiResponse<T> =
     | { data: T; error?: never }
     | { data?: never; error: ApiError };
   ```
@@ -227,11 +244,12 @@ The project enforces strict type safety for all API interactions:
 ### Database Types
 
 - Utilize generated Supabase types for database operations:
+
   ```typescript
-  import { Database } from '@/lib/database.types';
-  
-  type User = Database['public']['Tables']['users']['Row'];
-  type UserInsert = Database['public']['Tables']['users']['Insert'];
+  import { Database } from "@/lib/database.types";
+
+  type User = Database["public"]["Tables"]["users"]["Row"];
+  type UserInsert = Database["public"]["Tables"]["users"]["Insert"];
   ```
 
 ### Type Guards
@@ -240,10 +258,10 @@ The project enforces strict type safety for all API interactions:
   ```typescript
   function isApiError(response: unknown): response is ApiError {
     return (
-      typeof response === 'object' &&
+      typeof response === "object" &&
       response !== null &&
-      'error' in response &&
-      'code' in response
+      "error" in response &&
+      "code" in response
     );
   }
   ```
@@ -355,47 +373,59 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 ### React Data Fetching Best Practices
 
 - Use custom hooks for data fetching logic:
+
   ```typescript
   // hooks/use-api.ts
   export function useApi() {
-    const fetchApi = useCallback(async <T>(endpoint: string, options?: FetchOptions): Promise<ApiResponse<T>> => {
-      // Implementation
-    }, [])
-    return { fetchApi }
+    const fetchApi = useCallback(
+      async <T>(
+        endpoint: string,
+        options?: FetchOptions
+      ): Promise<ApiResponse<T>> => {
+        // Implementation
+      },
+      []
+    );
+    return { fetchApi };
   }
 
   // hooks/use-users.ts
   export function useUsers() {
-    const { fetchApi } = useApi()
-    const mountedRef = useRef(false)
+    const { fetchApi } = useApi();
+    const mountedRef = useRef(false);
 
     const loadUsers = useCallback(async () => {
-      if (!mountedRef.current) return
+      if (!mountedRef.current) return;
       // Implementation
-    }, [fetchApi])
+    }, [fetchApi]);
 
     useEffect(() => {
-      mountedRef.current = true
-      return () => { mountedRef.current = false }
-    }, [])
+      mountedRef.current = true;
+      return () => {
+        mountedRef.current = false;
+      };
+    }, []);
 
-    return { users, loading, error, loadUsers }
+    return { users, loading, error, loadUsers };
   }
   ```
 
 - Prevent memory leaks and race conditions:
+
   - Use a mounted ref to track component lifecycle
   - Cancel in-flight requests on unmount
   - Check mounted state before setState calls
   - Clean up subscriptions and intervals
 
 - Optimize re-renders:
+
   - Memoize fetch functions with useCallback
   - Stabilize hook dependencies
   - Use proper dependency arrays in useEffect
   - Avoid unnecessary state updates
 
 - Handle loading and error states:
+
   - Maintain consistent loading indicators
   - Provide clear error messages
   - Include retry functionality
@@ -410,23 +440,24 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 ### Component Structure
 
 - Components follow a consistent pattern:
+
   ```typescript
   // components/features/user-profile/user-card.tsx
-  import { type FC } from 'react'
-  import { cn } from '@/lib/utils'
-  
+  import { type FC } from "react";
+  import { cn } from "@/lib/utils";
+
   interface UserCardProps {
-    user: Database['public']['Tables']['users']['Row']
-    className?: string
+    user: Database["public"]["Tables"]["users"]["Row"];
+    className?: string;
   }
-  
+
   export const UserCard: FC<UserCardProps> = ({ user, className }) => {
     return (
-      <div className={cn('rounded-lg p-4', className)}>
+      <div className={cn("rounded-lg p-4", className)}>
         {/* Component content */}
       </div>
-    )
-  }
+    );
+  };
   ```
 
 ### File Organization
@@ -447,10 +478,9 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 ### State Management
 
 - Local state: React useState
-- Complex state: React useReducer
-- Global state: React Context
-- Server state: React Query
-- Form state: React Hook Form
+- Global auth state: React Context (AuthContext)
+- Protected route state management
+- Loading and error states
 
 ### Data Fetching Patterns
 
@@ -458,14 +488,14 @@ The project is deployed on Vercel. For deployment, ensure these environment vari
 // hooks/queries/use-users.ts
 export const useUsers = () => {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: async () => {
-      const response = await fetch('/api/users')
-      if (!response.ok) throw new Error('Failed to fetch users')
-      return response.json()
-    }
-  })
-}
+      const response = await fetch("/api/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      return response.json();
+    },
+  });
+};
 ```
 
 ### Error Handling
@@ -486,35 +516,38 @@ export const useUsers = () => {
 
 ```typescript
 // __tests__/components/user-card.test.tsx
-import { render, screen } from '@testing-library/react'
-import { UserCard } from '@/components/features/user-profile/user-card'
+import { render, screen } from "@testing-library/react";
+import { UserCard } from "@/components/features/user-profile/user-card";
 
-describe('UserCard', () => {
-  it('renders user information correctly', () => {
+describe("UserCard", () => {
+  it("renders user information correctly", () => {
     const user = {
-      id: '1',
-      name: 'Test User',
-      email: 'test@example.com'
-    }
-    render(<UserCard user={user} />)
-    expect(screen.getByText('Test User')).toBeInTheDocument()
-  })
-})
+      id: "1",
+      name: "Test User",
+      email: "test@example.com",
+    };
+    render(<UserCard user={user} />);
+    expect(screen.getByText("Test User")).toBeInTheDocument();
+  });
+});
 ```
 
 ### Form Handling
 
-- Use React Hook Form for all forms
-- Zod schema validation
-- Consistent error messaging
+- Controlled components with React useState
+- Type-safe form events
+- Consistent error handling patterns
 - Loading states for submissions
+- Reusable form components
+- Form field abstraction
 
 ### CSS & Styling
 
-- Use CSS Modules for component-specific styles
-- Tailwind utility classes for common patterns
-- CSS variables for theme values
+- Tailwind CSS for utility classes
+- Consistent spacing with space-y utilities
 - Mobile-first responsive design
+- shadcn/ui component integration
+- Custom theme variables
 
 ### Security Practices
 
@@ -526,33 +559,36 @@ describe('UserCard', () => {
 
 ### Code Quality Standards
 
-- ESLint configuration:
-  ```json
-  {
-    "extends": [
-      "next/core-web-vitals",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "rules": {
-      "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-explicit-any": "error"
-    }
-  }
-  ```
+- TypeScript Configuration:
+
+  - Strict mode enabled
+  - No explicit any
+  - Required prop types
+  - Event handler types
+  - React.FC usage
+
+- Component Structure:
+
+  - Feature-based organization
+  - Shared UI components
+  - Consistent file naming
+  - Clear component interfaces
+  - JSDoc documentation
+
+- Styling Approach:
+  - Tailwind CSS utilities
+  - Consistent spacing
+  - Responsive design
+  - Theme variables
+  - Accessible colors
 
 ### Documentation Requirements
 
-- JSDoc for all components and functions:
-  ```typescript
-  /**
-   * Displays user information in a card format
-   * @param {UserCardProps} props - Component props
-   * @param {User} props.user - User data to display
-   * @param {string} [props.className] - Optional CSS class names
-   * @returns {JSX.Element} Rendered card component
-   */
-  export const UserCard = ...
-  ```
+- Clear TypeScript interfaces
+- Descriptive prop types
+- Consistent file organization
+- README documentation
+- Component usage examples
 
 ### Git Workflow
 
@@ -590,3 +626,99 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 MIT
+
+### Authentication
+
+- Supabase Authentication Integration:
+  - Email/Password Sign Up and Sign In
+  - Protected Routes with Auth Context
+  - Loading & Error States
+  - Persistent Sessions
+  - Route Protection with AuthLayout
+  - Role-Based Access Control
+
+### Component Architecture
+
+- Auth Components:
+  ```typescript
+  components/features/auth/
+  ├── auth-form.tsx      # Reusable form components
+  ├── auth-layout.tsx    # Authentication layout wrapper
+  ├── login-form.tsx     # Login implementation
+  └── signup-form.tsx    # Signup implementation
+  ```
+
+- Type-Safe Interfaces:
+  ```typescript
+  interface AuthFormProps {
+    children: ReactNode
+    onSubmit: (e: React.FormEvent) => void
+    loading: boolean
+    error?: string | null
+    variant: 'login' | 'signup'
+  }
+  ```
+
+### Form Implementation
+
+- Current Pattern:
+  - Controlled inputs with useState
+  - Type-safe event handlers
+  - Shared AuthForm component
+  - Reusable AuthFormField
+  - Consistent error display
+  - Loading state indicators
+  - Variant-based rendering (login/signup)
+  - Responsive form layout
+
+### UI Components
+
+- shadcn/ui Integration:
+  - Custom Button component
+  - Form Input fields
+  - Label components
+  - Card layouts
+  - Logo component
+  - Mobile-responsive design
+
+### State Management
+
+- Current Implementation:
+  - Form state with useState
+  - Supabase auth context
+  - Loading states
+  - Error handling
+  - Navigation with useRouter
+  - Type-safe state management
+
+### Error Handling
+
+- Try-catch blocks in async operations
+- Consistent error state management
+- User-friendly error messages
+- Loading state handling
+- Type-safe error states
+
+### Implemented Patterns
+
+- Component Props:
+
+  - Strict TypeScript interfaces
+  - Optional/required prop handling
+  - React.FC type usage
+  - Children prop support
+  - Event handler typing
+
+- Layout Structure:
+
+  - Nested layouts with children
+  - Conditional rendering
+  - Protected routes
+  - Loading skeletons
+  - Error boundaries
+
+- Navigation Flow:
+  - Protected route redirects
+  - Authentication-based routing
+  - Home page redirect after auth
+  - Login/Signup flow
