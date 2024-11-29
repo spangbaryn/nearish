@@ -29,12 +29,19 @@
 ### **Frontend**
 
 - **React**
-    - **`useContext`** for global state sharing (e.g., theme, authentication status).
-    - **`useSyncExternalStore`** for consistent subscription to real-time data sources.
-- **Next.js**
+    - **`useContext`** for global state sharing (auth, theme, sidebar state)
+    - **`useReducer`** for complex component state
+    - **`forwardRef`** for component composition
+- **Next.js 14**
+    - App Router
+    - Server Components
 - **TypeScript**
 - **TailwindCSS**
+    - Custom design tokens
+    - Responsive utilities
 - **shadcn/ui**
+    - Customized components
+    - Composable primitives
 
 ### **Backend**
 
@@ -132,11 +139,19 @@ docs/                            # Documentation
 
 ### **3. State Management Patterns**
 
-- Use `useState` and `useReducer` for local component state.
-- Use `useContext` for global state that doesn’t change frequently (e.g., auth, theme).
-- Use `useSyncExternalStore` for subscribing to real-time data sources.
-- For global, application-wide state:
-    - Use **Redux Toolkit** with slices stored in the `store/` directory.
+- Use `useState` for simple component state
+- Use `useReducer` for complex state logic
+- Use `useContext` for:
+    - Global UI state (sidebar, theme)
+    - Authentication state
+    - Feature flags
+- Use `forwardRef` for:
+    - Component composition
+    - DOM node access
+    - Component libraries
+- For global state:
+    - Redux Toolkit for business logic
+    - Context for UI state
 
 ---
 
@@ -145,9 +160,31 @@ docs/                            # Documentation
 Each component file should include:
 
 1. **Imports**:
-    - Separate external imports and internal imports with a blank line.
-2. **Type Definitions** (if applicable): Place before the component definition.
-3. **Component Code**: Default export at the end of the file.
+    - External library imports first
+    - Internal imports second, separated by blank line
+    - Component imports third
+2. **Type Definitions**: Place before component definition
+3. **Context Definitions**: If needed, before component
+4. **Component Code**: Using forwardRef when needed
+5. **Display Names**: Always set for forwardRef components
+
+Example structure:
+```typescript
+import * as React from "react"
+import { external } from "library"
+
+import { internal } from "@/lib/utils"
+import { Component } from "@/components"
+
+type ComponentProps = {
+  prop: string
+}
+
+const Component = React.forwardRef<HTMLElement, ComponentProps>((props, ref) => {
+  return <div ref={ref} {...props} />
+})
+Component.displayName = "Component"
+```
 
 ---
 
