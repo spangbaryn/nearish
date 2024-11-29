@@ -1,4 +1,5 @@
-export type UserRole = 'Customer' | 'Business' | 'Admin';
+export type UserRole = 'Admin' | 'Business' | 'Customer';
+export type BusinessRole = 'Owner' | 'Staff';
 
 export interface Database {
   public: {
@@ -8,8 +9,27 @@ export interface Database {
           id: string;
           email: string;
           role: UserRole;
+          business_role: BusinessRole | null;
+          business_id: string | null;
           created_at: string;
           updated_at: string | null;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          role?: UserRole;
+          business_role?: BusinessRole | null;
+          business_id?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          role?: UserRole;
+          business_role?: BusinessRole | null;
+          business_id?: string | null;
+          updated_at?: string | null;
         };
       };
       businesses: {
@@ -21,14 +41,18 @@ export interface Database {
           created_at: string;
           updated_at: string | null;
         };
-      };
-      business_roles: {
-        Row: {
-          id: string;
-          business_id: string;
-          user_id: string;
-          role: 'Owner' | 'Staff';
-          created_at: string;
+        Insert: {
+          name: string;
+          description?: string | null;
+          owner_id: string;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          owner_id?: string;
+          updated_at?: string | null;
         };
       };
     };
