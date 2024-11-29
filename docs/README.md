@@ -270,3 +270,5 @@ To ensure consistent collaboration with AI tools:
 - Example AI-specific task list:
     - Generate boilerplate for new features (e.g., `posts`).
     - Write tests for `api/messages` endpoint.
+-  "Always use the centralized AppError class and error handling patterns established in the codebase. When logging Supabase errors, only access properties that are documented in their AuthError type: status and message. Don't assume additional properties exist."
+- "When defining async functions in a context provider, ensure the return type in the interface matches the actual implementation. If a function returns data (like signUp returning a User), the interface should reflect this instead of using void."

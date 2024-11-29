@@ -6,7 +6,7 @@ import type { User, AuthState, UserRole } from "@/types/auth";
 
 interface AuthContextType extends AuthState {
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, role?: UserRole) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
 }
 
@@ -14,9 +14,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: false,
   error: null,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
+  signIn: async (email: string, password: string): Promise<void> => {},
+  signUp: async (email: string, password: string): Promise<User> => ({ id: '', email: '', role: 'customer' }),
+  signOut: async (): Promise<void> => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -37,10 +37,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error || ""
       );
       if (error) {
-        setState((s) => ({ ...s, error: error.message }));
+        setState((s) => ({ ...s, error: new Error(error.message) }));
         return;
       }
-      setState((s) => ({ ...s, user: session?.user || null }));
+      setState((s) => ({ 
+        ...s, 
+        user: session?.user ? {
+          ...session.user,
+          email: session.user.email || '',
+          role: (session.user.user_metadata.role as UserRole) || 'Customer'
+        } : null 
+      }));
     });
 
     // Listen for auth changes
@@ -52,7 +59,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         event,
         session ? "Session exists" : "No session"
       );
-      setState((s) => ({ ...s, user: session?.user || null }));
+      setState((s) => ({ 
+        ...s, 
+        user: session?.user ? {
+          ...session.user,
+          email: session.user.email || '',
+          role: (session.user.user_metadata.role as UserRole) || 'Customer'
+        } : null 
+      }));
     });
 
     return () => {
@@ -70,21 +84,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, loading: false }));
   };
 
-  const signUp = async (
-    email: string,
-    password: string,
-    role: UserRole = "customer"
-  ) => {
-    setState((s) => ({ ...s, loading: true }));
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { role },
-      },
-    });
-    if (error) throw error;
-    setState((s) => ({ ...s, loading: false }));
+  const signUp = async (email: string, password: string) => {
+    setState(s => ({ ...s, loading: true, error: null }));
+    
+    try {
+      console.log('Starting signup process...');
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            role: 'Customer'
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Supabase signup error:', {
+          code: error.status,
+          message: error.message
+        });
+        setState(s => ({ ...s, loading: false, error: new Error(error.message) }));
+        throw error;
+      }
+
+      if (!data?.user) {
+        const noUserError = new Error('No user data returned from signup');
+        setState(s => ({ ...s, loading: false, error: noUserError }));
+        throw noUserError;
+      }
+
+      const mappedUser: User = {
+        id: data.user.id,
+        email: data.user.email || '',
+        role: 'Customer'
+      };
+
+      setState(s => ({ ...s, loading: false, user: mappedUser }));
+      return mappedUser;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+      console.error('Signup error details:', {
+        error,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      setState(s => ({ ...s, loading: false, error: new Error(errorMessage) }));
+      throw error;
+    }
   };
 
   const signOut = async () => {
@@ -104,3 +153,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+

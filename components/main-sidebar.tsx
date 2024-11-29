@@ -11,10 +11,11 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export function MainSidebar() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   const routes = [
@@ -66,10 +67,18 @@ export function MainSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <div className="flex-1">
             <p className="text-sm">{user?.email}</p>
           </div>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => signOut()}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Log out
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -15,18 +15,38 @@ import {
 } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth-context";
+import { useAuthError } from "@/lib/hooks/useAuthError";
+
+const isEmailValid = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const isPasswordStrong = (password: string): boolean => {
+  return password.length >= 6;
+};
 
 export default function SignUpPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { error, setError, handleAuthError } = useAuthError();
   const { signUp } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isEmailValid(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!isPasswordStrong(password)) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 
@@ -34,7 +54,16 @@ export default function SignUpPage() {
       await signUp(email, password);
       setIsSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error('Signup error details:', {
+        error: err,
+        name: err instanceof Error ? err.name : 'Unknown',
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : 'No stack trace'
+      });
+      const message = err instanceof Error 
+        ? err.message 
+        : 'Failed to create account. Please try again.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
