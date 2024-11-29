@@ -19,42 +19,43 @@ The schema is designed to support:
 
 ## **Tables**
 
-### **1. Users**
+### **1. Profiles**
 
 Holds all registered users, including Customers, Business Users, and Admins.
 
 | Column | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| `id` | UUID | Primary Key, Not Null | Unique identifier for each user. |
-| `email` | VARCHAR(255) | Unique, Not Null | User's email address. |
-| `password` | VARCHAR(255) | Not Null | Encrypted password. |
-| `role` | ENUM | Not Null | User role (`Customer`, `Business`, `Admin`). |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | User creation date. |
-| `updated_at` | TIMESTAMP |  | Last updated timestamp. |
+| `id` | UUID | Primary Key, Not Null | Unique identifier from auth.users |
+| `email` | VARCHAR(255) | Unique, Not Null | User's email address |
+| `role` | ENUM | Not Null | User role (`admin`, `business`, `customer`) |
+| `business_role` | ENUM | Null | Business-specific role (`owner`, `staff`) |
+| `business_id` | UUID | Foreign Key -> `businesses.id` | Associated business ID |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Profile creation date |
+| `updated_at` | TIMESTAMP | | Last updated timestamp |
 
 **Context**:
-
-- The `role` column supports hierarchical access control, with `Business` users capable of creating posts and managing staff.
-- Passwords should be encrypted using a secure hashing algorithm (e.g., bcrypt).
+- The `id` column links to Supabase's built-in auth.users table
+- The `role` column supports hierarchical access control
+- `business_role` and `business_id` are only populated for business users
 
 ---
 
 ### **2. Businesses**
 
-Stores information about businesses registered on Nearish.
+Stores business account information.
 
 | Column | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| `id` | UUID | Primary Key, Not Null | Unique identifier for the business. |
-| `name` | VARCHAR(255) | Not Null | Business name. |
-| `description` | TEXT |  | Description of the business. |
-| `owner_id` | UUID | Foreign Key -> `users.id` | ID of the business owner. |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Business creation date. |
-| `updated_at` | TIMESTAMP |  | Last updated timestamp. |
+| `id` | UUID | Primary Key, Not Null | Unique business identifier |
+| `name` | VARCHAR(255) | Not Null | Business name |
+| `description` | TEXT | Null | Business description |
+| `owner_id` | UUID | Foreign Key -> `profiles.id` | Profile ID of business owner |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Business creation date |
+| `updated_at` | TIMESTAMP | | Last updated timestamp |
 
 **Context**:
-
-- The `owner_id` links to a user with the `Business` role. This user can manage staff and create posts.
+- One-to-many relationship with profiles (one business can have multiple staff members)
+- The `owner_id` references the profile who created/owns the business
 
 ---
 

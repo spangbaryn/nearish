@@ -18,14 +18,14 @@ describe('RLS Policies', () => {
     });
 
     const { data: ownData, error: ownError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('id', session?.user.id)
       .single();
 
     expect(ownError).toBeNull();
     expect(ownData).toBeTruthy();
-    expect(mockSupabase.from).toHaveBeenCalledWith('users');
+    expect(mockSupabase.from).toHaveBeenCalledWith('profiles');
   });
 
   test('Users cannot update other users data', async () => {
@@ -39,7 +39,7 @@ describe('RLS Policies', () => {
     });
 
     const { error } = await supabase
-      .from('users')
+      .from('profiles')
       .update({ role: 'Admin' })
       .eq('id', 'other-user-id')
       .single();
@@ -58,7 +58,7 @@ describe('RLS Policies', () => {
     });
 
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .single();
 

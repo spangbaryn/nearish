@@ -1,7 +1,7 @@
 Phase 1: Foundation & Authentication
 Setup Supabase Integration
 Initialize Supabase client
-Create auth tables based on schema (Users table, lines 19-35 in schema)
+Create auth tables based on schema (Profiles table, lines 19-35 in schema)
 Implement auth context using provided structure
 Core Components Setup
 20

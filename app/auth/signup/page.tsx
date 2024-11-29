@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -51,23 +51,33 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
+      console.log('Starting signup process...');
       await signUp(email, password);
+      console.log('Signup successful');
       setIsSuccess(true);
     } catch (err) {
-      console.error('Signup error details:', {
-        error: err,
-        name: err instanceof Error ? err.name : 'Unknown',
-        message: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : 'No stack trace'
-      });
-      const message = err instanceof Error 
-        ? err.message 
-        : 'Failed to create account. Please try again.';
+      console.error('Signup error:', err);
+      const message = err instanceof Error ? err.message : 'Signup failed';
       setError(message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const checkConfig = async () => {
+      const { supabase } = await import('@/lib/supabase');
+      const { data, error } = await supabase.auth.getSession();
+      console.log('Supabase config check:', {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        session: data.session,
+        error
+      });
+    };
+    
+    checkConfig();
+  }, []);
 
   if (isSuccess) {
     return (

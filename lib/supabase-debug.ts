@@ -12,7 +12,7 @@ export async function testSupabaseConnection() {
     console.log('[Supabase] Configuration found, testing API connection...');
     
     // First try a simple health check
-    const { data, error } = await supabase.from('users').select('count', { count: 'exact' });
+    const { data, error } = await supabase.from('profiles').select('count', { count: 'exact' });
     
     if (error) {
       console.error('[Supabase] Connection error:', error.message);

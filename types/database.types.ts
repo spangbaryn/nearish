@@ -1,10 +1,10 @@
-export type UserRole = 'Admin' | 'Business' | 'Customer';
-export type BusinessRole = 'Owner' | 'Staff';
+export type UserRole = 'admin' | 'business' | 'customer';
+export type BusinessRole = 'owner' | 'staff';
 
 export interface Database {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           id: string;
           email: string;

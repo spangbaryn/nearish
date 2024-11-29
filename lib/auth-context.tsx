@@ -88,51 +88,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState(s => ({ ...s, loading: true, error: null }));
     
     try {
-      console.log('Starting signup process...');
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            role: 'Customer'
-          }
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
-      if (error) {
-        console.error('Supabase signup error:', {
-          code: error.status,
-          message: error.message
-        });
-        setState(s => ({ ...s, loading: false, error: new Error(error.message) }));
-        throw error;
-      }
-
-      if (!data?.user) {
-        const noUserError = new Error('No user data returned from signup');
-        setState(s => ({ ...s, loading: false, error: noUserError }));
-        throw noUserError;
-      }
-
-      const mappedUser: User = {
+      if (error) throw error;
+      if (!data.user) throw new Error('No user data returned');
+      
+      return {
         id: data.user.id,
         email: data.user.email || '',
-        role: 'Customer'
+        role: 'customer'
       };
 
-      setState(s => ({ ...s, loading: false, user: mappedUser }));
-      return mappedUser;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
-      console.error('Signup error details:', {
-        error,
-        message: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      setState(s => ({ ...s, loading: false, error: new Error(errorMessage) }));
+      setState(s => ({ ...s, error: message }));
       throw error;
+    } finally {
+      setState(s => ({ ...s, loading: false }));
     }
   };
 
