@@ -44,7 +44,7 @@ describe('RLS Policies', () => {
       .eq('id', 'other-user-id')
       .single();
 
-    expect(error).toBeTruthy();
+    if (!error) throw new Error('Expected error but got null');
     expect(error.message).toBe('RLS policy violation');
   });
 

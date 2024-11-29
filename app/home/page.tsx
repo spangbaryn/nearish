@@ -1,17 +1,29 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container flex h-screen w-screen flex-col items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   if (!user) {
-    redirect("/");
+    return null;
   }
 
   return (

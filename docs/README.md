@@ -62,6 +62,27 @@
 - **Jest** (Unit testing)
 - **Cypress** (End-to-end testing)
 
+### **4. Error Handling Patterns**
+
+- **Centralized Error Handling**
+    - Use `AppError` class for consistent error formatting
+    - Implement custom error hooks for reusability
+    - Handle errors at the appropriate level
+
+- **Error Types**
+    - Business logic errors
+    - API/Network errors
+    - Validation errors
+    - Authentication errors
+
+- **Error Handling Best Practices**
+    - Use custom hooks for feature-specific error handling
+    - Implement error boundaries for React component trees
+    - Log errors appropriately for monitoring
+    - Provide user-friendly error messages
+    - Handle errors based on context and severity
+
+
 ---
 
 ## **Folder Structure**
@@ -155,36 +176,27 @@ docs/                            # Documentation
 
 ---
 
-### **4. Component Structure**
+### **4. Error Handling Patterns**
 
-Each component file should include:
+- **Centralized Error Handling**
+    - Use `AppError` class for consistent error formatting
+    - Implement custom error hooks for reusability
+    - Handle errors at the appropriate level
 
-1. **Imports**:
-    - External library imports first
-    - Internal imports second, separated by blank line
-    - Component imports third
-2. **Type Definitions**: Place before component definition
-3. **Context Definitions**: If needed, before component
-4. **Component Code**: Using forwardRef when needed
-5. **Display Names**: Always set for forwardRef components
+- **Error Types**
+    - Business logic errors
+    - API/Network errors
+    - Validation errors
+    - Authentication errors
 
-Example structure:
-```typescript
-import * as React from "react"
-import { external } from "library"
+- **Error Handling Best Practices**
+    - Use custom hooks for feature-specific error handling
+    - Implement error boundaries for React component trees
+    - Log errors appropriately for monitoring
+    - Provide user-friendly error messages
+    - Handle errors based on context and severity
 
-import { internal } from "@/lib/utils"
-import { Component } from "@/components"
-
-type ComponentProps = {
-  prop: string
-}
-
-const Component = React.forwardRef<HTMLElement, ComponentProps>((props, ref) => {
-  return <div ref={ref} {...props} />
-})
-Component.displayName = "Component"
-```
+Example usage:
 
 ---
 
