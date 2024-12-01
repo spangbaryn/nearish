@@ -1,41 +1,11 @@
 import { mockSupabase } from './mocks/supabase';
-import { createBusiness, addBusinessMember, getUserBusinesses } from '@/lib/business';
+import { addBusinessMember, getUserBusinesses } from '@/lib/business';
 
 describe('Business Helper Functions', () => {
-  const testBusiness = {
-    name: 'Test Business',
-    description: 'Test Description'
-  };
-
   const testUserId = 'test-user-id';
 
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  describe('createBusiness', () => {
-    test('creates business and adds owner', async () => {
-      const businessData = { id: 'business-id', ...testBusiness };
-      
-      mockSupabase.from.mockImplementationOnce(() => ({
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValueOnce({
-          data: businessData,
-          error: null
-        })
-      }));
-
-      mockSupabase.from.mockImplementationOnce(() => ({
-        insert: jest.fn().mockResolvedValueOnce({
-          data: null,
-          error: null
-        })
-      }));
-
-      const result = await createBusiness(testBusiness, testUserId);
-      expect(result).toEqual(businessData);
-    });
   });
 
   describe('addBusinessMember', () => {
@@ -117,54 +87,10 @@ describe('Business Helper Functions', () => {
 });
 
 describe('Business Helper Functions Error Handling', () => {
-  const testBusiness = {
-    name: 'Test Business',
-    description: 'Test Description'
-  };
-
   const testUserId = 'test-user-id';
 
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  describe('createBusiness', () => {
-    test('handles business creation error', async () => {
-      mockSupabase.from.mockImplementationOnce(() => ({
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValueOnce({
-          data: null,
-          error: { message: 'Database error' }
-        })
-      }));
-
-      await expect(createBusiness(testBusiness, testUserId))
-        .rejects
-        .toEqual({ message: 'Database error' });
-    });
-
-    test('handles member creation error', async () => {
-      mockSupabase.from
-        .mockImplementationOnce(() => ({
-          insert: jest.fn().mockReturnThis(),
-          select: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValueOnce({
-            data: { id: 'business-id', ...testBusiness },
-            error: null
-          })
-        }))
-        .mockImplementationOnce(() => ({
-          insert: jest.fn().mockResolvedValueOnce({
-            data: null,
-            error: { message: 'RLS policy violation' }
-          })
-        }));
-
-      await expect(createBusiness(testBusiness, testUserId))
-        .rejects
-        .toEqual({ message: 'RLS policy violation' });
-    });
   });
 
   describe('addBusinessMember', () => {

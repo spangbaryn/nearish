@@ -24,7 +24,6 @@ export function MainSidebar() {
       title: "Business",
       items: [
         { title: "All Businesses", href: "/businesses", icon: Building2 },
-        { title: "Registration", href: "/businesses/register", icon: Building2 },
         { title: "Management", href: "/businesses/manage", icon: Building2 },
       ],
     }] : []),

@@ -2,35 +2,7 @@ import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database.types';
 import type { BusinessRole } from '@/types/auth';
 
-type Business = Database['public']['Tables']['businesses']['Insert'];
 type BusinessMember = Database['public']['Tables']['business_members']['Insert'];
-
-/**
- * Creates a new business and adds the creator as an owner
- */
-export async function createBusiness(business: Business, userId: string) {
-  const { data: businessData, error: businessError } = await supabase
-    .from('businesses')
-    .insert(business)
-    .select()
-    .single();
-
-  if (businessError) throw businessError;
-
-  const member: BusinessMember = {
-    profile_id: userId,
-    business_id: businessData.id,
-    role: 'owner'
-  };
-
-  const { error: memberError } = await supabase
-    .from('business_members')
-    .insert(member);
-
-  if (memberError) throw memberError;
-
-  return businessData;
-}
 
 /**
  * Adds a new member to a business
