@@ -24,15 +24,23 @@ export async function signUp(email: string, password: string) {
 }
 
 export async function getUserProfile(userId: string): Promise<User> {
+  console.log('[Auth] Fetching profile for user:', userId);
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .single();
 
-  if (error) throw error;
-  if (!data) throw new Error('Profile not found');
+  if (error) {
+    console.error('[Auth] Profile fetch error:', error);
+    throw error;
+  }
+  if (!data) {
+    console.error('[Auth] No profile found for user:', userId);
+    throw new Error('Profile not found');
+  }
 
+  console.log('[Auth] Profile found:', data);
   return {
     id: data.id,
     email: data.email,

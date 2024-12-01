@@ -50,8 +50,33 @@
 
 ### **State Management**
 
-- **Redux Toolkit** (For critical global state)
-- Local state via React’s `useState` and `useReducer`.
+- **Server State**
+    - React Query for auth and data fetching
+    - Automatic cache invalidation
+    - Background revalidation
+    - Optimistic updates
+
+- **Client State**
+    - `useState` for simple component state
+    - `useContext` for global UI state (sidebar, theme)
+    - No Redux - keeping state management simple and focused
+
+- **Authentication Pattern**
+    ```tsx
+    const { user, loading } = useAuth();
+    if (!user) redirect("/auth/login");
+    ```
+
+- **Loading Pattern**
+    ```tsx
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      );
+    }
+    ```
 
 ### **Email Service**
 
@@ -173,6 +198,18 @@ docs/                            # Documentation
 - For global state:
     - Redux Toolkit for business logic
     - Context for UI state
+- **Authentication State**
+    - Use React Query for server state management
+    - Cache invalidation on auth state changes
+    - Automatic background revalidation
+    - Centralized auth context with React Query
+- **Loading States**
+    - Consistent LoadingSpinner component using shadcn/ui
+    - Centralized loading state management
+    - Full-screen loading states for route transitions
+    - Component-level loading indicators for actions
+
+Example usage:
 
 ---
 
@@ -224,6 +261,37 @@ Example usage:
     
     ```
     
+
+---
+
+### **7. Component Patterns**
+
+- **Loading States**
+    ```tsx
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      );
+    }
+    ```
+
+- **Auth Protection**
+    ```tsx
+    const { user, loading } = useAuth();
+    if (!user) redirect("/auth/login");
+    ```
+
+### **8. React Query Integration**
+
+- Use for server state management (auth, user data)
+- Automatic cache invalidation
+- Background revalidation
+- Optimistic updates
+- Error handling
+
+Would you like me to expand on any of these sections or add additional documentation?
 
 ---
 

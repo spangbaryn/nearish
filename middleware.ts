@@ -6,16 +6,22 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    if (error) throw error;
 
-  // If user is signed in and the current path is / redirect the user to /home
-  if (session && req.nextUrl.pathname === '/') {
-    return NextResponse.redirect(new URL('/home', req.url))
+    // If user is signed in and the current path is / redirect the user to /home
+    if (session && req.nextUrl.pathname === '/') {
+      return NextResponse.redirect(new URL('/home', req.url))
+    }
+
+    return res
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // On error, allow the request to continue to handle error states in the components
+    return res
   }
-
-  return res
 }
 
 export const config = {

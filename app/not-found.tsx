@@ -2,18 +2,17 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function NotFound() {
-  const { user, loading, initialized } = useAuth();
+  const { user, loading } = useAuth();
 
-  // Don't show anything until auth is initialized
-  if (!initialized) {
-    return null;
-  }
-
-  // Only show loading after initialization
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/lib/auth-context";
 
 const isEmailValid = (email: string): boolean => {
@@ -19,22 +20,25 @@ const isPasswordStrong = (password: string): boolean => {
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { user, loading, initialized, signUp } = useAuth();
+  const { user, loading, signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Don't show anything until auth is initialized
-  if (!initialized) {
-    return null;
-  }
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/home");
+    }
+  }, [loading, user, router]);
 
-  // Redirect if already logged in
-  if (!loading && user) {
-    router.replace("/home");
-    return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   const handleSignUp = async (e: React.FormEvent) => {

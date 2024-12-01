@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-context"
 import { redirect } from "next/navigation"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/main-sidebar"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export function AuthenticatedLayout({
   children,
@@ -17,7 +18,11 @@ export function AuthenticatedLayout({
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!user) {

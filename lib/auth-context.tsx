@@ -1,133 +1,80 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@/types/auth";
 import { getUserProfile } from "@/lib/auth";
 
-interface AuthState {
+interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: Error | null;
-  initialized: boolean;
-}
-
-interface AuthContextType extends AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-const LOADING_TIMEOUT = 3000; // 3 seconds max loading time
+async function fetchAuthState() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  
+  if (session?.user) {
+    const profile = await getUserProfile(session.user.id);
+    return { user: profile };
+  }
+  return { user: null };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    loading: true,
-    error: null,
-    initialized: false
+  const queryClient = useQueryClient();
+  
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['auth'],
+    queryFn: fetchAuthState,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false
   });
 
-  const refreshSession = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const profile = await getUserProfile(session.user.id);
-        setState(prev => ({ ...prev, user: profile, loading: false, error: null, initialized: true }));
-      } else {
-        setState(prev => ({ ...prev, user: null, loading: false, error: null, initialized: true }));
-      }
-    } catch (error) {
-      setState(prev => ({ ...prev, error: error as Error, loading: false, initialized: true }));
-    }
-  };
-
+  // Set up auth state change listener
   useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        initialized: true,
-        error: prev.loading ? new Error('Auth loading timeout') : prev.error
-      }));
-    }, LOADING_TIMEOUT);
-
-    refreshSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        try {
-          const profile = await getUserProfile(session.user.id);
-          setState(prev => ({ ...prev, user: profile, loading: false, error: null, initialized: true }));
-        } catch (error) {
-          setState(prev => ({ ...prev, error: error as Error, loading: false, initialized: true }));
-        }
-      } else {
-        setState(prev => ({ ...prev, user: null, loading: false, error: null, initialized: true }));
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
     });
 
-    return () => {
-      clearTimeout(loadingTimeout);
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Don't render anything until we've initialized
-  if (!state.initialized) {
-    return null;
-  }
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
   const value = {
-    ...state,
-    refreshSession,
+    user: data?.user ?? null,
+    loading: isLoading,
+    error: error as Error | null,
     signIn: async (email: string, password: string) => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } catch (error) {
-        setState(prev => ({ ...prev, error: error as Error }));
-        throw error;
-      } finally {
-        setState(prev => ({ ...prev, loading: false }));
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     },
     signUp: async (email: string, password: string) => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      try {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
-        });
-        if (error) throw error;
-      } catch (error) {
-        setState(prev => ({ ...prev, error: error as Error }));
-        throw error;
-      } finally {
-        setState(prev => ({ ...prev, loading: false }));
-      }
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
+      });
+      if (error) throw error;
     },
     signOut: async () => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        setState(prev => ({ ...prev, user: null }));
-      } catch (error) {
-        setState(prev => ({ ...prev, error: error as Error }));
-        throw error;
-      } finally {
-        setState(prev => ({ ...prev, loading: false }));
-      }
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ['auth'] });
     }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = () => useContext(AuthContext);
