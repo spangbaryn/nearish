@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
-import { useAuthError } from "@/lib/hooks/useAuthError";
 
 const isEmailValid = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -27,12 +19,23 @@ const isPasswordStrong = (password: string): boolean => {
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { user, loading, initialized, signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { error, setError, handleAuthError } = useAuthError();
-  const { signUp } = useAuth();
+
+  // Don't show anything until auth is initialized
+  if (!initialized) {
+    return null;
+  }
+
+  // Redirect if already logged in
+  if (!loading && user) {
+    router.replace("/home");
+    return null;
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,33 +54,15 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      console.log('Starting signup process...');
       await signUp(email, password);
-      console.log('Signup successful');
       setIsSuccess(true);
     } catch (err) {
-      console.error('Signup error:', err);
       const message = err instanceof Error ? err.message : 'Signup failed';
       setError(message);
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const checkConfig = async () => {
-      const { supabase } = await import('@/lib/supabase');
-      const { data, error } = await supabase.auth.getSession();
-      console.log('Supabase config check:', {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        session: data.session,
-        error
-      });
-    };
-    
-    checkConfig();
-  }, []);
 
   if (isSuccess) {
     return (
@@ -110,9 +95,9 @@ export default function SignUpPage() {
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">
             {error && (
-              <Alert variant="destructive" className="text-sm">
+              <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
                 {error}
-              </Alert>
+              </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

@@ -1,31 +1,17 @@
-import { useState, useCallback } from 'react';
-import { handleError } from '@/lib/error-handler';
-import { toast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 
 export function useErrorHandler() {
   const [error, setError] = useState<string | null>(null);
 
-  const handleAppError = useCallback((err: unknown) => {
-    const appError = handleError(err);
-    setError(appError.message);
-    
-    toast({
-      variant: 'destructive',
-      title: 'Error',
-      children: appError.message,
-    });
-
-    // Log error for monitoring
-    console.error('[App Error]:', {
-      message: appError.message,
-      code: appError.code,
-      data: appError.data,
-    });
-  }, []);
+  const handleError = (error: unknown, defaultMessage: string = 'An error occurred') => {
+    const message = error instanceof Error ? error.message : defaultMessage;
+    setError(message);
+    return message;
+  };
 
   return {
     error,
     setError,
-    handleAppError,
+    handleError
   };
 } 

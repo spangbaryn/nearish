@@ -17,16 +17,17 @@ import { Button } from "@/components/ui/button"
 export function MainSidebar() {
   const { user, signOut } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const canAccessBusiness = user?.role === 'business' || isAdmin;
 
   const routes = [
-    {
+    ...(canAccessBusiness ? [{
       title: "Business",
       items: [
         { title: "All Businesses", href: "/businesses", icon: Building2 },
         { title: "Registration", href: "/businesses/register", icon: Building2 },
         { title: "Management", href: "/businesses/manage", icon: Building2 },
       ],
-    },
+    }] : []),
     ...(isAdmin ? [{
       title: "Admin Tools",
       items: [

@@ -10,10 +10,19 @@ export function AuthenticatedLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, error } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
-  if (!user) redirect("/auth/login");
+  if (error) {
+    redirect("/auth/login");
+  }
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    redirect("/auth/login");
+  }
 
   return (
     <SidebarProvider>

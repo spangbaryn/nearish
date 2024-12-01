@@ -9,8 +9,6 @@ export interface Database {
           id: string;
           email: string;
           role: UserRole;
-          business_role: BusinessRole | null;
-          business_id: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -18,17 +16,12 @@ export interface Database {
           id: string;
           email: string;
           role?: UserRole;
-          business_role?: BusinessRole | null;
-          business_id?: string | null;
           created_at?: string;
           updated_at?: string | null;
         };
         Update: {
-          id?: string;
           email?: string;
           role?: UserRole;
-          business_role?: BusinessRole | null;
-          business_id?: string | null;
           updated_at?: string | null;
         };
       };
@@ -37,21 +30,39 @@ export interface Database {
           id: string;
           name: string;
           description: string | null;
-          owner_id: string;
           created_at: string;
           updated_at: string | null;
         };
         Insert: {
           name: string;
           description?: string | null;
-          owner_id: string;
           created_at?: string;
           updated_at?: string | null;
         };
         Update: {
           name?: string;
           description?: string | null;
-          owner_id?: string;
+          updated_at?: string | null;
+        };
+      };
+      business_members: {
+        Row: {
+          id: string;
+          profile_id: string;
+          business_id: string;
+          role: BusinessRole;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          profile_id: string;
+          business_id: string;
+          role: BusinessRole;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          role?: BusinessRole;
           updated_at?: string | null;
         };
       };

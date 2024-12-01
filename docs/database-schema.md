@@ -25,13 +25,11 @@ Holds all registered users, including Customers, Business Users, and Admins.
 
 | Column | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| `id` | UUID | Primary Key, Not Null | Unique identifier from auth.users |
+| `id` | UUID | Primary Key, References auth.users | User's unique identifier |
 | `email` | VARCHAR(255) | Unique, Not Null | User's email address |
-| `role` | ENUM | Not Null | User role (`admin`, `business`, `customer`) |
-| `business_role` | ENUM | Null | Business-specific role (`owner`, `staff`) |
-| `business_id` | UUID | Foreign Key -> `businesses.id` | Associated business ID |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Profile creation date |
-| `updated_at` | TIMESTAMP | | Last updated timestamp |
+| `role` | TEXT | Not Null, CHECK | User role (`admin`, `business`, `customer`) |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Profile creation timestamp |
+| `updated_at` | TIMESTAMPTZ | | Last update timestamp |
 
 **Context**:
 - The `id` column links to Supabase's built-in auth.users table
@@ -46,12 +44,11 @@ Stores business account information.
 
 | Column | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| `id` | UUID | Primary Key, Not Null | Unique business identifier |
+| `id` | UUID | Primary Key | Business unique identifier |
 | `name` | VARCHAR(255) | Not Null | Business name |
-| `description` | TEXT | Null | Business description |
-| `owner_id` | UUID | Foreign Key -> `profiles.id` | Profile ID of business owner |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Business creation date |
-| `updated_at` | TIMESTAMP | | Last updated timestamp |
+| `description` | TEXT | | Business description |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Business creation timestamp |
+| `updated_at` | TIMESTAMPTZ | | Last update timestamp |
 
 **Context**:
 - One-to-many relationship with profiles (one business can have multiple staff members)
@@ -59,17 +56,18 @@ Stores business account information.
 
 ---
 
-### **3. Business Roles**
+### **3. Business Members**
 
 Defines roles for users within businesses, including `Owners` and `Staff Members`.
 
 | Column | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| `id` | UUID | Primary Key, Not Null | Unique identifier for the role entry. |
-| `business_id` | UUID | Foreign Key -> `businesses.id` | The associated business. |
-| `user_id` | UUID | Foreign Key -> `users.id` | The associated user. |
-| `role` | ENUM | Default: `Staff` | Role within the business (`Owner`, `Staff`). |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Role assignment creation date. |
+| `id` | UUID | Primary Key | Membership unique identifier |
+| `profile_id` | UUID | References profiles(id) | Associated user profile |
+| `business_id` | UUID | References businesses(id) | Associated business |
+| `role` | TEXT | Not Null, CHECK | Member role (`owner`, `staff`) |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Membership creation timestamp |
+| `updated_at` | TIMESTAMPTZ | | Last update timestamp |
 
 **Context**:
 

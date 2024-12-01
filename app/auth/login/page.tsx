@@ -8,28 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, initialized, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user && !loading) {
-      router.push("/home");
+    if (initialized && !loading && user) {
+      router.replace("/home");
     }
-  }, [user, loading, router]);
+  }, [initialized, loading, user, router]);
 
-  if (loading) {
-    return (
-      <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
+  if (!initialized || loading) {
+    return null;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,7 +34,6 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
