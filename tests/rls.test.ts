@@ -1,6 +1,5 @@
 import { mockSupabase } from './mocks/supabase';
 import { supabase } from '@/lib/supabase';
-import type { BusinessRole } from '@/types/auth';
 
 describe('RLS Policies', () => {
   beforeEach(() => {
@@ -24,74 +23,37 @@ describe('RLS Policies', () => {
     expect(data).toBeTruthy();
   });
 
-  // Business policies
-  test('Users can read businesses they are members of', async () => {
+  test('Users can update their own profile', async () => {
     mockSupabase.from.mockReturnValueOnce({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValueOnce({
-        data: { id: 'business-id', name: 'Test Business' },
+      update: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValueOnce({
+        data: { id: 'user-id', name: 'Updated Name' },
         error: null
       })
     });
 
     const { data, error } = await supabase
-      .from('businesses')
-      .select('*')
-      .eq('id', 'business-id')
-      .single();
+      .from('profiles')
+      .update({ name: 'Updated Name' })
+      .eq('id', 'user-id');
 
     expect(error).toBeNull();
     expect(data).toBeTruthy();
   });
 
-  // Business members policies
-  test('Business owners can manage members', async () => {
-    const newMember: {
-      profile_id: string;
-      business_id: string;
-      role: BusinessRole;
-    } = {
-      profile_id: 'new-member-id',
-      business_id: 'business-id',
-      role: 'staff'
-    };
-
+  test('Users cannot read other profiles directly', async () => {
     mockSupabase.from.mockReturnValueOnce({
-      insert: jest.fn().mockReturnThis(),
-      select: jest.fn().mockResolvedValueOnce({
-        data: newMember,
-        error: null
-      })
-    });
-
-    const { data, error } = await supabase
-      .from('business_members')
-      .insert(newMember)
-      .select()
-      .single();
-
-    expect(error).toBeNull();
-    expect(data).toEqual(newMember);
-  });
-
-  test('Staff cannot add new members', async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      insert: jest.fn().mockReturnThis(),
-      select: jest.fn().mockResolvedValueOnce({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValueOnce({
         data: null,
         error: { message: 'RLS policy violation' }
       })
     });
 
     const { error } = await supabase
-      .from('business_members')
-      .insert({
-        profile_id: 'new-member-id',
-        business_id: 'business-id',
-        role: 'staff'
-      })
-      .select()
+      .from('profiles')
+      .select('*')
+      .eq('id', 'other-user-id')
       .single();
 
     expect(error).toBeTruthy();
