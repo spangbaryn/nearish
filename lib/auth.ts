@@ -1,3 +1,4 @@
+import { AuthError, ValidationError } from '@/lib/errors';
 import { supabase } from "@/lib/supabase";
 import type { User, UserRole } from "@/types/auth";
 
@@ -7,14 +8,12 @@ export async function signUp(email: string, password: string) {
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/auth/callback`,
-      data: {
-        role: 'customer'
-      }
+      data: { role: 'customer' }
     }
   });
 
-  if (authError) throw authError;
-  if (!authData.user) throw new Error('No user data returned');
+  if (authError) throw new AuthError(authError.message);
+  if (!authData.user) throw new AuthError('No user data returned');
 
   return {
     id: authData.user.id,
@@ -24,23 +23,15 @@ export async function signUp(email: string, password: string) {
 }
 
 export async function getUserProfile(userId: string): Promise<User> {
-  console.log('[Auth] Fetching profile for user:', userId);
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .single();
 
-  if (error) {
-    console.error('[Auth] Profile fetch error:', error);
-    throw error;
-  }
-  if (!data) {
-    console.error('[Auth] No profile found for user:', userId);
-    throw new Error('Profile not found');
-  }
+  if (error) throw new AuthError('Failed to fetch profile');
+  if (!data) throw new AuthError('Profile not found');
 
-  console.log('[Auth] Profile found:', data);
   return {
     id: data.id,
     email: data.email,
