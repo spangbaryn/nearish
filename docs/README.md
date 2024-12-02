@@ -87,103 +87,6 @@
 - **Jest** (Unit testing)
 - **Cypress** (End-to-end testing)
 
-### **4. Error Handling Patterns**
-
-#### Centralized Error System
-- Use the `AppError` class hierarchy for all errors
-- Specific error types extend `AppError`:
-  - `AuthError`: Authentication and authorization issues
-  - `ValidationError`: Input validation failures
-  - `NetworkError`: API and connection issues
-
-#### Error Handling Best Practices
-- Always throw appropriate error type with meaningful messages
-- Only access documented error properties (status, message)
-- Use error codes for programmatic handling:  ```typescript
-  throw new AuthError('Invalid credentials', 'AUTH_ERROR');  ```
-
-- Error codes and their meanings:
-  - `AUTH_ERROR`: Authentication/authorization failures
-  - `VALIDATION_ERROR`: Input validation issues
-  - `NETWORK_ERROR`: Connection/API problems
-
-#### Component Error Handling
-- Use `useAuthError` hook for auth-related errors:  ```typescript
-  const { error, handleAuthError } = useAuthError();
-  
-  try {
-    await signIn(email, password);
-  } catch (err) {
-    handleAuthError(err);
-  }  ```
-
-- Display errors consistently using the error state:  ```typescript
-  {error && (
-    <div className="text-red-500 text-sm mt-2">
-      {error}
-    </div>
-  )}  ```
-
-#### Route Handler Error Handling
-Reference implementation in:
-
-typescript:app/auth/callback/route.ts
-startLine: 16
-endLine: 44
-
-
-#### Middleware Error Handling
-Reference implementation in:
-
-typescript:middleware.ts
-startLine: 10
-endLine: 28
-
-
-#### Error Logging
-- Log errors at appropriate levels:
-  - Authentication errors: INFO/WARN
-  - Validation errors: WARN
-  - System errors: ERROR
-- Include relevant context but no sensitive data
-- Use structured logging format
-
-#### Testing Error Scenarios
-- Test both successful and error paths
-- Verify error messages are user-friendly
-- Ensure errors are properly propagated
-- Mock different error types:
-
-ypescript
-test('handles auth error', async () => {
-mockSupabase.auth.signIn.mockRejectedValue(
-new AuthError('Invalid credentials')
-);
-// Test error handling
-});
-
-
-#### Error Boundaries
-- Implement React Error Boundaries for component trees
-- Handle unexpected errors gracefully
-- Provide fallback UI for error states
-- Log errors to monitoring service
-
-Example Error Boundary usage:
-
-typescript
-<ErrorBoundary
-fallback={<AuthErrorFallback />}
-onError={(error) => logError(error)}
->
-<AuthenticatedLayout>{children}</AuthenticatedLayout>
-</ErrorBoundary>
-
-
-For implementation details, see:
-- `useAuthError` hook: Used for handling auth-specific errors
-- `AuthError` class: Base class for auth errors
-- Error handling in auth context: Consistent error propagation
 
 ---
 
@@ -292,25 +195,108 @@ Example usage:
 
 ### **4. Error Handling Patterns**
 
-- **Centralized Error Handling**
-    - Use `AppError` class for consistent error formatting
-    - Implement custom error hooks for reusability
-    - Handle errors at the appropriate level
-
 - **Error Types**
     - Business logic errors
     - API/Network errors
     - Validation errors
     - Authentication errors
 
-- **Error Handling Best Practices**
-    - Use custom hooks for feature-specific error handling
-    - Implement error boundaries for React component trees
-    - Log errors appropriately for monitoring
-    - Provide user-friendly error messages
-    - Handle errors based on context and severity
+#### Centralized Error System
+- Use the `AppError` class hierarchy for all errors
+- Specific error types extend `AppError`:
+  - `AuthError`: Authentication and authorization issues
+  - `ValidationError`: Input validation failures
+  - `NetworkError`: API and connection issues
 
-Example usage:
+#### Error Handling Best Practices
+- Always throw appropriate error type with meaningful messages
+- Only access documented error properties (status, message)
+- Use error codes for programmatic handling:  ```typescript
+  throw new AuthError('Invalid credentials', 'AUTH_ERROR');  ```
+
+- Error codes and their meanings:
+  - `AUTH_ERROR`: Authentication/authorization failures
+  - `VALIDATION_ERROR`: Input validation issues
+  - `NETWORK_ERROR`: Connection/API problems
+
+#### Component Error Handling
+- Use `useAuthError` hook for auth-related errors:  ```typescript
+  const { error, handleAuthError } = useAuthError();
+  
+  try {
+    await signIn(email, password);
+  } catch (err) {
+    handleAuthError(err);
+  }  ```
+
+- Display errors consistently using the error state:  ```typescript
+  {error && (
+    <div className="text-red-500 text-sm mt-2">
+      {error}
+    </div>
+  )}  ```
+
+#### Route Handler Error Handling
+Reference implementation in:
+
+typescript:app/auth/callback/route.ts
+startLine: 16
+endLine: 44
+
+
+#### Middleware Error Handling
+Reference implementation in:
+
+typescript:middleware.ts
+startLine: 10
+endLine: 28
+
+
+#### Error Logging
+- Log errors at appropriate levels:
+  - Authentication errors: INFO/WARN
+  - Validation errors: WARN
+  - System errors: ERROR
+- Include relevant context but no sensitive data
+- Use structured logging format
+
+#### Testing Error Scenarios
+- Test both successful and error paths
+- Verify error messages are user-friendly
+- Ensure errors are properly propagated
+- Mock different error types:
+
+ypescript
+test('handles auth error', async () => {
+mockSupabase.auth.signIn.mockRejectedValue(
+new AuthError('Invalid credentials')
+);
+// Test error handling
+});
+
+
+#### Error Boundaries
+- Implement React Error Boundaries for component trees
+- Handle unexpected errors gracefully
+- Provide fallback UI for error states
+- Log errors to monitoring service
+
+Example Error Boundary usage:
+
+typescript
+<ErrorBoundary
+fallback={<AuthErrorFallback />}
+onError={(error) => logError(error)}
+>
+<AuthenticatedLayout>{children}</AuthenticatedLayout>
+</ErrorBoundary>
+
+
+For implementation details, see:
+- `useAuthError` hook: Used for handling auth-specific errors
+- `AuthError` class: Base class for auth errors
+- Error handling in auth context: Consistent error propagation
+
 
 ---
 
@@ -359,6 +345,12 @@ Example usage:
     const { user, loading } = useAuth();
     if (!user) redirect("/auth/login");
     ```
+
+- **Authenticated Layout**
+    - Use `AuthenticatedLayout` from `@/components/authenticated-layout` for protected routes.
+    - Handles loading, error, and authentication states.
+    - Provides consistent layout with sidebar navigation.
+    - Example usage:
 
 ### **8. React Query Integration**
 
