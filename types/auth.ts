@@ -12,6 +12,7 @@ export interface User {
   id: string
   email: string
   role: UserRole
+  created_at: string
   metadata?: {
     name?: string
     avatar_url?: string

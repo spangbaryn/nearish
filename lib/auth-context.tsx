@@ -76,7 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return {
         id: authData.user.id,
         email: authData.user.email!,
-        role: 'customer' as UserRole
+        role: 'customer' as UserRole,
+        created_at: new Date().toISOString()
       };
     },
     signOut: async () => {
