@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function MainSidebar() {
@@ -32,6 +32,7 @@ export function MainSidebar() {
       items: [
         { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { title: "Users", href: "/admin/users", icon: Users },
+        { title: "Templates", href: "/admin/templates", icon: Mail },
         { title: "Settings", href: "/admin/settings", icon: Settings },
       ],
     }] : [])

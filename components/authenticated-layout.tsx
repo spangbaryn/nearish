@@ -31,7 +31,7 @@ export function AuthenticatedLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen">
+      <div className="flex min-h-screen w-full">
         <MainSidebar />
         <main className="flex-1 overflow-y-auto p-8">
           {children}
