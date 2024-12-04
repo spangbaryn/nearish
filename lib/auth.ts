@@ -35,6 +35,7 @@ export async function getUserProfile(userId: string): Promise<User> {
   return {
     id: data.id,
     email: data.email,
-    role: data.role
+    role: data.role,
+    created_at: data.created_at
   };
 }
