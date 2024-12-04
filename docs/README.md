@@ -360,6 +360,63 @@ For implementation details, see:
 - Optimistic updates
 - Error handling
 
+### **Form Patterns**
+
+- **React Hook Form + Zod**
+    ```tsx
+    const schema = z.object({
+      name: z.string().min(1, "Required"),
+    })
+    
+    const form = useForm<z.infer<typeof schema>>({
+      resolver: zodResolver(schema)
+    })
+    ```
+
+- **Form Components**
+    - Use shadcn/ui form components
+    - Consistent validation and error handling
+    - Accessible by default
+    ```tsx
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name</FormLabel>
+            <FormControl>
+              <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </Form>
+    ```
+
+- **Mutations**
+    ```tsx
+    const mutation = useMutation({
+      mutationFn: async (data) => {
+        const { error } = await supabase
+          .from('table')
+          .insert([data])
+        if (error) throw error
+      },
+      onSuccess: () => {
+        toast.success("Success")
+        queryClient.invalidateQueries(['key'])
+      }
+    })
+    ```
+
+### **Toast Notifications**
+
+- Use Sonner for toast notifications
+- Consistent error and success messages
+- Automatic dismissal
+
 Would you like me to expand on any of these sections or add additional documentation?
 
 ---

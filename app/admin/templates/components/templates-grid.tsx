@@ -53,7 +53,7 @@ export function TemplatesGrid() {
                 {template.subject}
               </p>
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
                   {template.type}
                 </span>
               </div>
