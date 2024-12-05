@@ -164,6 +164,24 @@ export interface Database {
           updated_at?: string | null;
         };
       };
+      posts_collections: {
+        Row: {
+          id: string;
+          post_id: string;
+          collection_id: string;
+          created_at: string;
+        };
+        Insert: {
+          post_id: string;
+          collection_id: string;
+          created_at?: string;
+        };
+        Update: {
+          post_id?: string;
+          collection_id?: string;
+          created_at?: string;
+        };
+      };
     };
   };
 }

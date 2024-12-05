@@ -97,6 +97,24 @@ Represents social posts created by businesses or users.
 
 ---
 
+### **4.1 Posts Collections**
+
+Links posts to collections for organizing content and campaigns.
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key, Not Null | Unique identifier for the association |
+| `post_id` | UUID | Foreign Key -> `posts.id`, Not Null | The associated post |
+| `collection_id` | UUID | Foreign Key -> `collections.id`, Not Null | The collection containing the post |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | When the post was added to the collection |
+
+**Context**:
+- Many-to-many relationship between posts and collections
+- Enables posts to be included in multiple collections
+- Supports the campaign system by grouping related posts
+
+---
+
 ### **5. AI Responses**
 
 Stores AI-generated responses for posts.
