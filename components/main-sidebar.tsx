@@ -34,7 +34,6 @@ export function MainSidebar() {
         { title: "Users", href: "/admin/users", icon: Users },
         { title: "Templates", href: "/admin/templates", icon: Mail },
         { title: "Campaigns", href: "/admin/campaigns", icon: SendHorizontal },
-        { title: "Settings", href: "/admin/settings", icon: Settings },
         { title: "Collections", href: "/admin/collections", icon: FolderOpen },
       ],
     }] : [])

@@ -97,7 +97,7 @@ export interface Database {
           id: string;
           collection_id: string;
           template_id: string;
-          sent_at: string;
+          sent_at: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -180,6 +180,44 @@ export interface Database {
           post_id?: string;
           collection_id?: string;
           created_at?: string;
+        };
+      };
+      email_lists: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          name: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          updated_at?: string | null;
+        };
+      };
+      profile_list_subscriptions: {
+        Row: {
+          id: string;
+          profile_id: string;
+          list_id: string;
+          subscribed_at: string;
+          unsubscribed_at: string | null;
+        };
+        Insert: {
+          profile_id: string;
+          list_id: string;
+          subscribed_at?: string;
+          unsubscribed_at?: string | null;
+        };
+        Update: {
+          unsubscribed_at?: string | null;
         };
       };
     };

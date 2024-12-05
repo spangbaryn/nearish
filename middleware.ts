@@ -17,17 +17,33 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/home', req.url))
     }
 
+    // For API routes, ensure there's a session
+    if (req.nextUrl.pathname.startsWith('/api/')) {
+      if (!session) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      // Allow the request to continue if authenticated
+      return res
+    }
+
     return res
   } catch (error) {
     if (error instanceof AuthError) {
+      if (req.nextUrl.pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 401 }
+        )
+      }
       console.error('Auth middleware error:', error.message)
-    } else {
-      console.error('Unexpected middleware error:', error)
     }
     return res
   }
 }
 
 export const config = {
-  matcher: ['/', '/home']
+  matcher: ['/', '/home', '/api/:path*']
 } 

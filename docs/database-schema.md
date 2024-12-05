@@ -38,6 +38,28 @@ Holds all registered users, including Customers, Business Users, and Admins.
 
 ---
 
+### **10. Email Lists**
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key, Not Null | Unique identifier for the list |
+| `name` | VARCHAR(255) | Not Null, Unique | Name of the list (e.g., "Weekly Roundup") |
+| `description` | TEXT | | Description of the list |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | List creation date |
+| `updated_at` | TIMESTAMP | | Last updated timestamp |
+
+### **11. Profile List Subscriptions**
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key, Not Null | Unique identifier for the subscription |
+| `profile_id` | UUID | Foreign Key -> profiles(id), Not Null | The subscribed profile |
+| `list_id` | UUID | Foreign Key -> email_lists(id), Not Null | The list being subscribed to |
+| `subscribed_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | When the subscription was created |
+| `unsubscribed_at` | TIMESTAMP | | When the user unsubscribed (null if still subscribed) |
+
+---
+
 ### **2. Businesses**
 
 Stores business account information.

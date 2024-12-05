@@ -20,7 +20,10 @@ export default function CreateCampaignPage() {
     mutationFn: async (data: any) => {
       const { error, data: campaign } = await supabase
         .from('campaigns')
-        .insert([data])
+        .insert([{
+          ...data,
+          sent_at: null
+        }])
         .select()
         .single()
 

@@ -37,6 +37,7 @@ type Template = {
 const campaignSchema = z.object({
   collection_id: z.string().min(1, "Collection is required"),
   template_id: z.string().min(1, "Template is required"),
+  list_id: z.string().min(1, "Email list is required"),
 })
 
 type CampaignForm = z.infer<typeof campaignSchema>
@@ -59,6 +60,7 @@ export function CampaignForm({
     defaultValues: {
       collection_id: campaign?.collection_id ?? "",
       template_id: campaign?.template_id ?? "",
+      list_id: campaign?.list_id ?? "",
     },
   })
 
@@ -86,6 +88,19 @@ export function CampaignForm({
 
       if (error) throw error
       return data as Template[]
+    }
+  })
+
+  const { data: lists } = useQuery({
+    queryKey: ['email-lists'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('email_lists')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      return data
     }
   })
 
@@ -133,6 +148,31 @@ export function CampaignForm({
                   {templates?.map((template) => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="list_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email List</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an email list" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {lists?.map((list) => (
+                    <SelectItem key={list.id} value={list.id}>
+                      {list.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
