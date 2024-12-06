@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { sendCampaignEmail, EmailServiceError } from '@/lib/email-service';
 import { AuthError } from '@/lib/errors';
 
 export async function POST(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
   
@@ -34,7 +34,7 @@ export async function POST(
           content
         )
       `)
-      .eq('id', context.params.id)
+      .eq('id', params.id)
       .single();
 
     if (campaignError || !campaignData) {
@@ -57,15 +57,15 @@ export async function POST(
     }
 
     const recipientEmails: string[] = subscribers
-      .map(sub => sub.profiles.email)
-      .filter(Boolean);
+      .map(sub => sub.profiles[0]?.email)
+      .filter((email): email is string => Boolean(email));
 
     if (recipientEmails.length === 0) {
       throw new Error('No subscribers found for this list');
     }
 
     const { response, recipientCount } = await sendCampaignEmail(
-      context.params.id,
+      params.id,
       campaignData.email_templates.subject,
       campaignData.email_templates.content,
       recipientEmails
@@ -75,7 +75,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({ sent_at: new Date().toISOString() })
-      .eq('id', context.params.id);
+      .eq('id', params.id);
 
     if (updateError) {
       throw new Error('Failed to update campaign status');
