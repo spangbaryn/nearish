@@ -9,7 +9,6 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
-  let campaign: any;
   
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
@@ -42,18 +41,45 @@ export async function POST(
       throw new Error('Campaign not found');
     }
 
-    campaign = campaignData;
+    // Fetch subscribers from the list
+    const { data: subscribers, error: subscribersError } = await supabase
+      .from('profile_list_subscriptions')
+      .select(`
+        profiles (
+          email
+        )
+      `)
+      .eq('list_id', campaignData.list_id)
+      .is('unsubscribed_at', null);
 
-    if (campaign.sent_at) {
-      throw new Error('Campaign has already been sent');
+    if (subscribersError) {
+      throw new Error('Failed to fetch subscribers');
+    }
+
+    const recipientEmails: string[] = subscribers
+      .map(sub => sub.profiles.email)
+      .filter(Boolean);
+
+    if (recipientEmails.length === 0) {
+      throw new Error('No subscribers found for this list');
     }
 
     const { response, recipientCount } = await sendCampaignEmail(
       params.id,
-      campaign.email_templates.subject,
-      campaign.email_templates.content,
-      campaign.list_id
+      campaignData.email_templates.subject,
+      campaignData.email_templates.content,
+      recipientEmails
     );
+
+    // Update campaign sent_at timestamp
+    const { error: updateError } = await supabase
+      .from('campaigns')
+      .update({ sent_at: new Date().toISOString() })
+      .eq('id', params.id);
+
+    if (updateError) {
+      throw new Error('Failed to update campaign status');
+    }
 
     return NextResponse.json({ 
       success: true,
@@ -62,11 +88,7 @@ export async function POST(
     });
 
   } catch (error: any) {
-    console.error('Campaign send error:', {
-      error,
-      campaignId: params.id,
-      campaignDetails: campaign
-    });
+    console.error('Campaign send error:', error);
     
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
