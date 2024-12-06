@@ -7,8 +7,8 @@ import { AuthError } from '@/lib/errors';
 type Params = { id: string };
 
 export async function POST(
-  req: NextRequest,
-  context: { params: Params }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
   
@@ -36,7 +36,7 @@ export async function POST(
           content
         )
       `)
-      .eq('id', context.params.id)
+      .eq('id', params.id)
       .single();
 
     if (campaignError || !campaignData) {
@@ -67,7 +67,7 @@ export async function POST(
     }
 
     const { response, recipientCount } = await sendCampaignEmail(
-      context.params.id,
+      params.id,
       campaignData.email_templates.subject,
       campaignData.email_templates.content,
       recipientEmails
@@ -77,7 +77,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({ sent_at: new Date().toISOString() })
-      .eq('id', context.params.id);
+      .eq('id', params.id);
 
     if (updateError) {
       throw new Error('Failed to update campaign status');
