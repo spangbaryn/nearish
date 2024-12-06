@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { NextApiRequest } from 'next';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { sendCampaignEmail, EmailServiceError } from '@/lib/email-service';
 import { AuthError } from '@/lib/errors';
 
-type RouteParams = {
-  params: { id: string }
-}
-
 export async function POST(
-  req: NextRequest,
-  { params }: RouteParams
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
   
