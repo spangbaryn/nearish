@@ -86,7 +86,7 @@ export async function sendCampaignEmail(
   campaignId: string,
   subject: string,
   htmlContent: string,
-  listId: string
+  recipientEmails: string[]
 ) {
   try {
     if (!process.env.MAILGUN_API_KEY) {
@@ -99,20 +99,16 @@ export async function sendCampaignEmail(
       throw new EmailServiceError('EMAIL_FROM_ADDRESS is not configured');
     }
 
-    const domain = process.env.NODE_ENV === 'development' 
-      ? 'sandbox' + process.env.MAILGUN_DOMAIN.replace('sandbox', '')
-      : process.env.MAILGUN_DOMAIN;
+    const domain = process.env.MAILGUN_DOMAIN;
 
     const fromAddress = process.env.NODE_ENV === 'development'
       ? `test@${domain}`
       : process.env.EMAIL_FROM_ADDRESS || 'default@example.com';
 
-    const toEmail = 'espangenberg@gmail.com';
-
     console.log('Attempting to send campaign email:', {
       domain,
       from: fromAddress,
-      to: toEmail,
+      recipientCount: recipientEmails.length,
       subject,
       environment: process.env.NODE_ENV,
       apiKey: process.env.MAILGUN_API_KEY?.substring(0, 5) + '...'
@@ -120,7 +116,7 @@ export async function sendCampaignEmail(
 
     const response = await client.messages.create(domain, {
       from: fromAddress,
-      to: toEmail,
+      to: recipientEmails,
       subject,
       html: htmlContent,
     });
@@ -133,7 +129,7 @@ export async function sendCampaignEmail(
 
     return {
       response,
-      recipientCount: 1
+      recipientCount: recipientEmails.length
     };
   } catch (error: any) {
     console.error('Email service detailed error:', {
