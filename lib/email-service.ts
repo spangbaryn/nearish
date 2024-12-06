@@ -100,36 +100,32 @@ export async function sendCampaignEmail(
     }
 
     const domain = process.env.MAILGUN_DOMAIN;
+    const fromAddress = process.env.EMAIL_FROM_ADDRESS || 'default@example.com';
 
-    const fromAddress = process.env.NODE_ENV === 'development'
-      ? `test@${domain}`
-      : process.env.EMAIL_FROM_ADDRESS || 'default@example.com';
-
-    console.log('Attempting to send campaign email:', {
+    console.log('Starting campaign email send:', {
       domain,
       from: fromAddress,
       recipientCount: recipientEmails.length,
       subject,
-      environment: process.env.NODE_ENV,
-      apiKey: process.env.MAILGUN_API_KEY?.substring(0, 5) + '...'
+      environment: process.env.NODE_ENV
     });
 
-    const response = await client.messages.create(domain, {
-      from: fromAddress,
-      to: recipientEmails,
-      subject,
-      html: htmlContent,
+    // Send individual emails to each recipient
+    const sendPromises = recipientEmails.map(async (email) => {
+      return client.messages.create(domain, {
+        from: fromAddress,
+        to: email,
+        subject,
+        html: htmlContent,
+      });
     });
 
-    if (!response) {
-      throw new EmailServiceError('No response from email service');
-    }
-
-    console.log('Mailgun response:', response);
+    const responses = await Promise.all(sendPromises);
+    console.log(`Successfully sent ${responses.length} emails`);
 
     return {
-      response,
-      recipientCount: recipientEmails.length
+      response: responses,
+      recipientCount: responses.length
     };
   } catch (error: any) {
     console.error('Email service detailed error:', {
