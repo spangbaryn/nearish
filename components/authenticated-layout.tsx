@@ -2,8 +2,6 @@
 
 import { useAuth } from "@/lib/auth-context"
 import { redirect } from "next/navigation"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { MainSidebar } from "@/components/main-sidebar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export function AuthenticatedLayout({
@@ -29,14 +27,5 @@ export function AuthenticatedLayout({
     redirect("/auth/login");
   }
 
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <MainSidebar />
-        <main className="flex-1 overflow-y-auto p-8">
-          {children}
-        </main>
-      </div>
-    </SidebarProvider>
-  )
+  return children;
 } 
