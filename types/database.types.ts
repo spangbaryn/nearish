@@ -141,8 +141,10 @@ export interface Database {
           business_id: string;
           source: 'facebook' | 'admin' | 'platform';
           content: string;
-          type: string | null;
+          final_content: string | null;
+          final_type: 'Promotion' | 'Event' | 'Update' | null;
           ai_generated_type: string | null;
+          included: boolean;
           created_at: string;
           updated_at: string | null;
         };
@@ -150,8 +152,10 @@ export interface Database {
           business_id: string;
           source: 'facebook' | 'admin' | 'platform';
           content: string;
-          type?: string | null;
+          final_content?: string | null;
+          final_type?: 'Promotion' | 'Event' | 'Update' | null;
           ai_generated_type?: string | null;
+          included?: boolean;
           created_at?: string;
           updated_at?: string | null;
         };
@@ -159,8 +163,10 @@ export interface Database {
           business_id?: string;
           source?: 'facebook' | 'admin' | 'platform';
           content?: string;
-          type?: string | null;
+          final_content?: string | null;
+          final_type?: 'Promotion' | 'Event' | 'Update' | null;
           ai_generated_type?: string | null;
+          included?: boolean;
           updated_at?: string | null;
         };
       };

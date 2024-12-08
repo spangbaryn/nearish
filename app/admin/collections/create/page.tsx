@@ -18,19 +18,44 @@ export default function CreateCollectionPage() {
 
   const createCollection = useMutation({
     mutationFn: async (data: any) => {
-      const { error, data: collection } = await supabase
+      // First create the collection
+      const { data: collection, error: collectionError } = await supabase
         .from('collections')
         .insert([data])
         .select()
         .single()
 
-      if (error) throw error
+      if (collectionError) throw collectionError
+
+      // Get default prompts
+      const { data: defaultPrompts, error: promptsError } = await supabase
+        .from('ai_prompts')
+        .select('id, prompt_type')
+        .eq('is_active', true)
+        .eq('is_default', true)
+
+      if (promptsError) throw promptsError
+
+      // Create associations with default prompts
+      if (defaultPrompts.length > 0) {
+        const promptAssociations = defaultPrompts.map(prompt => ({
+          collection_id: collection.id,
+          prompt_id: prompt.id
+        }))
+
+        const { error: associationError } = await supabase
+          .from('collection_prompts')
+          .insert(promptAssociations)
+
+        if (associationError) throw associationError
+      }
+
       return collection
     },
-    onSuccess: () => {
+    onSuccess: (collection) => {
       toast.success("Collection created successfully")
       queryClient.invalidateQueries({ queryKey: ['collections'] })
-      router.push('/admin/collections')
+      router.push(`/admin/collections/${collection.id}`)
     },
     onError: (error: any) => {
       toast.error("Failed to create collection", {

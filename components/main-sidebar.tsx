@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function MainSidebar() {
@@ -35,6 +35,7 @@ export function MainSidebar() {
         { title: "Templates", href: "/admin/templates", icon: Mail },
         { title: "Campaigns", href: "/admin/campaigns", icon: SendHorizontal },
         { title: "Collections", href: "/admin/collections", icon: FolderOpen },
+        { title: "AI Prompts", href: "/admin/prompts", icon: Sparkles },
         { title: "UI Kit", href: "/admin/ui-kit", icon: Palette },
       ],
     }] : [])

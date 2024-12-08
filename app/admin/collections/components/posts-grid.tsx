@@ -34,7 +34,13 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
       
       const { data: posts, error: postsError } = await supabase
         .from("posts")
-        .select("*")
+        .select(`
+          *,
+          businesses:business_id (
+            id,
+            name
+          )
+        `)
         .in("id", postIds)
         .order("created_at", { ascending: false })
 
@@ -69,25 +75,56 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
       {posts?.map((post) => (
         <Link key={post.id} href={`/admin/posts/${post.id}?collection=${collectionId}`}>
           <Card className="hover:bg-muted/50 cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {post.type || 'Post'}
+            <CardHeader className="flex flex-col space-y-2">
+              <CardTitle className="text-base font-medium">
+                {post.businesses?.name || 'Unnamed Business'}
               </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground line-clamp-3">
-                {post.content}
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-                  {post.source}
-                </span>
-                {post.ai_generated_type && (
-                  <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-                    {post.ai_generated_type}
+              <div className="flex flex-col space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">AI Generated Type</span>
+                  <span className="text-sm text-muted-foreground">
+                    {post.ai_generated_type || 'Not classified'}
                   </span>
-                )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Final Type</span>
+                  <span className="text-sm text-muted-foreground">
+                    {post.final_type || 'Not set'}
+                  </span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Original Content</h4>
+                <p className="text-xs text-muted-foreground line-clamp-3">
+                  {post.content}
+                </p>
+              </div>
+              {post.final_content && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Final Content</h4>
+                  <p className="text-xs text-muted-foreground line-clamp-3">
+                    {post.final_content}
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+                    {post.source}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    post.included 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {post.included ? 'Included' : 'Not Included'}
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
               </div>
             </CardContent>
           </Card>

@@ -107,14 +107,16 @@ Represents social posts created by businesses or users.
 | `business_id` | UUID | Foreign Key -> `businesses.id` | Business associated with the post. |
 | `source` | ENUM | Not Null | Source of the post (`facebook`, `admin`, `platform`). |
 | `content` | TEXT | Not Null | Content of the post. |
-| `type` | VARCHAR(255) |  | Editable type of the post (e.g., "Promotion", "Event"). |
-| `ai_generated_type` | VARCHAR(255) |  | Non-editable AI-generated classification of the post. |
+| `final_content` | TEXT | | Editable version of the post content. |
+| `final_type` | ENUM | | Post type ('Promotion', 'Event', 'Update'). |
+| `ai_generated_type` | VARCHAR(255) | | Non-editable AI-generated classification of the post. |
+| `included` | BOOLEAN | Default: false | Whether the post is included in the campaign. |
 | `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Post creation date. |
-| `updated_at` | TIMESTAMP |  | Last updated timestamp. |
+| `updated_at` | TIMESTAMP | | Last updated timestamp. |
 
 **Context**:
 
-- The `type` field allows user edits to refine the classification.
+- The `final_type` field allows user edits to refine the classification.
 - The `ai_generated_type` field preserves the original AI classification.
 
 ---
@@ -211,5 +213,27 @@ Reusable templates for campaigns and transactional emails.
 | `content` | TEXT | Not Null | HTML or text content with placeholders. |
 | `type` | ENUM | Not Null | Template type (`transactional`, `campaign`). |
 | `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Template creation date. |
+
+---
+
+### **AI Prompts**
+
+Stores AI prompts used for generating responses.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | Primary Key, Not Null | Unique identifier for the prompt |
+| `name` | VARCHAR(255) | Not Null | Name of the prompt |
+| `description` | TEXT | | Description of the prompt's purpose |
+| `prompt` | TEXT | Not Null | The actual prompt content |
+| `is_active` | BOOLEAN | Default: true | Whether the prompt is currently active |
+| `prompt_type` | ENUM | Not Null | Type of prompt ('content', 'type_id', null) |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | When the prompt was created |
+| `updated_at` | TIMESTAMP | | Last updated timestamp |
+
+**Context**:
+- Used to store reusable AI prompts for generating responses
+- `is_active` allows disabling prompts without deleting them
+- Follows the same CRUD patterns as other admin-managed content
 
 ---

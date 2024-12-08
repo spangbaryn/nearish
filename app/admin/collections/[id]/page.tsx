@@ -7,13 +7,16 @@ import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, Plus, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { PostsGrid } from "../components/posts-grid"
+import { AIGenerationModal } from "../components/ai-generation-modal"
+import { useState } from "react"
 
 export default function CollectionDetailPage() {
   const params = useParams()
   const collectionId = params.id as string
+  const [showAIModal, setShowAIModal] = useState(false)
 
   const { data: collection, isLoading } = useQuery({
     queryKey: ['collection', collectionId],
@@ -55,12 +58,18 @@ export default function CollectionDetailPage() {
               <p className="text-muted-foreground">
                 {collection?.description}
               </p>
-              <Link href={`/admin/posts/create?collection=${collectionId}`}>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Post
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => setShowAIModal(true)}>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Generation
                 </Button>
-              </Link>
+                <Link href={`/admin/posts/create?collection=${collectionId}`}>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Post
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
@@ -68,6 +77,12 @@ export default function CollectionDetailPage() {
             </div>
           </div>
         </div>
+
+        <AIGenerationModal 
+          open={showAIModal} 
+          onOpenChange={setShowAIModal}
+          collectionId={collectionId}
+        />
       </RequireAdmin>
     </AuthenticatedLayout>
   )

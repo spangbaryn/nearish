@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import type { Database } from "@/types/database.types"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { Checkbox } from "@/components/ui/checkbox"
 
 type Post = Database["public"]["Tables"]["posts"]["Row"]
 
@@ -43,7 +44,9 @@ type BusinessMember = {
 const postSchema = z.object({
   business_id: z.string().uuid("Invalid business ID"),
   content: z.string().min(1, "Content is required"),
-  type: z.string().optional(),
+  final_content: z.string().optional(),
+  final_type: z.enum(['Promotion', 'Event', 'Update']).optional(),
+  included: z.boolean().optional(),
   source: z.enum(["facebook", "admin", "platform"], {
     required_error: "Please select a source",
   }),
@@ -69,7 +72,9 @@ export function PostForm({
     defaultValues: {
       business_id: post?.business_id || "",
       content: post?.content || "",
-      type: post?.type || "",
+      final_content: post?.final_content || "",
+      final_type: post?.final_type || undefined,
+      included: post?.included ?? true,
       source: post?.source || "admin",
     },
   })
@@ -164,13 +169,53 @@ export function PostForm({
 
         <FormField
           control={form.control}
-          name="type"
+          name="final_content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type (Optional)</FormLabel>
+              <FormLabel>Final Content</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="e.g., Promotion, Event" />
+                <Textarea {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="final_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Final Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Promotion">Promotion</SelectItem>
+                  <SelectItem value="Event">Event</SelectItem>
+                  <SelectItem value="Update">Update</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="included"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel>Include in Campaign</FormLabel>
               <FormMessage />
             </FormItem>
           )}
