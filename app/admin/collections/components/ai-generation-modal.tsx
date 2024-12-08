@@ -21,6 +21,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { replaceDynamicTags } from "../../../lib/prompt-utils"
 
 interface AIGenerationModalProps {
   open: boolean
@@ -136,6 +137,82 @@ export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenera
     }
   })
 
+  const generateContent = useMutation({
+    mutationFn: async () => {
+      // Get posts in collection
+      const { data: postsInCollection, error: junctionError } = await supabase
+        .from("posts_collections")
+        .select("post_id")
+        .eq("collection_id", collectionId)
+
+      if (junctionError) throw junctionError
+      if (!postsInCollection?.length) throw new Error("No posts found in collection")
+
+      const postIds = postsInCollection.map(pc => pc.post_id)
+      
+      // Get posts with business data
+      const { data: posts, error: postsError } = await supabase
+        .from("posts")
+        .select(`
+          *,
+          businesses (
+            name
+          )
+        `)
+        .in("id", postIds)
+
+      if (postsError) throw postsError
+      if (!selectedContentPrompt) throw new Error("No content prompt selected")
+
+      // Process each post with ChatGPT
+      const updates = await Promise.all(
+        posts.map(async (post) => {
+          const dynamicPrompt = replaceDynamicTags(selectedContentPrompt.prompt, post)
+          
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: dynamicPrompt
+            })
+          })
+
+          if (!response.ok) {
+            throw new Error(`Generation failed for post ${post.id}`)
+          }
+
+          const { generatedContent } = await response.json()
+
+          return {
+            id: post.id,
+            final_content: generatedContent || null,
+            updated_at: new Date().toISOString()
+          }
+        })
+      )
+
+      // Update the Supabase query
+      const { error: updateError } = await supabase
+        .from("posts")
+        .upsert(updates, {
+          onConflict: 'id'
+        })
+
+      if (updateError) throw updateError
+
+      return updates
+    },
+    onSuccess: () => {
+      toast.success("Content generated successfully")
+      queryClient.invalidateQueries({ queryKey: ['posts', collectionId] })
+    },
+    onError: (error: any) => {
+      toast.error("Failed to generate content", {
+        description: error.message
+      })
+    }
+  })
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -225,8 +302,11 @@ export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenera
           >
             {savePrompts.isPending ? "Saving..." : "Save Prompts"}
           </Button>
-          <Button>
-            Generate
+          <Button
+            onClick={() => generateContent.mutate()}
+            disabled={generateContent.isPending || !selectedContentPrompt}
+          >
+            {generateContent.isPending ? "Generating..." : "Generate"}
           </Button>
         </div>
       </DialogContent>
