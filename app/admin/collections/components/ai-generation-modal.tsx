@@ -163,42 +163,64 @@ export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenera
 
       if (postsError) throw postsError
       if (!selectedContentPrompt) throw new Error("No content prompt selected")
+      if (!selectedTypePrompt) throw new Error("No type prompt selected")
 
       // Process each post with ChatGPT
       const updates = await Promise.all(
         posts.map(async (post) => {
-          const dynamicPrompt = replaceDynamicTags(selectedContentPrompt.prompt, post)
-          
-          const response = await fetch('/api/generate', {
+          // Generate content
+          const contentPrompt = replaceDynamicTags(selectedContentPrompt.prompt, post)
+          const contentResponse = await fetch('/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              prompt: dynamicPrompt
+              prompt: contentPrompt
             })
           })
 
-          if (!response.ok) {
-            throw new Error(`Generation failed for post ${post.id}`)
+          if (!contentResponse.ok) {
+            throw new Error(`Content generation failed for post ${post.id}`)
           }
 
-          const { generatedContent } = await response.json()
+          const { generatedContent } = await contentResponse.json()
 
+          // Generate type
+          const typePrompt = replaceDynamicTags(selectedTypePrompt.prompt, post)
+          const typeResponse = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: typePrompt
+            })
+          })
+
+          if (!typeResponse.ok) {
+            throw new Error(`Type generation failed for post ${post.id}`)
+          }
+
+          const { generatedContent: generatedType } = await typeResponse.json()
+
+          // Return properly formatted update object
           return {
             id: post.id,
-            final_content: generatedContent || null,
+            ai_generated_content: generatedContent,
+            final_content: generatedContent,
+            ai_generated_type: generatedType,
+            final_type: generatedType,
             updated_at: new Date().toISOString()
           }
         })
       )
 
-      // Update the Supabase query
-      const { error: updateError } = await supabase
-        .from("posts")
-        .upsert(updates, {
-          onConflict: 'id'
-        })
+      // Update posts one by one to avoid batch update issues
+      for (const update of updates) {
+        const { error: updateError } = await supabase
+          .from("posts")
+          .update(update)
+          .eq('id', update.id)
 
-      if (updateError) throw updateError
+        if (updateError) throw updateError
+      }
 
       return updates
     },
@@ -207,6 +229,7 @@ export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenera
       queryClient.invalidateQueries({ queryKey: ['posts', collectionId] })
     },
     onError: (error: any) => {
+      console.error('Generation error:', error)
       toast.error("Failed to generate content", {
         description: error.message
       })
