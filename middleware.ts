@@ -12,7 +12,31 @@ export async function middleware(req: NextRequest) {
     
     if (error) throw new AuthError(error.message)
 
-    // If user is signed in and the current path is / redirect the user to /home
+    // Handle auth pages layout and redirects
+    if (req.nextUrl.pathname.startsWith('/auth')) {
+      if (session) {
+        // If user is authenticated, set main layout and redirect to home
+        const response = NextResponse.redirect(new URL('/home', req.url))
+        response.headers.set('x-layout', 'main')
+        return response
+      }
+      const response = NextResponse.next()
+      response.headers.set('x-layout', 'auth')
+      return response
+    }
+
+    // Protected routes (everything except / and /auth/*)
+    if (!req.nextUrl.pathname.startsWith('/auth') && req.nextUrl.pathname !== '/') {
+      if (!session) {
+        return NextResponse.redirect(new URL('/auth/login', req.url))
+      }
+      // Set main layout for authenticated routes
+      const response = NextResponse.next()
+      response.headers.set('x-layout', 'main')
+      return response
+    }
+
+    // Handle root route
     if (session && req.nextUrl.pathname === '/') {
       return NextResponse.redirect(new URL('/home', req.url))
     }
@@ -25,8 +49,14 @@ export async function middleware(req: NextRequest) {
           { status: 401 }
         )
       }
-      // Allow the request to continue if authenticated
       return res
+    }
+
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/', req.url))
+      }
     }
 
     return res
@@ -45,5 +75,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/home', '/api/:path*']
+  matcher: '/((?!_next/static|_next/image|favicon.ico).*)',
 } 

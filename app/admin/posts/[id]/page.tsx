@@ -1,7 +1,5 @@
 "use client"
 
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "../../components/require-admin"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -73,35 +71,31 @@ export default function EditPostPage() {
   }
 
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href={collectionId ? `/admin/collections/${collectionId}` : '/admin/posts'}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Edit Post</h1>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Post Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PostForm
-                  post={post}
-                  onSubmit={updatePost.mutate}
-                  isSubmitting={updatePost.isPending}
-                  submitLabel="Update Post"
-                />
-              </CardContent>
-            </Card>
-          </div>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href={collectionId ? `/admin/collections/${collectionId}` : '/admin/posts'}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Edit Post</h1>
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Post Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PostForm
+              post={post}
+              onSubmit={updatePost.mutate}
+              isSubmitting={updatePost.isPending}
+              submitLabel="Update Post"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 } 

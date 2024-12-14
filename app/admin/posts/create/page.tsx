@@ -1,7 +1,5 @@
 "use client"
 
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "../../components/require-admin"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -46,11 +44,7 @@ export default function CreatePostPage() {
     onSuccess: () => {
       toast.success("Post created successfully")
       queryClient.invalidateQueries({ queryKey: ['posts'] })
-      if (collectionId) {
-        router.push(`/admin/collections/${collectionId}`)
-      } else {
-        router.push('/admin/posts')
-      }
+      router.push(collectionId ? `/admin/collections/${collectionId}` : '/admin/posts')
     },
     onError: (error: any) => {
       toast.error("Failed to create post", {
@@ -60,34 +54,30 @@ export default function CreatePostPage() {
   })
 
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href={collectionId ? `/admin/collections/${collectionId}` : '/admin/posts'}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Create Post</h1>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Post Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PostForm
-                  onSubmit={createPost.mutate}
-                  isSubmitting={createPost.isPending}
-                  submitLabel="Create Post"
-                />
-              </CardContent>
-            </Card>
-          </div>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href={collectionId ? `/admin/collections/${collectionId}` : '/admin/posts'}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Create Post</h1>
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Post Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PostForm
+              onSubmit={createPost.mutate}
+              isSubmitting={createPost.isPending}
+              submitLabel="Create Post"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 } 

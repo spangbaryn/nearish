@@ -1,7 +1,5 @@
 "use client"
 
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "../../components/require-admin"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -65,34 +63,30 @@ export default function CreateCollectionPage() {
   })
 
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/admin/collections">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Create Collection</h1>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Collection Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CollectionForm
-                  onSubmit={createCollection.mutate}
-                  isSubmitting={createCollection.isPending}
-                  submitLabel="Create Collection"
-                />
-              </CardContent>
-            </Card>
-          </div>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin/collections">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Create Collection</h1>
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Collection Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CollectionForm
+              onSubmit={createCollection.mutate}
+              isSubmitting={createCollection.isPending}
+              submitLabel="Create Collection"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 } 

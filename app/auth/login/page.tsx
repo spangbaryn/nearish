@@ -20,9 +20,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/home");
+      window.location.href = "/home";
     }
-  }, [loading, user, router]);
+  }, [loading, user]);
 
   if (loading) {
     return (
@@ -41,7 +41,6 @@ export default function LoginPage() {
       await signIn(email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
   };

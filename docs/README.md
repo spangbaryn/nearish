@@ -62,10 +62,37 @@
     - No Redux - keeping state management simple and focused
 
 - **Authentication Pattern**
-    ```tsx
-    const { user, loading } = useAuth();
-    if (!user) redirect("/auth/login");
-    ```
+
+We use middleware-based authentication and layout control:
+
+1. **Middleware Authentication**
+   - Centralized auth checks in middleware
+   - Automatic redirects for unauthenticated users
+   - Role-based access control for admin routes
+   - Layout switching based on auth state
+
+2. **Layout Control**
+   - Middleware sets `x-layout` header
+   - Root layout switches between auth and main layouts
+   - No manual auth checks needed in pages
+
+3. **Best Practices**
+   - No redundant auth wrappers in pages
+   - Consistent layout handling
+   - Automatic role enforcement for admin routes
+   - Clean separation of concerns
+
+Example protected route:
+
+"use client"
+export default function ProtectedPage() {
+return (
+<div className="p-8">
+{/ Content here - auth is handled by middleware /}
+</div>
+)
+}
+
 
 - **Loading Pattern**
     ```tsx
@@ -466,3 +493,9 @@ To ensure consistent collaboration with AI tools:
     - Write tests for `api/messages` endpoint.
 -  "Always use the centralized AppError class and error handling patterns established in the codebase. When logging Supabase errors, only access properties that are documented in their AuthError type: status and message. Don't assume additional properties exist."
 - "When defining async functions in a context provider, ensure the return type in the interface matches the actual implementation. If a function returns data (like signUp returning a User), the interface should reflect this instead of using void."
+
+The middleware handles:
+- Authentication state checks
+- Role-based access control
+- Layout switching
+- Redirects for unauthenticated users

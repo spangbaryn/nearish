@@ -1,12 +1,6 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import React from "react"
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "../../components/require-admin"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { toast } from "sonner"
+import { useParams, useRouter } from "next/navigation"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TemplateForm } from "../components/template-form"
@@ -14,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 
 export default function EditTemplatePage() {
   const params = useParams()
@@ -65,35 +61,31 @@ export default function EditTemplatePage() {
   }
 
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/admin/templates">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Edit Template</h1>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Template Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TemplateForm
-                  template={template}
-                  onSubmit={updateTemplate.mutate}
-                  isSubmitting={updateTemplate.isPending}
-                  submitLabel="Save Changes"
-                />
-              </CardContent>
-            </Card>
-          </div>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin/templates">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Edit Template</h1>
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Template Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TemplateForm
+              template={template}
+              onSubmit={updateTemplate.mutate}
+              isSubmitting={updateTemplate.isPending}
+              submitLabel="Save Changes"
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 } 

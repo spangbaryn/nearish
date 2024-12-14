@@ -81,9 +81,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     },
     signOut: async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw new AuthError(error.message);
-      await queryClient.invalidateQueries({ queryKey: ['auth'] });
+      try {
+        await supabase.auth.signOut();
+        window.location.href = '/auth/login';
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
     }
   };
 

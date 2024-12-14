@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono"
 import { Providers } from "../components/providers"
 import "./styles/globals.css"
 import { RootLayoutClient } from "@/components/root-layout-client"
+import { headers } from 'next/headers'
 
 export const metadata: Metadata = {
   title: "Nearish",
@@ -15,6 +16,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersList = headers()
+  const isAuthLayout = headersList.get('x-layout') === 'auth'
+
   return (
     <html
       lang="en"
@@ -23,7 +27,7 @@ export default function RootLayout({
     >
       <body className="antialiased">
         <Providers>
-          <RootLayoutClient>{children}</RootLayoutClient>
+          {isAuthLayout ? children : <RootLayoutClient>{children}</RootLayoutClient>}
         </Providers>
       </body>
     </html>

@@ -1,17 +1,17 @@
 "use client"
 
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "./components/require-admin"
-
 export default function AdminDashboard() {
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="min-w-0 flex-1">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow p-4">
           {/* Admin dashboard content */}
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+      </div>
+    </div>
   )
 } 

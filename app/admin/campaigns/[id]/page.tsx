@@ -1,7 +1,5 @@
 "use client"
 
-import { AuthenticatedLayout } from "@/components/authenticated-layout"
-import { RequireAdmin } from "../../components/require-admin"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -132,81 +130,77 @@ export default function EditCampaignPage() {
   }
 
   return (
-    <AuthenticatedLayout>
-      <RequireAdmin>
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/admin/campaigns">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold">Edit Campaign</h1>
-              <div className="ml-auto">
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isSending || campaign?.sent_at}
-                >
-                  <SendHorizontal className="h-4 w-4 mr-2" />
-                  {isSending ? "Sending..." : "Send Campaign"}
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-8">
-              <div className="overflow-y-auto">
-                <Card className="mb-8">
-                  <CardHeader>
-                    <CardTitle>Campaign Details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CampaignForm
-                      campaign={campaign}
-                      onSubmit={updateCampaign.mutate}
-                      isSubmitting={updateCampaign.isPending}
-                      submitLabel="Save Changes"
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Target Audience</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <SubscribersTable listId={campaign?.list_id} />
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="col-span-2 bg-white rounded-lg p-8">
-                {campaign?.email_templates?.subject && (
-                  <div className="mb-8">
-                    <h2 className="text-sm font-medium text-muted-foreground">
-                      Subject: {campaign.email_templates.subject}
-                    </h2>
-                    <Separator className="mt-2" />
-                  </div>
-                )}
-                
-                {campaign?.email_templates?.content ? (
-                  <div 
-                    dangerouslySetInnerHTML={{ 
-                      __html: campaign.email_templates.content 
-                    }}
-                    className="email-preview"
-                  />
-                ) : (
-                  <p className="text-muted-foreground">
-                    Select a template to preview content
-                  </p>
-                )}
-              </div>
-            </div>
+    <div className="flex-1 overflow-y-auto p-8">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/admin/campaigns">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Edit Campaign</h1>
+          <div className="ml-auto">
+            <Button 
+              onClick={handleSend} 
+              disabled={isSending || campaign?.sent_at}
+            >
+              <SendHorizontal className="h-4 w-4 mr-2" />
+              {isSending ? "Sending..." : "Send Campaign"}
+            </Button>
           </div>
         </div>
-      </RequireAdmin>
-    </AuthenticatedLayout>
+
+        <div className="grid grid-cols-3 gap-8">
+          <div className="overflow-y-auto">
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Campaign Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CampaignForm
+                  campaign={campaign}
+                  onSubmit={updateCampaign.mutate}
+                  isSubmitting={updateCampaign.isPending}
+                  submitLabel="Save Changes"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Target Audience</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SubscribersTable listId={campaign?.list_id} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="col-span-2 bg-white rounded-lg p-8">
+            {campaign?.email_templates?.subject && (
+              <div className="mb-8">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  Subject: {campaign.email_templates.subject}
+                </h2>
+                <Separator className="mt-2" />
+              </div>
+            )}
+            
+            {campaign?.email_templates?.content ? (
+              <div 
+                dangerouslySetInnerHTML={{ 
+                  __html: campaign.email_templates.content 
+                }}
+                className="email-preview"
+              />
+            ) : (
+              <p className="text-muted-foreground">
+                Select a template to preview content
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 } 
