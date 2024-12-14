@@ -9,6 +9,7 @@ export interface Database {
           id: string;
           email: string;
           role: UserRole;
+          avatar_url: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -16,12 +17,14 @@ export interface Database {
           id: string;
           email: string;
           role?: UserRole;
+          avatar_url?: string | null;
           created_at?: string;
           updated_at?: string | null;
         };
         Update: {
           email?: string;
           role?: UserRole;
+          avatar_url?: string | null;
           updated_at?: string | null;
         };
       };

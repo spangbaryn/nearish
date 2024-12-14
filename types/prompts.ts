@@ -3,10 +3,10 @@ export type PromptType = 'content' | 'type_id' | null
 export type AIPrompt = {
   id: string
   name: string
-  description: string | null
   prompt: string
-  is_active: boolean
+  description?: string
   prompt_type: PromptType
+  is_active: boolean
   is_default: boolean
   created_at: string
   updated_at: string | null

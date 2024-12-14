@@ -11,7 +11,7 @@ import Link from "next/link"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Separator } from "@/components/ui/separator"
 import { useState } from "react"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { SubscribersTable } from "../components/subscribers-table"
 
 export default function EditCampaignPage() {
@@ -52,7 +52,7 @@ export default function EditCampaignPage() {
       if (error) throw error
     },
     onSuccess: () => {
-      toast.success("Campaign updated successfully")
+      toast("Campaign updated successfully")
       queryClient.invalidateQueries({ queryKey: ['campaigns'] })
       router.push('/admin/campaigns')
     },
@@ -64,7 +64,6 @@ export default function EditCampaignPage() {
   })
 
   const [isSending, setIsSending] = useState(false)
-  const { toast } = useToast()
 
   const handleSend = async () => {
     try {
@@ -96,11 +95,7 @@ export default function EditCampaignPage() {
         throw new Error(data?.error || `Server error: ${response.status}`);
       }
       
-      console.log('6b. Response OK, showing success toast');
-      toast({
-        title: "Campaign sent successfully",
-        description: `Campaign sent to ${data.recipientCount} subscribers`,
-      });
+
       
       queryClient.invalidateQueries({ queryKey: ['campaigns', id] });
     } catch (error: any) {
@@ -111,11 +106,7 @@ export default function EditCampaignPage() {
         stack: error?.stack
       });
       
-      toast({
-        title: "Failed to send campaign",
-        description: error?.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      toast.error("Failed to send campaign: " + (error?.message || "An unexpected error occurred"))
     } finally {
       setIsSending(false);
     }

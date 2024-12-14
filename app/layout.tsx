@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   description: "A social network for small businesses and their customers",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const headersList = headers()
+  const headersList = await headers()
   const isAuthLayout = headersList.get('x-layout') === 'auth'
 
   return (
