@@ -11,22 +11,67 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useQuery } from "@tanstack/react-query"
+import { getUserBusinesses } from "@/lib/business"
+import type { BusinessRole } from '@/types/auth'
+
+interface BusinessRoute {
+  id: string
+  name: string
+  role: BusinessRole
+  items: {
+    title: string
+    href: string
+    icon: LucideIcon
+  }[]
+}
 
 export function MainSidebar() {
-  const { user, signOut } = useAuth();
-  const isAdmin = user?.role === 'admin';
-  const canAccessBusiness = user?.role === 'business' || isAdmin;
+  const { user, signOut } = useAuth()
+  const isAdmin = user?.role === 'admin'
+
+  const { data: businesses } = useQuery({
+    queryKey: ['user-businesses'],
+    queryFn: () => getUserBusinesses(user?.id!),
+    enabled: !!user?.id,
+  })
+
+  const getBusinessRoutes = (businesses: Awaited<ReturnType<typeof getUserBusinesses>>) => {
+    return businesses?.map(({ business, role }) => ({
+      id: business.id,
+      name: business.name,
+      role,
+      items: [
+        { 
+          title: "Dashboard", 
+          href: `/businesses/${business.id}`, 
+          icon: LayoutDashboard 
+        },
+        ...(role === 'owner' || role === 'admin' ? [
+          { 
+            title: "Settings", 
+            href: `/businesses/${business.id}/settings`, 
+            icon: Settings 
+          },
+          { 
+            title: "Team", 
+            href: `/businesses/${business.id}/team`, 
+            icon: Users 
+          }
+        ] : []),
+        { 
+          title: "Posts", 
+          href: `/businesses/${business.id}/posts`, 
+          icon: FileText 
+        }
+      ]
+    })) ?? []
+  }
 
   const routes = [
-    ...(canAccessBusiness ? [{
-      title: "Business",
-      items: [
-        { title: "All Businesses", href: "/businesses", icon: Building2 },
-        { title: "Management", href: "/businesses/manage", icon: Building2 },
-      ],
-    }] : []),
+    ...getBusinessRoutes(businesses),
     ...(isAdmin ? [{
       title: "Admin Tools",
       items: [
@@ -45,8 +90,10 @@ export function MainSidebar() {
     <Sidebar className="pt-14">
       <SidebarContent>
         {routes.map((section) => (
-          <SidebarGroup key={section.title}>
-            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+          <SidebarGroup key={section.title ?? section.id}>
+            <SidebarGroupLabel>
+              {section.title ?? section.name}
+            </SidebarGroupLabel>
             {section.items.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href}>
