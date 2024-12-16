@@ -16,9 +16,11 @@ import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
 import { getUserBusinesses } from "@/lib/business"
 import type { BusinessRole } from '@/types/auth'
+import type { LucideIcon } from "lucide-react"
 
 interface BusinessRoute {
   id: string
+  title?: string
   name: string
   role: BusinessRole
   items: {
@@ -27,6 +29,19 @@ interface BusinessRoute {
     icon: LucideIcon
   }[]
 }
+
+interface AdminRoute {
+  id?: string
+  title: string
+  name?: string
+  items: {
+    title: string
+    href: string
+    icon: LucideIcon
+  }[]
+}
+
+type RouteSection = BusinessRoute | AdminRoute
 
 export function MainSidebar() {
   const { user, signOut } = useAuth()
@@ -38,8 +53,9 @@ export function MainSidebar() {
     enabled: !!user?.id,
   })
 
-  const getBusinessRoutes = (businesses: Awaited<ReturnType<typeof getUserBusinesses>>) => {
-    return businesses?.map(({ business, role }) => ({
+  const getBusinessRoutes = (businesses: Awaited<ReturnType<typeof getUserBusinesses>> | undefined) => {
+    if (!businesses) return []
+    return businesses.map(({ business, role }) => ({
       id: business.id,
       name: business.name,
       role,
@@ -49,7 +65,7 @@ export function MainSidebar() {
           href: `/businesses/${business.id}`, 
           icon: LayoutDashboard 
         },
-        ...(role === 'owner' || role === 'admin' ? [
+        ...(role === 'owner' ? [
           { 
             title: "Settings", 
             href: `/businesses/${business.id}/settings`, 
@@ -67,10 +83,10 @@ export function MainSidebar() {
           icon: FileText 
         }
       ]
-    })) ?? []
+    }))
   }
 
-  const routes = [
+  const routes: RouteSection[] = [
     ...getBusinessRoutes(businesses),
     ...(isAdmin ? [{
       title: "Admin Tools",

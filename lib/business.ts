@@ -30,7 +30,7 @@ export async function getUserBusinesses(userId: string) {
     .from('business_members')
     .select(`
       role,
-      business:businesses (
+      business:businesses!inner(
         id,
         name,
         description
@@ -39,5 +39,12 @@ export async function getUserBusinesses(userId: string) {
     .eq('profile_id', userId);
 
   if (error) throw error;
-  return data;
+  return data as unknown as Array<{
+    role: BusinessRole;
+    business: {
+      id: string;
+      name: string;
+      description: string | null;
+    }
+  }>;
 } 
