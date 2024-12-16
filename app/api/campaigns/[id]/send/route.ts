@@ -4,13 +4,9 @@ import { cookies } from 'next/headers';
 import { sendCampaignEmail, EmailServiceError } from '@/lib/email-service';
 import { AuthError } from '@/lib/errors';
 
-type Props = {
-  params: { id: string }
-}
-
 export async function POST(
-  _request: Request,
-  props: Props
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
   
@@ -38,7 +34,7 @@ export async function POST(
           content
         )
       `)
-      .eq('id', props.params.id)
+      .eq('id', params.id)
       .single();
 
     if (campaignError || !campaignData) {
@@ -69,7 +65,7 @@ export async function POST(
     }
 
     const { response, recipientCount } = await sendCampaignEmail(
-      props.params.id,
+      params.id,
       campaignData.email_templates.subject,
       campaignData.email_templates.content,
       recipientEmails
@@ -79,7 +75,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({ sent_at: new Date().toISOString() })
-      .eq('id', props.params.id);
+      .eq('id', params.id);
 
     if (updateError) {
       throw new Error('Failed to update campaign status');
