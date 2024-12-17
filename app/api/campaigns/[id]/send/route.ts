@@ -6,12 +6,17 @@ import { AuthError } from '@/lib/errors';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { id } = context.params;
+
   const supabase = createRouteHandlerClient({ cookies });
   
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) throw new AuthError(error.message);
     if (!session?.user) throw new AuthError('No user in session');
 
@@ -25,6 +30,7 @@ export async function POST(
     if (profileError) throw new AuthError('Failed to fetch user profile');
     if (!profile || profile.role !== 'admin') throw new AuthError('Admin access required');
 
+    // Fetch campaign data
     const { data: campaignData, error: campaignError } = await supabase
       .from('campaigns')
       .select(`
@@ -34,7 +40,7 @@ export async function POST(
           content
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (campaignError || !campaignData) {
@@ -65,7 +71,7 @@ export async function POST(
     }
 
     const { response, recipientCount } = await sendCampaignEmail(
-      params.id,
+      id,
       campaignData.email_templates.subject,
       campaignData.email_templates.content,
       recipientEmails
@@ -75,7 +81,7 @@ export async function POST(
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({ sent_at: new Date().toISOString() })
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (updateError) {
       throw new Error('Failed to update campaign status');
