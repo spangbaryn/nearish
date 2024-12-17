@@ -1,18 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { sendCampaignEmail, EmailServiceError } from '@/lib/email-service';
 import { AuthError } from '@/lib/errors';
 
-export async function POST(
-  request: Request,
-  context: { params: { id: string } }
-) {
-  const { id } = context.params;
-
+export async function POST(request: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  
+
   try {
+    // Extract 'id' from request URL
+    const { pathname } = request.nextUrl;
+    const segments = pathname.split('/');
+    const id = segments[segments.indexOf('campaigns') + 1];
+
+    // Ensure 'id' is present
+    if (!id) {
+      throw new Error('Campaign ID not found in URL');
+    }
+
+    // Get the current session
     const {
       data: { session },
       error,
@@ -62,14 +68,16 @@ export async function POST(
       throw new Error('Failed to fetch subscribers');
     }
 
+    // Map over subscribers to get emails
     const recipientEmails: string[] = subscribers
-      .map(sub => sub.profiles[0]?.email)
-      .filter((email): email is string => Boolean(email));
+      .map(sub => (sub.profiles as unknown as { email: string }).email)
+      .filter(Boolean);
 
     if (recipientEmails.length === 0) {
       throw new Error('No subscribers found for this list');
     }
 
+    // Send the campaign email
     const { response, recipientCount } = await sendCampaignEmail(
       id,
       campaignData.email_templates.subject,
@@ -87,19 +95,18 @@ export async function POST(
       throw new Error('Failed to update campaign status');
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message: 'Campaign sent successfully',
-      recipientCount
+      recipientCount,
     });
-
   } catch (error: any) {
     console.error('Campaign send error:', error);
-    
+
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-    
+
     if (error instanceof EmailServiceError) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
