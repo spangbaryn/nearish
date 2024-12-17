@@ -26,7 +26,7 @@ export async function getUserLists(userId: string): Promise<EmailList[]> {
   console.log('Supabase response:', JSON.stringify(data, null, 2));
 
   if (error) throw new AuthError('Failed to fetch user lists');
-  return (data?.map(subscription => subscription.email_lists) || []) as unknown as EmailList[];
+  return data?.map(subscription => subscription.email_lists as unknown as EmailList) || [];
 }
 
 /**
