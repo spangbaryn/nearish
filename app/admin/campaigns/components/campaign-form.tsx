@@ -24,7 +24,9 @@ import type { Database } from "@/types/database.types"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 
-type Campaign = Database["public"]["Tables"]["campaigns"]["Row"]
+type Campaign = Database["public"]["Tables"]["campaigns"]["Row"] & {
+  list_id?: string;
+};
 
 type Template = {
   id: string
