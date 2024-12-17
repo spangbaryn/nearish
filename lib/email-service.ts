@@ -2,8 +2,6 @@ import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 import { supabase } from '@/lib/supabase';
 
-const mailgun = new Mailgun(formData);
-
 console.log('Email service config:', {
   hasApiKey: !!process.env.MAILGUN_API_KEY,
   hasDomain: !!process.env.MAILGUN_DOMAIN,
@@ -11,16 +9,19 @@ console.log('Email service config:', {
   isDevelopment: process.env.NODE_ENV === 'development'
 });
 
-const client = mailgun.client({
-  username: 'api',
-  key: process.env.MAILGUN_API_KEY || '',
-});
-
 export class EmailServiceError extends Error {
   constructor(message: string, public readonly code?: string) {
     super(message);
     this.name = 'EmailServiceError';
   }
+}
+
+function createMailgunClient() {
+  const mailgun = new Mailgun(formData);
+  return mailgun.client({ 
+    username: 'api', 
+    key: process.env.MAILGUN_API_KEY || '' 
+  });
 }
 
 export async function sendTestEmail(
@@ -54,6 +55,7 @@ export async function sendTestEmail(
       environment: process.env.NODE_ENV
     });
 
+    const client = createMailgunClient();
     const response = await client.messages.create(domain, {
       from: fromAddress,
       to: 'espangenberg@gmail.com',
@@ -111,6 +113,7 @@ export async function sendCampaignEmail(
     });
 
     // Send individual emails to each recipient
+    const client = createMailgunClient();
     const sendPromises = recipientEmails.map(async (email) => {
       return client.messages.create(domain, {
         from: fromAddress,
