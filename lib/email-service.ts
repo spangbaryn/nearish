@@ -13,7 +13,7 @@ console.log('Email service config:', {
 
 const client = mailgun.client({
   username: 'api',
-  key: process.env.MAILGUN_API_KEY!,
+  key: process.env.MAILGUN_API_KEY || '',
 });
 
 export class EmailServiceError extends Error {
