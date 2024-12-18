@@ -77,55 +77,88 @@
 }
 
 .email-preview {
-  /* Gmail-specific resets */
-  min-width: 100% !important;
-  width: 100% !important;
-  font-family: 'Google Sans', Roboto, Arial, sans-serif !important;
+  /* Base resets */
+  font-family: Arial, sans-serif !important;
   font-size: 14px !important;
-  line-height: 1.5 !important;
-  color: #222222 !important;
-  margin: 0 !important;
+  line-height: 1.6 !important;
+  color: #24292e !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
   padding: 0 !important;
 
-  /* Gmail strips these but we'll keep them for other clients */
-  -webkit-text-size-adjust: 100% !important;
-  -ms-text-size-adjust: 100% !important;
-
-  /* Element resets for Gmail */
+  /* Element resets */
   h1, h2, h3, h4, h5, h6, p, div, span, a, img {
-    margin: 0 !important;
+    margin: 0 0 16px 0 !important;
     padding: 0 !important;
-    line-height: 1.5 !important;
-    font-family: 'Google Sans', Roboto, Arial, sans-serif !important;
+    line-height: 1.6 !important;
+    font-family: Arial, sans-serif !important;
   }
 
-  /* Gmail-friendly typography */
-  h1 { font-size: 20px !important; margin-bottom: 12px !important; font-weight: 500 !important; }
-  h2 { font-size: 16px !important; margin-bottom: 12px !important; font-weight: 500 !important; }
-  h3 { font-size: 14px !important; margin-bottom: 12px !important; font-weight: 500 !important; }
-  p { margin-bottom: 12px !important; }
+  /* Typography */
+  h1 { font-size: 24px !important; font-weight: 600 !important; }
+  h2 { font-size: 20px !important; font-weight: 600 !important; }
+  h3 { font-size: 16px !important; font-weight: 600 !important; }
+  p { margin-bottom: 16px !important; }
 
-  /* Gmail link styles */
+  /* Links */
   a {
-    color: #1a73e8 !important;
+    color: #0366d6 !important;
     text-decoration: none !important;
+    &:hover {
+      text-decoration: underline !important;
+    }
   }
 
-  /* Gmail-friendly image handling */
+  /* Images */
   img {
-    border: 0 !important;
-    outline: none !important;
-    display: block !important;
+    max-width: 100% !important;
     height: auto !important;
+    display: block !important;
+    margin: 16px 0 !important;
   }
 
-  /* Gmail table resets */
+  /* Tables */
   table {
-    border-collapse: collapse !important;
     width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 16px !important;
   }
 
-  td {
-    padding: 0 !important;
+  td, th {
+    padding: 8px !important;
+    border: 1px solid #e1e4e8 !important;
+  }
+
+  /* Lists */
+  ul, ol {
+    margin: 0 0 16px 0 !important;
+    padding-left: 24px !important;
+  }
+
+  li {
+    margin-bottom: 8px !important;
+  }
+
+  /* Blockquotes */
+  blockquote {
+    margin: 16px 0 !important;
+    padding-left: 16px !important;
+    border-left: 4px solid #e1e4e8 !important;
+    color: #6a737d !important;
+  }
+
+  /* Code blocks */
+  pre, code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace !important;
+    background-color: #f6f8fa !important;
+    border-radius: 3px !important;
+    padding: 2px 4px !important;
+    font-size: 85% !important;
+  }
+
+  pre {
+    padding: 16px !important;
+    overflow: auto !important;
+    margin-bottom: 16px !important;
   }
 }

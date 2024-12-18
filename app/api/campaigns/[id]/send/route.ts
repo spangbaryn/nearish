@@ -1,43 +1,22 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { sendCampaignEmail, EmailServiceError } from '@/lib/email-service';
-import { AuthError } from '@/lib/errors';
+import { NextResponse } from "next/server"
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { supabase } from "@/lib/supabase"
+import { replaceEmailTags } from "@/lib/email-utils"
+import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
+import { AuthError } from "@/lib/errors"
 
-export async function POST(request: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const cookieStore = await cookies()
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const campaignId = params.id
 
   try {
-    // Extract 'id' from request URL
-    const { pathname } = request.nextUrl;
-    const segments = pathname.split('/');
-    const id = segments[segments.indexOf('campaigns') + 1];
-
-    // Ensure 'id' is present
-    if (!id) {
-      throw new Error('Campaign ID not found in URL');
-    }
-
-    // Get the current session
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (error) throw new AuthError(error.message);
-    if (!session?.user) throw new AuthError('No user in session');
-
-    // Check admin role
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-
-    if (profileError) throw new AuthError('Failed to fetch user profile');
-    if (!profile || profile.role !== 'admin') throw new AuthError('Admin access required');
-
-    // Fetch campaign data
-    const { data: campaignData, error: campaignError } = await supabase
+    // Get campaign data
+    const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
       .select(`
         *,
@@ -46,74 +25,64 @@ export async function POST(request: NextRequest) {
           content
         )
       `)
-      .eq('id', id)
-      .single();
+      .eq('id', campaignId)
+      .single()
 
-    if (campaignError || !campaignData) {
-      throw new Error('Campaign not found');
+    if (campaignError || !campaign) {
+      throw new Error('Campaign not found')
     }
 
-    // Fetch subscribers from the list
+    // Process template content with dynamic tags
+    console.log('Template content before processing:', campaign.email_templates.content)
+    const processedContent = await replaceEmailTags(
+      campaign.email_templates.content,
+      campaign.collection_id
+    )
+    console.log('Template content after processing:', processedContent)
+
+    // Get subscribers
     const { data: subscribers, error: subscribersError } = await supabase
       .from('profile_list_subscriptions')
-      .select(`
-        profiles (
-          email
-        )
-      `)
-      .eq('list_id', campaignData.list_id)
-      .is('unsubscribed_at', null);
+      .select('profiles (email)')
+      .eq('list_id', campaign.list_id)
+      .is('unsubscribed_at', null)
 
     if (subscribersError) {
-      throw new Error('Failed to fetch subscribers');
+      throw new Error('Failed to fetch subscribers')
     }
 
-    // Map over subscribers to get emails
-    const recipientEmails: string[] = subscribers
-      .map(sub => (sub.profiles as unknown as { email: string }).email)
-      .filter(Boolean);
-
-    if (recipientEmails.length === 0) {
-      throw new Error('No subscribers found for this list');
+    if (!subscribers?.length) {
+      throw new Error('No subscribers found')
     }
 
-    // Send the campaign email
+    // Send campaign using the processed content
     const { response, recipientCount } = await sendCampaignEmail(
-      id,
-      campaignData.email_templates.subject,
-      campaignData.email_templates.content,
-      recipientEmails
-    );
+      campaign.id,
+      campaign.email_templates.subject,
+      processedContent,
+      subscribers.map(sub => sub.profiles.email)
+    )
 
-    // Update campaign sent_at timestamp
+    // Update campaign sent timestamp
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({ sent_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', campaignId)
 
     if (updateError) {
-      throw new Error('Failed to update campaign status');
+      throw new Error('Failed to update campaign status')
     }
 
     return NextResponse.json({
       success: true,
       message: 'Campaign sent successfully',
-      recipientCount,
-    });
+      recipientCount
+    })
   } catch (error: any) {
-    console.error('Campaign send error:', error);
-
-    if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-
-    if (error instanceof EmailServiceError) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
+    console.error('Campaign send error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
-    );
+      { error: error.message },
+      { status: error instanceof AuthError ? 401 : 500 }
+    )
   }
 }
