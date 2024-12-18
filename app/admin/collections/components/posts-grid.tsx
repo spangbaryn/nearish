@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Trash2 } from "lucide-react"
 
 type Post = Database["public"]["Tables"]["posts"]["Row"]
 
@@ -77,6 +79,36 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
     },
     onError: (error: any) => {
       toast.error("Failed to update final type", {
+        description: error.message
+      })
+    }
+  })
+
+  const deletePost = useMutation({
+    mutationFn: async (postId: string) => {
+      // First delete the collection association
+      const { error: relationError } = await supabase
+        .from("posts_collections")
+        .delete()
+        .eq('post_id', postId)
+        .eq('collection_id', collectionId)
+
+      if (relationError) throw relationError
+
+      // Then delete the post itself
+      const { error: postError } = await supabase
+        .from("posts")
+        .delete()
+        .eq('id', postId)
+
+      if (postError) throw postError
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts', collectionId] })
+      toast.success("Post deleted successfully")
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete post", {
         description: error.message
       })
     }
@@ -175,10 +207,12 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
           </div>
 
           <Card className="hover:bg-muted/50 cursor-pointer" onClick={(e) => handleCardClick(e, post.id)}>
-            <CardHeader className="flex flex-col space-y-2">
-              <CardTitle className="text-base font-medium">
-                {post.businesses?.name || 'Unnamed Business'}
-              </CardTitle>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-medium">
+                  {post.businesses?.name || 'Unnamed Business'}
+                </CardTitle>
+              </div>
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">AI Generated Type</span>
@@ -209,7 +243,7 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div>
                 <h4 className="text-sm font-medium mb-1">Original Content</h4>
                 <p className="text-xs text-muted-foreground line-clamp-3">
@@ -246,6 +280,24 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
                 </span>
               </div>
             </CardContent>
+            <div className="px-6 pb-4 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation() // Prevent card click
+                  if (confirm('Are you sure you want to delete this post?')) {
+                    deletePost.mutate(post.id)
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                {post.source}
+              </span>
+            </div>
           </Card>
         </div>
       ))}

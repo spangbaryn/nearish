@@ -5,10 +5,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Plus, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, Sparkles, Facebook } from "lucide-react"
 import Link from "next/link"
 import { PostsGrid } from "../components/posts-grid"
 import { AIGenerationModal } from "../components/ai-generation-modal"
+import { FacebookFetchModal } from "../components/facebook-fetch-modal"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
@@ -20,6 +21,7 @@ export default function CollectionDetailPage() {
   const [description, setDescription] = useState("")
   const [savedState, setSavedState] = useState(false)
   const queryClient = useQueryClient()
+  const [showFacebookModal, setShowFacebookModal] = useState(false)
 
   const updateDescription = useMutation({
     mutationFn: async (newDescription: string) => {
@@ -106,6 +108,13 @@ export default function CollectionDetailPage() {
                 Create Post
               </Button>
             </Link>
+            <Button
+              variant="outline"
+              onClick={() => setShowFacebookModal(true)}
+            >
+              <Facebook className="h-4 w-4 mr-2" />
+              Facebook
+            </Button>
           </div>
         </div>
 
@@ -117,6 +126,11 @@ export default function CollectionDetailPage() {
       <AIGenerationModal 
         open={showAIModal} 
         onOpenChange={setShowAIModal}
+        collectionId={collectionId}
+      />
+      <FacebookFetchModal
+        open={showFacebookModal}
+        onOpenChange={setShowFacebookModal}
         collectionId={collectionId}
       />
     </div>

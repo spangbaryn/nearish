@@ -106,18 +106,23 @@ Represents social posts created by businesses or users.
 | `id` | UUID | Primary Key, Not Null | Unique identifier for the post. |
 | `business_id` | UUID | Foreign Key -> `businesses.id` | Business associated with the post. |
 | `source` | ENUM | Not Null | Source of the post (`facebook`, `admin`, `platform`). |
+| `external_id` | VARCHAR(255) | | External identifier (e.g., Facebook post ID). |
 | `content` | TEXT | Not Null | Content of the post. |
 | `final_content` | TEXT | | Editable version of the post content. |
 | `final_type` | ENUM | | Post type ('Promotion', 'Event', 'Update'). |
 | `ai_generated_type` | VARCHAR(255) | | Non-editable AI-generated classification of the post. |
 | `included` | BOOLEAN | Default: false | Whether the post is included in the campaign. |
-| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Post creation date. |
+| `url` | TEXT | | URL to the original post. |
+| `published_at` | TIMESTAMP | | When the post was published on the original platform. |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | Post creation date in our system. |
 | `updated_at` | TIMESTAMP | | Last updated timestamp. |
 
 **Context**:
 
 - The `final_type` field allows user edits to refine the classification.
 - The `ai_generated_type` field preserves the original AI classification.
+- `external_id` and `url` are used for tracking external platform posts.
+- `published_at` tracks the original publication date from external platforms.
 
 ---
 

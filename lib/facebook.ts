@@ -54,8 +54,8 @@ export class FacebookAPI {
 
   static async getPagePosts(pageId: string, accessToken: string) {
     const response = await fetch(
-      `https://graph.facebook.com/v18.0/${pageId}/posts?` +
-      `fields=id,message,created_time&access_token=${accessToken}`,
+      `https://graph.facebook.com/v19.0/${pageId}/posts?` +
+      `fields=id,message,created_time,type,permalink_url,status_type&access_token=${accessToken}`,
       { cache: 'no-store' }
     )
 
