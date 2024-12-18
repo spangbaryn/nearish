@@ -91,6 +91,15 @@ export async function sendCampaignEmail(
   recipientEmails: string[]
 ) {
   try {
+    // Log incoming data
+    console.log('sendCampaignEmail received:', {
+      campaignId,
+      subject,
+      contentLength: htmlContent?.length,
+      contentPreview: htmlContent?.substring(0, 100) + '...',
+      recipientCount: recipientEmails.length
+    })
+
     if (!process.env.MAILGUN_API_KEY) {
       throw new EmailServiceError('MAILGUN_API_KEY is not configured');
     }

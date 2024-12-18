@@ -33,10 +33,11 @@ export async function POST(
     }
 
     // Process template content with dynamic tags
-    console.log('Template content before processing:', campaign.email_templates.content)
+    console.log('Processing template content...')
     const processedContent = await replaceEmailTags(
       campaign.email_templates.content,
-      campaign.collection_id
+      campaign.collection_id,
+      supabase
     )
     console.log('Template content after processing:', processedContent)
 

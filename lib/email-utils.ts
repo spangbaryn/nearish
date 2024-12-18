@@ -11,12 +11,16 @@ type PostsJoinResult = {
   posts: PostWithType[]
 }
 
-export async function replaceEmailTags(content: string, collectionId: string) {
+export async function replaceEmailTags(
+  content: string, 
+  collectionId: string,
+  customClient = supabase // Allow passing a custom client
+) {
   if (!content.includes('{{')) return content
 
-  // Fetch posts for this collection
+  // Fetch posts for this collection using provided client
   console.log('Fetching posts with collection ID:', collectionId)
-  const { data: postsCollections, error } = await supabase
+  const { data: postsCollections, error } = await customClient
     .from('posts_collections')
     .select(`
       posts (
@@ -26,6 +30,7 @@ export async function replaceEmailTags(content: string, collectionId: string) {
       )
     `)
     .eq('collection_id', collectionId)
+    .order('created_at', { ascending: false })
 
   console.log('Full Supabase query result:', {
     postsCollections,
