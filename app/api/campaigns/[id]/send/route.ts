@@ -7,9 +7,10 @@ import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
 import type { Database } from "@/types/database.types"
 
-type SubscriberProfile = Database['public']['Tables']['profiles']['Row']
-type ProfileSubscription = {
-  profiles: Pick<SubscriberProfile, 'email'>
+type SubscriberResponse = {
+  profiles: {
+    email: string;
+  }
 }
 
 export async function POST(
@@ -67,7 +68,7 @@ export async function POST(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map(sub => (sub.profiles as ProfileSubscription['profiles']).email)
+      subscribers.map((sub: SubscriberResponse) => sub.profiles.email)
     )
 
     // Update campaign sent timestamp
