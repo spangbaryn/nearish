@@ -8,11 +8,11 @@ import { AuthError } from "@/lib/errors"
 
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   const cookieStore = cookies()
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-  const campaignId = context.params.id
+  const campaignId = params.id
 
   try {
     // Get campaign data
