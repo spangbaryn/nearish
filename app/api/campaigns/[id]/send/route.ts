@@ -61,15 +61,12 @@ export async function POST(
       throw new Error('No subscribers found')
     }
 
-    // Transform the data to match the subscribers-table.tsx pattern
-    const subscribers = subscriptionData.map(sub => sub.profiles)
-
     // Send campaign using the processed content
     const { response, recipientCount } = await sendCampaignEmail(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map(subscriber => subscriber[0].email)
+      subscriptionData.map(sub => sub.profiles[0].email)
     )
 
     // Update campaign sent timestamp
