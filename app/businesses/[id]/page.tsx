@@ -237,7 +237,10 @@ export default function BusinessDashboardPage() {
                 ) : (
                   <SendHorizontal className="mr-2 h-4 w-4" />
                 )}
-                {postToFacebook ? `Post to Platform & ${selectedPage?.name || 'Facebook'}` : 'Post to Platform'}
+                {postToFacebook 
+                  ? `Post to Platform & ${selectedPage?.name} Facebook Page` 
+                  : 'Post to Platform'
+                }
               </Button>
             </form>
           </CardContent>
