@@ -8,11 +8,11 @@ import { AuthError } from "@/lib/errors"
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const cookieStore = cookies()
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-  const campaignId = params.id
+  const campaignId = (await params).id
 
   try {
     // Get campaign data
