@@ -107,8 +107,12 @@ export default function BusinessSettingsPage() {
       if (tempError) throw tempError
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['business-social-connections', businessId])
-      queryClient.invalidateQueries(['temp-facebook-pages', businessId])
+      queryClient.invalidateQueries({
+        queryKey: ['business-social-connections', businessId]
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['temp-facebook-pages', businessId]
+      })
       toast.success('Facebook page disconnected')
       setPageToDisconnect(null)
     },
