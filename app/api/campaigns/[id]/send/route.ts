@@ -7,6 +7,12 @@ import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
 import type { Database } from "@/types/database.types"
 
+type SubscriptionWithProfile = {
+  profiles: {
+    email: string;
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -51,7 +57,7 @@ export async function POST(
         )
       `)
       .eq('list_id', campaign.list_id)
-      .is('unsubscribed_at', null)
+      .is('unsubscribed_at', null) as { data: SubscriptionWithProfile[] | null, error: any }
 
     if (subscribersError) {
       throw new Error('Failed to fetch subscribers')
@@ -66,7 +72,7 @@ export async function POST(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscriptionData.map(sub => sub.profiles[0].email)
+      subscriptionData.map(sub => sub.profiles.email)
     )
 
     // Update campaign sent timestamp
