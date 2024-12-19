@@ -7,10 +7,9 @@ import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
 import type { Database } from "@/types/database.types"
 
-type SubscriberResponse = {
-  profiles: {
-    email: string;
-  }
+// Match the shape from subscribers-table.tsx
+type Subscriber = {
+  email: string
 }
 
 export async function POST(
@@ -51,7 +50,11 @@ export async function POST(
     // Get subscribers
     const { data: subscribers, error: subscribersError } = await supabase
       .from('profile_list_subscriptions')
-      .select('profiles (email)')
+      .select(`
+        profiles (
+          email
+        )
+      `)
       .eq('list_id', campaign.list_id)
       .is('unsubscribed_at', null)
 
@@ -68,7 +71,7 @@ export async function POST(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map((sub: SubscriberResponse) => sub.profiles.email)
+      subscribers.map(sub => sub.profiles.email)
     )
 
     // Update campaign sent timestamp
