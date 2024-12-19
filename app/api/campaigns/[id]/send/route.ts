@@ -5,11 +5,11 @@ import { supabase } from "@/lib/supabase"
 import { replaceEmailTags } from "@/lib/email-utils"
 import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
+import type { Database } from "@/types/database.types"
 
+type SubscriberProfile = Database['public']['Tables']['profiles']['Row']
 type ProfileSubscription = {
-  profiles: {
-    email: string
-  }
+  profiles: Pick<SubscriberProfile, 'email'>
 }
 
 export async function POST(
@@ -17,7 +17,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+  const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
   const campaignId = (await params).id
 
   try {
@@ -52,7 +52,7 @@ export async function POST(
       .from('profile_list_subscriptions')
       .select('profiles (email)')
       .eq('list_id', campaign.list_id)
-      .is('unsubscribed_at', null) as { data: ProfileSubscription[], error: any }
+      .is('unsubscribed_at', null)
 
     if (subscribersError) {
       throw new Error('Failed to fetch subscribers')
@@ -67,7 +67,7 @@ export async function POST(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map(sub => sub.profiles.email)
+      subscribers.map(sub => (sub.profiles as ProfileSubscription['profiles']).email)
     )
 
     // Update campaign sent timestamp
