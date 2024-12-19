@@ -201,7 +201,7 @@ export default function BusinessDashboardPage() {
                     >
                       <Facebook className="h-4 w-4 mr-2 text-[#1877F2]" />
                       {facebookPages.length === 1 
-                        ? `Also post to the ${facebookPages[0].name} Facebook Page`
+                        ? `Also post to ${facebookPages[0].name} Facebook Page`
                         : "Also post to Facebook"
                       }
                     </label>
