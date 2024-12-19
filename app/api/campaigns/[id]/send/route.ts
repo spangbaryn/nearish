@@ -7,11 +7,6 @@ import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
 import type { Database } from "@/types/database.types"
 
-// Match the shape from subscribers-table.tsx
-type Subscriber = {
-  email: string
-}
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -48,7 +43,7 @@ export async function POST(
     console.log('Template content after processing:', processedContent)
 
     // Get subscribers
-    const { data: subscribers, error: subscribersError } = await supabase
+    const { data: subscriptionData, error: subscribersError } = await supabase
       .from('profile_list_subscriptions')
       .select(`
         profiles (
@@ -62,16 +57,19 @@ export async function POST(
       throw new Error('Failed to fetch subscribers')
     }
 
-    if (!subscribers?.length) {
+    if (!subscriptionData?.length) {
       throw new Error('No subscribers found')
     }
+
+    // Transform the data to match the subscribers-table.tsx pattern
+    const subscribers = subscriptionData.map(sub => sub.profiles)
 
     // Send campaign using the processed content
     const { response, recipientCount } = await sendCampaignEmail(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map(sub => sub.profiles.email)
+      subscribers.map(subscriber => subscriber.email)
     )
 
     // Update campaign sent timestamp
