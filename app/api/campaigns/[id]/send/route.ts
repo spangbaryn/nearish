@@ -6,19 +6,13 @@ import { replaceEmailTags } from "@/lib/email-utils"
 import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
 import { AuthError } from "@/lib/errors"
 
-type RouteParams = {
-  params: {
-    id: string
-  }
-}
-
 export async function POST(
   request: Request,
-  { params }: RouteParams
+  context: { params: { id: string } }
 ) {
   const cookieStore = cookies()
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-  const campaignId = params.id
+  const campaignId = context.params.id
 
   try {
     // Get campaign data
