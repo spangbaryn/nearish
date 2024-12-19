@@ -69,7 +69,7 @@ export async function POST(
       campaign.id,
       campaign.email_templates.subject,
       processedContent,
-      subscribers.map(subscriber => subscriber.email)
+      subscribers.map(subscriber => subscriber[0].email)
     )
 
     // Update campaign sent timestamp
