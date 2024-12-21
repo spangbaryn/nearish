@@ -4,7 +4,8 @@ import { cookies } from 'next/headers'
 import { supabase } from "@/lib/supabase"
 import { replaceEmailTags } from "@/lib/email-utils"
 import { sendCampaignEmail, EmailServiceError } from "@/lib/email-service"
-import { AuthError } from "@/lib/errors"
+import { AppError, ValidationError, AuthError } from "@/lib/errors"
+import { withErrorHandler } from "@/lib/api/error-handler"
 import type { Database } from "@/types/database.types"
 
 type SubscriptionWithProfile = {
@@ -17,11 +18,11 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = cookies()
-  const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
-  const campaignId = (await params).id
+  return withErrorHandler(async () => {
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const campaignId = (await params).id
 
-  try {
     // Get campaign data
     const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
@@ -36,7 +37,7 @@ export async function POST(
       .single()
 
     if (campaignError || !campaign) {
-      throw new Error('Campaign not found')
+      throw new ValidationError('Campaign not found')
     }
 
     // Process template content with dynamic tags
@@ -60,11 +61,11 @@ export async function POST(
       .is('unsubscribed_at', null) as { data: SubscriptionWithProfile[] | null, error: any }
 
     if (subscribersError) {
-      throw new Error('Failed to fetch subscribers')
+      throw new AppError('Failed to fetch subscribers', 'DATABASE_ERROR', 500)
     }
 
     if (!subscriptionData?.length) {
-      throw new Error('No subscribers found')
+      throw new ValidationError('No subscribers found')
     }
 
     // Send campaign using the processed content
@@ -82,7 +83,7 @@ export async function POST(
       .eq('id', campaignId)
 
     if (updateError) {
-      throw new Error('Failed to update campaign status')
+      throw new AppError('Failed to update campaign status', 'DATABASE_ERROR', 500)
     }
 
     return NextResponse.json({
@@ -90,11 +91,5 @@ export async function POST(
       message: 'Campaign sent successfully',
       recipientCount
     })
-  } catch (error: any) {
-    console.error('Campaign send error:', error)
-    return NextResponse.json(
-      { error: error.message },
-      { status: error instanceof AuthError ? 401 : 500 }
-    )
-  }
+  })
 }

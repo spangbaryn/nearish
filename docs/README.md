@@ -228,102 +228,6 @@ Example usage:
     - Validation errors
     - Authentication errors
 
-#### Centralized Error System
-- Use the `AppError` class hierarchy for all errors
-- Specific error types extend `AppError`:
-  - `AuthError`: Authentication and authorization issues
-  - `ValidationError`: Input validation failures
-  - `NetworkError`: API and connection issues
-
-#### Error Handling Best Practices
-- Always throw appropriate error type with meaningful messages
-- Only access documented error properties (status, message)
-- Use error codes for programmatic handling:  ```typescript
-  throw new AuthError('Invalid credentials', 'AUTH_ERROR');  ```
-
-- Error codes and their meanings:
-  - `AUTH_ERROR`: Authentication/authorization failures
-  - `VALIDATION_ERROR`: Input validation issues
-  - `NETWORK_ERROR`: Connection/API problems
-
-#### Component Error Handling
-- Use `useAuthError` hook for auth-related errors:  ```typescript
-  const { error, handleAuthError } = useAuthError();
-  
-  try {
-    await signIn(email, password);
-  } catch (err) {
-    handleAuthError(err);
-  }  ```
-
-- Display errors consistently using the error state:  ```typescript
-  {error && (
-    <div className="text-red-500 text-sm mt-2">
-      {error}
-    </div>
-  )}  ```
-
-#### Route Handler Error Handling
-Reference implementation in:
-
-typescript:app/auth/callback/route.ts
-startLine: 16
-endLine: 44
-
-
-#### Middleware Error Handling
-Reference implementation in:
-
-typescript:middleware.ts
-startLine: 10
-endLine: 28
-
-
-#### Error Logging
-- Log errors at appropriate levels:
-  - Authentication errors: INFO/WARN
-  - Validation errors: WARN
-  - System errors: ERROR
-- Include relevant context but no sensitive data
-- Use structured logging format
-
-#### Testing Error Scenarios
-- Test both successful and error paths
-- Verify error messages are user-friendly
-- Ensure errors are properly propagated
-- Mock different error types:
-
-ypescript
-test('handles auth error', async () => {
-mockSupabase.auth.signIn.mockRejectedValue(
-new AuthError('Invalid credentials')
-);
-// Test error handling
-});
-
-
-#### Error Boundaries
-- Implement React Error Boundaries for component trees
-- Handle unexpected errors gracefully
-- Provide fallback UI for error states
-- Log errors to monitoring service
-
-Example Error Boundary usage:
-
-typescript
-<ErrorBoundary
-fallback={<AuthErrorFallback />}
-onError={(error) => logError(error)}
->
-<AuthenticatedLayout>{children}</AuthenticatedLayout>
-</ErrorBoundary>
-
-
-For implementation details, see:
-- `useAuthError` hook: Used for handling auth-specific errors
-- `AuthError` class: Base class for auth errors
-- Error handling in auth context: Consistent error propagation
-
 
 ---
 
@@ -499,3 +403,83 @@ The middleware handles:
 - Role-based access control
 - Layout switching
 - Redirects for unauthenticated users
+
+### **Error Handling System**
+
+Our application uses a centralized error handling approach for consistent error management across all layers.
+
+#### Core Components
+
+1. **Error Classes**
+- Base `AppError` class with standardized properties (message, code, status, data)
+- Specialized error types for specific scenarios:
+  ```typescript
+  throw new ValidationError('Invalid input');
+  throw new AuthError('Unauthorized access');
+  throw new DatabaseError('Query failed');
+  ```
+
+2. **Error Boundaries**
+- Wrap major layout sections to catch rendering errors
+- Provide fallback UI for error states
+- Example usage:
+  ```typescript
+  <ErrorBoundary
+    fallback={<ErrorFallback />}
+    onError={(error) => logErrorToService(error)}
+  >
+    <MainLayout>{children}</MainLayout>
+  </ErrorBoundary>
+  ```
+
+3. **API Error Handling**
+- Use `withErrorHandler` wrapper for consistent API responses:
+  ```typescript
+  export async function POST(request: Request) {
+    return withErrorHandler(async () => {
+      // Route logic here
+    });
+  }
+  ```
+
+4. **React Query Integration**
+- Standardized error handling in queries and mutations:
+  ```typescript
+  const mutation = useMutation({
+    mutationFn: async (data) => {
+      const { error } = await supabase.from('table').insert([data])
+      if (error) throw AppError.from(error)
+    },
+    onError: (error) => handleErrorWithToast(error)
+  })
+  ```
+
+5. **Toast Notifications**
+- Use `handleErrorWithToast` for user-facing errors:
+  ```typescript
+  try {
+    await submitData();
+  } catch (error) {
+    handleErrorWithToast(error, 'Failed to submit data');
+  }
+  ```
+
+#### Error Logging
+- Development: Full error details with stack traces
+- Production: Sanitized messages without sensitive data
+- Log levels by error type:
+  - AUTH_ERROR: WARN
+  - VALIDATION_ERROR: INFO
+  - DATABASE_ERROR: ERROR
+  - NETWORK_ERROR: ERROR
+
+#### Testing
+- Test error boundaries with simulated errors
+- Verify error transformations
+- Test toast notifications
+- Ensure consistent error responses from API routes
+
+For implementation details, see:
+- Error handling utilities: `lib/errors/handlers.ts`
+- Error boundary component: `components/error-boundary.tsx`
+- API error wrapper: `lib/api/error-handler.ts`
