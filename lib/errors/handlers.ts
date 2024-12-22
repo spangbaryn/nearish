@@ -1,12 +1,19 @@
 import { toast } from '@/components/ui/use-toast';
 import { AppError } from './base';
 
-export function handleError(error: unknown): AppError {
+type LogLevel = 'INFO' | 'WARN' | 'ERROR';
+
+export function handleError(error: unknown, level: LogLevel = 'ERROR'): AppError {
   const appError = AppError.from(error);
   
-  // Log error for debugging (in development)
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error details:', {
+    const logMethod = {
+      INFO: console.info,
+      WARN: console.warn,
+      ERROR: console.error
+    }[level];
+    
+    logMethod('Error details:', {
       name: appError.name,
       message: appError.message,
       code: appError.code,
@@ -15,7 +22,7 @@ export function handleError(error: unknown): AppError {
       stack: appError.stack
     });
   }
-
+  
   return appError;
 }
 
@@ -35,12 +42,7 @@ export function handleApiError(error: unknown) {
   const appError = handleError(error);
   
   return Response.json(
-    { 
-      error: {
-        message: appError.message,
-        code: appError.code
-      }
-    },
-    { status: appError.status || 500 }
+    { error: appError.message },
+    { status: appError.status }
   );
 }

@@ -216,18 +216,6 @@ docs/                            # Documentation
     - Full-screen loading states for route transitions
     - Component-level loading indicators for actions
 
-Example usage:
-
----
-
-### **4. Error Handling Patterns**
-
-- **Error Types**
-    - Business logic errors
-    - API/Network errors
-    - Validation errors
-    - Authentication errors
-
 
 ---
 
@@ -289,7 +277,18 @@ Example usage:
 - Automatic cache invalidation
 - Background revalidation
 - Optimistic updates
-- Error handling
+- Error handling using standardized AppError classes:
+  ```typescript
+  const mutation = useMutation({
+    mutationFn: async (data) => {
+      const { error } = await supabase
+        .from('table')
+        .insert([data])
+      if (error) throw new AppError(error.message)
+    },
+    onError: (error) => handleErrorWithToast(error)
+  })
+  ```
 
 ### **Form Patterns**
 
@@ -344,8 +343,9 @@ Example usage:
 
 ### **Toast Notifications**
 
-- Use Sonner for toast notifications
-- Consistent error and success messages
+- Use @/components/ui/use-toast for all notifications
+- Handle errors through handleErrorWithToast utility
+- Consistent error message formatting
 - Automatic dismissal
 
 Would you like me to expand on any of these sections or add additional documentation?
@@ -445,14 +445,19 @@ Our application uses a centralized error handling approach for consistent error 
 4. **React Query Integration**
 - Standardized error handling in queries and mutations:
   ```typescript
-  const mutation = useMutation({
-    mutationFn: async (data) => {
-      const { error } = await supabase.from('table').insert([data])
-      if (error) throw AppError.from(error)
-    },
-    onError: (error) => handleErrorWithToast(error)
-  })
-  ```
+    const mutation = useMutation({
+      mutationFn: async (data) => {
+        const { error } = await supabase
+          .from('table')
+          .insert([data])
+        if (error) throw error
+      },
+      onSuccess: () => {
+        toast.success("Success")
+        queryClient.invalidateQueries(['key'])
+      }
+    })
+    ```
 
 5. **Toast Notifications**
 - Use `handleErrorWithToast` for user-facing errors:
@@ -483,3 +488,8 @@ For implementation details, see:
 - Error handling utilities: `lib/errors/handlers.ts`
 - Error boundary component: `components/error-boundary.tsx`
 - API error wrapper: `lib/api/error-handler.ts`
+
+- Error Handling:
+  - Use AuthError for authentication failures
+  - Handle errors with handleErrorWithToast
+  - Consistent error messages for auth-related issues

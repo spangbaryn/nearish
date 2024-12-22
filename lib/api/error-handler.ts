@@ -1,6 +1,7 @@
 import { AppError } from '@/lib/errors';
 import { NextResponse } from 'next/server';
 
+
 export async function withErrorHandler(handler: () => Promise<Response>) {
   try {
     return await handler();
