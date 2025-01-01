@@ -55,7 +55,7 @@ export default function Home() {
         });
 
         if (authError) {
-          if (authError.message.includes('already registered')) {
+          if (authError.status === 409) {
             throw new AuthError('This email is already registered. Please use a different email address.');
           }
           throw new AuthError(authError.message);
@@ -77,7 +77,7 @@ export default function Home() {
 
         return authData.user;
       } catch (error: any) {
-        const message = error instanceof AuthError ? error.message : 'Failed to create account';
+        const message = error instanceof AuthError ? error.message : 'Something went wrong. Please try again.';
         toast.error(message);
         throw error;
       }
@@ -231,7 +231,7 @@ export default function Home() {
                   You're all set! 🎉
                 </h3>
                 <p className="text-green-600">
-                  If you happen to also operate a local business that wants to be included, check this out.
+                  You should receive a confirmation email shortly. If you happen to also operate a local business that wants to be included, check this out.
                 </p>
               </div>
             </div>

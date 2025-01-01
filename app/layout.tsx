@@ -5,6 +5,7 @@ import { Providers } from "../components/providers"
 import "./styles/globals.css"
 import { RootLayoutClient } from "@/components/root-layout-client"
 import { headers } from 'next/headers'
+import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
   title: "Nearish",
@@ -29,6 +30,7 @@ export default async function RootLayout({
         <Providers>
           {isAuthLayout ? children : <RootLayoutClient>{children}</RootLayoutClient>}
         </Providers>
+        <Toaster />
       </body>
     </html>
   )
