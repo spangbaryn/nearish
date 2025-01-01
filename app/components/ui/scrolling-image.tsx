@@ -19,15 +19,18 @@ export function ScrollingImage({ imageUrl, speed = 20 }: ScrollingImageProps) {
 
     if (!container || !image) return
 
-    // Wait for image to load to get its width
-    image.onload = () => {
-      // Set container width to match the full width needed for both images
-      container.style.width = `${image.naturalWidth * 2}px`
+    const setupAnimation = () => {
+      // Ensure we have a valid width
+      const width = image.naturalWidth || image.width
+      if (!width) return false
+
+      // Set container width
+      container.style.width = `${width * 2}px`
       
       const animate = () => {
         position -= speed / 60
         
-        if (position <= -image.naturalWidth) {
+        if (position <= -width) {
           position = 0
         }
 
@@ -36,6 +39,18 @@ export function ScrollingImage({ imageUrl, speed = 20 }: ScrollingImageProps) {
       }
 
       animate()
+      return true
+    }
+
+    // Try to setup immediately if image is already loaded
+    if (image.complete && image.naturalWidth) {
+      setupAnimation()
+    } else {
+      // Wait for image to load
+      image.onload = () => {
+        // Add a small delay to ensure naturalWidth is available
+        setTimeout(setupAnimation, 100)
+      }
     }
 
     return () => {
