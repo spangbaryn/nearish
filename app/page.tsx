@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { ScrollingImage } from './components/ui/scrolling-image'
 import { Checkbox } from "@/components/ui/checkbox"
+import { AuthError } from "@/lib/errors"
 
 const messages = [
   {
@@ -17,11 +18,11 @@ const messages = [
     delay: 0
   },
   {
-    content: "I’m working on a new way to help people hear about deals at our nearby local businesses (Signal, Red Bank, Walden and Fairmount).",
+    content: "I’m working on a new way to help people hear about deals at local businesses (starting with Signal Mountain, Red Bank, Walden and Fairmount).",
     delay: 2000
   },
   {
-    content: "If you’d like to be in the first batch to try it, drop your email address below. I’ll reach out when I'm ready for you!",
+    content: "If you’d like to be in the first batch to try it, drop your email address below. I’ll let you know when I'm ready for you!",
     delay: 4000
   }
 ]
@@ -31,38 +32,61 @@ export default function Home() {
   const [showTyping, setShowTyping] = useState<boolean>(false)
   const [showForm, setShowForm] = useState<boolean>(false)
   const [email, setEmail] = useState("")
+  const [zipCode, setZipCode] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
   const [isChecked, setIsChecked] = useState(false)
 
   const createProfile = useMutation({
-    mutationFn: async (email: string) => {
-      // Generate a secure random password
+    mutationFn: async (data: { email: string; zipCode: string }) => {
       const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { role: 'customer' },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+      try {
+        // First create auth user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password,
+          options: {
+            data: { 
+              role: 'customer',
+              zip_code: data.zipCode 
+            },
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
+
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            throw new AuthError('This email is already registered. Please use a different email address.');
+          }
+          throw new AuthError(authError.message);
         }
-      });
+        if (!authData.user) throw new AuthError('No user data returned');
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('No user data returned');
+        // Create profile immediately
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            email: data.email,
+            role: 'customer',
+            zip_code: data.zipCode
+          })
+          .single();
 
-      return authData.user;
+        if (profileError) throw new AuthError('Failed to create profile');
+
+        return authData.user;
+      } catch (error: any) {
+        const message = error instanceof AuthError ? error.message : 'Failed to create account';
+        toast.error(message);
+        throw error;
+      }
     },
     onSuccess: () => {
-      setIsSuccess(true)
-      toast.success("Thanks! I'll be in touch soon. 🙌")
-    },
-    onError: (error: any) => {
-      toast.error("Failed to join", {
-        description: error.message
-      })
+      setIsSuccess(true);
+      toast.success("Thanks! I'll be in touch soon. 🙌");
     }
-  })
+  });
 
   useEffect(() => {
     const showMessage = (index: number) => {
@@ -142,7 +166,7 @@ export default function Home() {
                     toast.error("Please verify you're human")
                     return
                   }
-                  createProfile.mutate(email)
+                  createProfile.mutate({ email, zipCode })
                 }}
                 className="flex flex-col gap-4 mt-4"
               >
@@ -159,14 +183,39 @@ export default function Home() {
                     I'm human
                   </label>
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm font-medium leading-none"
+                    >
+                      Email
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="zipCode"
+                      className="text-sm font-medium leading-none"
+                    >
+                      ZIP Code (for relevance)
+                    </label>
+                    <Input
+                      id="zipCode"
+                      type="text"
+                      value={zipCode}
+                      onChange={(e) => setZipCode(e.target.value)}
+                      pattern="[0-9]{5}"
+                      maxLength={5}
+                      required
+                    />
+                  </div>
                   <Button type="submit" disabled={createProfile.isPending}>
                     {createProfile.isPending ? "Submitting..." : "Submit"}
                   </Button>

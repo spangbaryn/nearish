@@ -19,18 +19,24 @@ export async function GET(request: Request) {
     if (!session?.user) throw new AuthError('No user in session');
 
     // Create profile if it doesn't exist
-    const { error: profileError } = await supabase
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .insert({
-        id: session.user.id,
-        email: session.user.email,
-        role: 'customer'
-      })
+      .select()
+      .eq('id', session.user.id)
       .single();
 
-    if (profileError) {
-      // Only throw if it's not a duplicate key error
-      if (profileError.code !== '23505') {
+    if (!existingProfile) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: session.user.id,
+          email: session.user.email,
+          role: 'customer',
+          zip_code: session.user.user_metadata.zip_code
+        })
+        .single();
+
+      if (profileError && profileError.code !== '23505') {
         throw new AuthError('Failed to create user profile');
       }
     }
