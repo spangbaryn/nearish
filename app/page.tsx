@@ -108,7 +108,8 @@ export default function Home() {
                 <img
                   src={`https://ufkjyykwialeflrgutef.supabase.co/storage/v1/object/public/assets/static-images/linkedin.jpeg`}
                   alt="Erik"
-                  className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                  className="h-10 w-10 rounded-full object-cover flex-shrink-0 cursor-pointer"
+                  onClick={() => window.open('https://www.facebook.com/espangenberg', '_blank')}
                 />
               )}
               <div className={`flex-1 ${index !== 0 ? 'ml-[48px]' : ''}`}>
