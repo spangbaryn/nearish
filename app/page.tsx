@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { ScrollingImage } from './components/ui/scrolling-image'
+import { Checkbox } from "@/components/ui/checkbox"
 
 const messages = [
   {
@@ -16,7 +17,7 @@ const messages = [
     delay: 0
   },
   {
-    content: "I’m working on a new way to help people find deals at our nearby local businesses (Signal, Red Bank, Walden and Fairmount).",
+    content: "I’m working on a new way to help people hear about deals at our nearby local businesses (Signal, Red Bank, Walden and Fairmount).",
     delay: 2000
   },
   {
@@ -31,6 +32,7 @@ export default function Home() {
   const [showForm, setShowForm] = useState<boolean>(false)
   const [email, setEmail] = useState("")
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isChecked, setIsChecked] = useState(false)
 
   const createProfile = useMutation({
     mutationFn: async (email: string) => {
@@ -135,20 +137,39 @@ export default function Home() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault()
+                  if (!isChecked) {
+                    toast.error("Please verify you're human")
+                    return
+                  }
                   createProfile.mutate(email)
                 }}
-                className="flex gap-2 mt-4"
+                className="flex flex-col gap-4 mt-4"
               >
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <Button type="submit" disabled={createProfile.isPending}>
-                  {createProfile.isPending ? "Submitting..." : "Submit"}
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="human" 
+                    checked={isChecked}
+                    onCheckedChange={(checked) => setIsChecked(checked === true)}
+                  />
+                  <label
+                    htmlFor="human"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I'm human
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Button type="submit" disabled={createProfile.isPending}>
+                    {createProfile.isPending ? "Submitting..." : "Submit"}
+                  </Button>
+                </div>
               </form>
             </div>
           )}
