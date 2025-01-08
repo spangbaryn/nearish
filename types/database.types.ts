@@ -232,6 +232,54 @@ export interface Database {
           unsubscribed_at?: string | null;
         };
       };
+      zip_codes: {
+        Row: {
+          id: string;
+          code: string;
+          city: string;
+          state: string;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          code: string;
+          city: string;
+          state: string;
+          created_at?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          city?: string;
+          state?: string;
+          updated_at?: string | null;
+        };
+      };
+      zip_code_status: {
+        Row: {
+          id: string;
+          zip_code_id: string;
+          is_active: boolean;
+          start_date: string;
+          end_date: string | null;
+          campaign_id: string | null;
+          reason: string | null;
+          created_at: string;
+          created_by: string;
+        };
+        Insert: {
+          zip_code_id: string;
+          is_active: boolean;
+          start_date: string;
+          end_date?: string | null;
+          campaign_id?: string | null;
+          reason?: string | null;
+          created_at?: string;
+          created_by: string;
+        };
+        Update: {
+          end_date?: string | null;
+        };
+      };
     };
   };
 }
