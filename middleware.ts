@@ -25,8 +25,10 @@ export async function middleware(req: NextRequest) {
       return response
     }
 
-    // Protected routes (everything except / and /auth/*)
-    if (!req.nextUrl.pathname.startsWith('/auth') && req.nextUrl.pathname !== '/') {
+    // Protected routes (everything except /, /auth/*, and /business)
+    if (!req.nextUrl.pathname.startsWith('/auth') && 
+        req.nextUrl.pathname !== '/' && 
+        req.nextUrl.pathname !== '/business') {
       if (!session) {
         return NextResponse.redirect(new URL('/auth/login', req.url))
       }

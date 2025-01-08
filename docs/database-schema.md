@@ -242,3 +242,15 @@ Stores AI prompts used for generating responses.
 - Follows the same CRUD patterns as other admin-managed content
 
 ---
+
+### **Database Functions and Triggers**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `handle_new_profile_subscription()` | Function | Automatically subscribes new profiles to the Weekly Roundup list |
+| `on_profile_created` | Trigger | Executes after INSERT on profiles table |
+
+**Context**:
+- Ensures all new users are automatically subscribed to the Weekly Roundup list
+- Runs after profile creation to maintain referential integrity
+- Uses SECURITY DEFINER to ensure proper permissions

@@ -7,14 +7,14 @@ import type { User, UserRole } from "@/types/auth";
 import { getUserProfile } from "@/lib/auth";
 import { AuthError } from "@/lib/errors";
 
-interface AuthContextType {
+export type AuthContextType = {
   user: User | null;
-  loading: boolean;
+  isLoading: boolean;
   error: Error | null;
   signIn: (email: string, password: string) => Promise<User>;
   signUp: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
-}
+};
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 

@@ -258,5 +258,11 @@ export interface Database {
         };
       };
     };
+    Functions: {
+      handle_new_profile_subscription: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
+    };
   };
 }

@@ -17,9 +17,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const headersList = await headers()
-  const isAuthLayout = headersList.get('x-layout') === 'auth'
-
   return (
     <html
       lang="en"
@@ -28,7 +25,7 @@ export default async function RootLayout({
     >
       <body className="antialiased">
         <Providers>
-          {isAuthLayout ? children : <RootLayoutClient>{children}</RootLayoutClient>}
+          <RootLayoutClient>{children}</RootLayoutClient>
         </Providers>
         <Toaster />
       </body>
