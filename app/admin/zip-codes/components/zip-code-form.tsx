@@ -23,7 +23,6 @@ const zipCodeSchema = z.object({
   city: z.string().min(1, "City is required"),
   state: z.string().length(2, "State must be a 2-letter code"),
   is_active: z.boolean().default(false),
-  reason: z.string().optional(),
 })
 
 type ZipCodeForm = z.infer<typeof zipCodeSchema>
@@ -34,11 +33,7 @@ interface ZipCodeFormProps {
     code: string
     city: string
     state: string
-    zip_code_status?: {
-      id: string
-      is_active: boolean
-      reason: string | null
-    } | null
+    is_active: boolean
   }
   onSubmit: (data: ZipCodeForm) => void
   isSubmitting?: boolean
@@ -52,15 +47,14 @@ export function ZipCodeForm({ zipCode, onSubmit, isSubmitting, submitLabel = "Sa
       code: zipCode?.code || "",
       city: zipCode?.city || "",
       state: zipCode?.state || "",
-      is_active: Boolean(zipCode?.zip_code_status?.is_active),
-      reason: zipCode?.zip_code_status?.reason || "",
+      is_active: Boolean(zipCode?.is_active),
     }
   });
 
   // Force update form when zip code data changes
   useEffect(() => {
-    if (zipCode?.zip_code_status) {
-      form.setValue('is_active', Boolean(zipCode.zip_code_status.is_active));
+    if (zipCode?.is_active) {
+      form.setValue('is_active', Boolean(zipCode.is_active));
     }
   }, [zipCode, form]);
 
@@ -126,20 +120,6 @@ export function ZipCodeForm({ zipCode, onSubmit, isSubmitting, submitLabel = "Sa
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="reason"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Reason for Status Change (Optional)</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />

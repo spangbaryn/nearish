@@ -15,18 +15,14 @@ import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 
-type ZipCodeWithStatus = {
+type ZipCode = {
   id: string
   code: string
   city: string
   state: string
+  is_active: boolean
   created_at: string
-  zip_code_status: {
-    is_active: boolean
-    start_date: string
-    reason: string | null
-    campaign_id: string | null
-  } | null
+  updated_at: string | null
 }
 
 export function ZipCodesTable() {
@@ -34,36 +30,13 @@ export function ZipCodesTable() {
   const { data: zipCodes, isLoading } = useQuery({
     queryKey: ['zip-codes'],
     queryFn: async () => {
-      // First get all zip codes
-      const { data: zipCodesData, error: zipError } = await supabase
+      const { data, error } = await supabase
         .from('zip_codes')
         .select('*')
         .order('code');
 
-      if (zipError) throw zipError;
-
-      // Then get the most recent status for each zip code
-      const zipCodesWithStatus = await Promise.all(
-        zipCodesData.map(async (zipCode) => {
-          const { data: statusData, error: statusError } = await supabase
-            .from('zip_code_status')
-            .select('*')
-            .eq('zip_code_id', zipCode.id)
-            .is('end_date', null)
-            .order('start_date', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (statusError && statusError.code !== 'PGRST116') throw statusError;
-
-          return {
-            ...zipCode,
-            zip_code_status: statusData || null
-          };
-        })
-      );
-
-      return zipCodesWithStatus as ZipCodeWithStatus[];
+      if (error) throw error;
+      return data as ZipCode[];
     }
   })
 
@@ -84,7 +57,6 @@ export function ZipCodesTable() {
           <TableHead>State</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Last Updated</TableHead>
-          <TableHead>Notes</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -98,18 +70,15 @@ export function ZipCodesTable() {
             <TableCell>{zipCode.city}</TableCell>
             <TableCell>{zipCode.state}</TableCell>
             <TableCell>
-              <Badge variant={zipCode.zip_code_status?.is_active ? "default" : "secondary"}>
-                {zipCode.zip_code_status?.is_active ? "Active" : "Inactive"}
+              <Badge variant={zipCode.is_active ? "default" : "secondary"}>
+                {zipCode.is_active ? "Active" : "Inactive"}
               </Badge>
             </TableCell>
             <TableCell>
-              {zipCode.zip_code_status?.start_date 
-                ? format(new Date(zipCode.zip_code_status.start_date), "MMM d, yyyy")
-                : "-"
+              {zipCode.updated_at 
+                ? format(new Date(zipCode.updated_at), "MMM d, yyyy")
+                : format(new Date(zipCode.created_at), "MMM d, yyyy")
               }
-            </TableCell>
-            <TableCell className="text-muted-foreground">
-              {zipCode.zip_code_status?.reason || "-"}
             </TableCell>
           </TableRow>
         ))}

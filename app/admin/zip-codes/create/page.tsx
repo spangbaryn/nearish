@@ -24,26 +24,13 @@ export default function CreateZipCodePage() {
           code: data.code,
           city: data.city,
           state: data.state,
+          is_active: data.is_active,
+          created_at: new Date().toISOString()
         }])
         .select()
         .single()
 
       if (error) throw error
-
-      if (data.is_active) {
-        const { error: statusError } = await supabase
-          .from('zip_code_status')
-          .insert([{
-            zip_code_id: zipCode.id,
-            is_active: true,
-            start_date: new Date().toISOString(),
-            reason: data.reason || null,
-            created_by: user?.id
-          }])
-
-        if (statusError) throw statusError
-      }
-
       return zipCode
     },
     onSuccess: () => {
@@ -62,7 +49,7 @@ export default function CreateZipCodePage() {
     <div className="flex-1 overflow-y-auto p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin/campaigns">
+          <Link href="/admin/zip-codes">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>

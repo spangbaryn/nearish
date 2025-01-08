@@ -21,32 +21,14 @@ export default function EditZipCodePage() {
   const { data: zipCode, isLoading } = useQuery({
     queryKey: ['zip-codes', params.id],
     queryFn: async () => {
-      // First get the zip code basic data
-      const { data: zipCodeData, error: zipError } = await supabase
+      const { data, error } = await supabase
         .from('zip_codes')
         .select('*')
         .eq('id', params.id)
         .single();
 
-      if (zipError) throw zipError;
-
-      // Then get the most recent status
-      const { data: statusData, error: statusError } = await supabase
-        .from('zip_code_status')
-        .select('*')
-        .eq('zip_code_id', params.id)
-        .is('end_date', null)
-        .order('start_date', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (statusError && statusError.code !== 'PGRST116') throw statusError; // Ignore "no rows returned" error
-
-      // Combine the data
-      return {
-        ...zipCodeData,
-        zip_code_status: statusData || null
-      };
+      if (error) throw error;
+      return data;
     }
   })
 
@@ -54,46 +36,18 @@ export default function EditZipCodePage() {
     mutationFn: async (data: any) => {
       if (!user?.id) throw new Error("User not authenticated")
 
-      // Update zip code basic info
       const { error } = await supabase
         .from('zip_codes')
         .update({
           code: data.code,
           city: data.city,
           state: data.state,
+          is_active: data.is_active,
+          updated_at: new Date().toISOString()
         })
         .eq('id', params.id)
 
       if (error) throw error
-
-      // Handle status update
-      const currentStatus = zipCode?.zip_code_status
-
-      // If there's a status change or reason change
-      if (data.is_active !== currentStatus?.is_active || data.reason !== currentStatus?.reason) {
-        // End current status if it exists
-        if (currentStatus?.id) {
-          const { error: endError } = await supabase
-            .from('zip_code_status')
-            .update({ end_date: new Date().toISOString() })
-            .eq('id', currentStatus.id)
-
-          if (endError) throw endError
-        }
-
-        // Create new status
-        const { error: statusError } = await supabase
-          .from('zip_code_status')
-          .insert([{
-            zip_code_id: params.id,
-            is_active: data.is_active,
-            start_date: new Date().toISOString(),
-            reason: data.reason || null,
-            created_by: user.id
-          }])
-
-        if (statusError) throw statusError
-      }
     },
     onSuccess: () => {
       toast.success("Zip code updated successfully")
