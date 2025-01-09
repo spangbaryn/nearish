@@ -41,7 +41,7 @@ type PostData = {
   ai_generated_type: string | null;
   created_at: string;
   updated_at?: string;
-  businesses?: { name: string; } | null;
+  businesses: { name: string; } | null;
 }
 
 export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenerationModalProps) {
