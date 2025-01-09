@@ -5,9 +5,9 @@ import { useAuth } from '@/lib/auth-context';
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function NotFound() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
