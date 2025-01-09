@@ -95,7 +95,7 @@ export default function Home() {
       <div className="min-h-screen bg-muted/15 p-4">
         <div className="max-w-md mx-auto py-4">
           <div className="flex flex-col items-center mb-4">
-            <h1 className="text-xl font-bold text-center">
+            <h1 className="text-2xl font-bold text-center">
               Nearish Chattanooga Newsletter
             </h1>
           </div>
@@ -104,11 +104,11 @@ export default function Home() {
             <CardContent className="text-center py-4">
               {!isSuccess ? (
                 <h2 className="text-foreground font-medium text-lg">
-                  Your weekly summary of deals from {' '}
+                  A weekly summary of deals from {' '}
                   <span className="bg-[linear-gradient(70deg,#ff0000,#ff8800,#ffd700,#248f47,#33bbff,#8A2BE2)] text-transparent bg-clip-text">
                     local
                   </span>
-                  {' '}Chattanooga businesses
+                  {' '}Chattanooga ❤️ businesses
                 </h2>
               ) : (
                 <h2 className="text-black font-medium text-xl">
