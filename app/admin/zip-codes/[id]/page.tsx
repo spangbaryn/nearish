@@ -14,6 +14,9 @@ import { useAuth } from "@/lib/auth-context"
 
 export default function EditZipCodePage() {
   const params = useParams()
+  if (!params.id || Array.isArray(params.id)) {
+    throw new Error("Invalid or missing ID");
+  }
   const router = useRouter()
   const queryClient = useQueryClient()
   const { user } = useAuth()
@@ -25,10 +28,10 @@ export default function EditZipCodePage() {
         .from('zip_codes')
         .select('*')
         .eq('id', params.id)
-        .single();
+        .single()
 
-      if (error) throw error;
-      return data;
+      if (error) throw error
+      return data
     }
   })
 
@@ -86,9 +89,9 @@ export default function EditZipCodePage() {
             <CardTitle>Zip Code Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <ZipCodeForm 
+            <ZipCodeForm
               zipCode={zipCode}
-              onSubmit={(data) => updateZipCode.mutate(data)}
+              onSubmit={data => updateZipCode.mutate(data)}
               isSubmitting={updateZipCode.isPending}
             />
           </CardContent>

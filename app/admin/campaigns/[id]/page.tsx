@@ -134,13 +134,13 @@ export default function EditCampaignPage() {
               </Link>
               <h1 className="text-2xl font-bold">Edit Campaign</h1>
               <div className="ml-auto">
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isSending || campaign?.sent_at}
-                >
-                  <SendHorizontal className="h-4 w-4 mr-2" />
-                  {isSending ? "Sending..." : "Send Campaign"}
-                </Button>
+              <Button 
+  onClick={handleSend} 
+  disabled={isSending || Boolean(campaign?.sent_at)}
+>
+  <SendHorizontal className="h-4 w-4 mr-2" />
+  {isSending ? "Sending..." : "Send Campaign"}
+</Button>
               </div>
             </div>
 
