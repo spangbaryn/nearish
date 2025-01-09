@@ -29,6 +29,21 @@ interface AIGenerationModalProps {
   collectionId: string
 }
 
+type PostData = {
+  id: string;
+  business_id: string;
+  content: string;
+  final_content?: string;
+  final_type?: 'Promotion' | 'Event' | 'Update';
+  included?: boolean;
+  source: "facebook" | "admin" | "platform";
+  ai_generated_content: string | null;
+  ai_generated_type: string | null;
+  created_at: string;
+  updated_at?: string;
+  businesses?: { name: string; } | null;
+}
+
 export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenerationModalProps) {
   const queryClient = useQueryClient()
   const [selectedContentPrompt, setSelectedContentPrompt] = useState<AIPrompt | null>(null)
