@@ -17,7 +17,7 @@ export function PublicHeader() {
       <div className="flex w-full items-center justify-between">
         <Link href="/">
           <div className="block md:hidden">
-            <Logo className="h-8" />
+            <Logo />
           </div>
           <div className="hidden md:block">
             <Wordmark />
