@@ -1,268 +1,720 @@
-export type UserRole = 'admin' | 'business' | 'customer';
-export type BusinessRole = 'owner' | 'staff';
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      profiles: {
+      ai_prompts: {
         Row: {
-          id: string;
-          email: string;
-          role: UserRole;
-          zip_code: string | null;
-          avatar_url: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean
+          name: string
+          prompt: string
+          prompt_type: Database["public"]["Enums"]["prompt_type"] | null
+          updated_at: string | null
+        }
         Insert: {
-          id: string;
-          email: string;
-          role?: UserRole;
-          zip_code?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean
+          name: string
+          prompt: string
+          prompt_type?: Database["public"]["Enums"]["prompt_type"] | null
+          updated_at?: string | null
+        }
         Update: {
-          email?: string;
-          role?: UserRole;
-          zip_code?: string | null;
-          avatar_url?: string | null;
-          updated_at?: string | null;
-        };
-      };
-      businesses: {
-        Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          name: string;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          name?: string;
-          description?: string | null;
-          updated_at?: string | null;
-        };
-      };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean
+          name?: string
+          prompt?: string
+          prompt_type?: Database["public"]["Enums"]["prompt_type"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       business_members: {
         Row: {
-          id: string;
-          profile_id: string;
-          business_id: string;
-          role: BusinessRole;
-          created_at: string;
-          updated_at: string | null;
-        };
+          business_id: string | null
+          created_at: string | null
+          id: string
+          profile_id: string | null
+          role: string
+          updated_at: string | null
+        }
         Insert: {
-          profile_id: string;
-          business_id: string;
-          role: BusinessRole;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          profile_id?: string | null
+          role: string
+          updated_at?: string | null
+        }
         Update: {
-          role?: BusinessRole;
-          updated_at?: string | null;
-        };
-      };
-      email_templates: {
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          profile_id?: string | null
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_social_connections: {
         Row: {
-          id: string;
-          name: string;
-          subject: string;
-          content: string;
-          type: 'transactional' | 'campaign';
-          created_at: string;
-          updated_at: string | null;
-        };
+          business_id: string | null
+          created_at: string | null
+          external_id: string
+          id: string
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          updated_at: string | null
+        }
         Insert: {
-          name: string;
-          subject: string;
-          content: string;
-          type: 'transactional' | 'campaign';
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          business_id?: string | null
+          created_at?: string | null
+          external_id: string
+          id?: string
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          updated_at?: string | null
+        }
         Update: {
-          name?: string;
-          subject?: string;
-          content?: string;
-          type?: 'transactional' | 'campaign';
-          updated_at?: string | null;
-        };
-      };
+          business_id?: string | null
+          created_at?: string | null
+          external_id?: string
+          id?: string
+          name?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_social_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
-          id: string;
-          collection_id: string;
-          template_id: string;
-          sent_at: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
+          collection_id: string
+          created_at: string
+          id: string
+          list_id: string
+          sent_at: string | null
+          template_id: string
+          updated_at: string | null
+        }
         Insert: {
-          collection_id: string;
-          template_id: string;
-          sent_at?: string;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          collection_id: string
+          created_at?: string
+          id?: string
+          list_id: string
+          sent_at?: string | null
+          template_id: string
+          updated_at?: string | null
+        }
         Update: {
-          collection_id?: string;
-          template_id?: string;
-          sent_at?: string;
-          updated_at?: string | null;
-        };
-      };
+          collection_id?: string
+          created_at?: string
+          id?: string
+          list_id?: string
+          sent_at?: string | null
+          template_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_prompts: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          id: string
+          prompt_id: string | null
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          prompt_id?: string | null
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          prompt_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_prompts_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_prompts_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "ai_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collections: {
         Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
         Insert: {
-          name: string;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
         Update: {
-          name?: string;
-          description?: string | null;
-          updated_at?: string | null;
-        };
-      };
-      posts: {
-        Row: {
-          id: string;
-          business_id: string;
-          source: 'facebook' | 'admin' | 'platform';
-          content: string;
-          final_content: string | null;
-          final_type: 'Promotion' | 'Event' | 'Update' | null;
-          ai_generated_type: string | null;
-          included: boolean;
-          created_at: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          business_id: string;
-          source: 'facebook' | 'admin' | 'platform';
-          content: string;
-          final_content?: string | null;
-          final_type?: 'Promotion' | 'Event' | 'Update' | null;
-          ai_generated_type?: string | null;
-          included?: boolean;
-          created_at?: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          business_id?: string;
-          source?: 'facebook' | 'admin' | 'platform';
-          content?: string;
-          final_content?: string | null;
-          final_type?: 'Promotion' | 'Event' | 'Update' | null;
-          ai_generated_type?: string | null;
-          included?: boolean;
-          updated_at?: string | null;
-        };
-      };
-      posts_collections: {
-        Row: {
-          id: string;
-          post_id: string;
-          collection_id: string;
-          created_at: string;
-        };
-        Insert: {
-          post_id: string;
-          collection_id: string;
-          created_at?: string;
-        };
-        Update: {
-          post_id?: string;
-          collection_id?: string;
-          created_at?: string;
-        };
-      };
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       email_lists: {
         Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
         Insert: {
-          name: string;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
         Update: {
-          name?: string;
-          description?: string | null;
-          updated_at?: string | null;
-        };
-      };
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          name: string
+          subject: string
+          type: Database["public"]["Enums"]["template_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          subject: string
+          type: Database["public"]["Enums"]["template_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string
+          type?: Database["public"]["Enums"]["template_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          ai_generated_content: string | null
+          ai_generated_type: string | null
+          business_id: string
+          content: string
+          created_at: string
+          external_id: string | null
+          facebook_page_id: string | null
+          facebook_post_id: string | null
+          final_content: string | null
+          final_type: Database["public"]["Enums"]["post_type"] | null
+          id: string
+          included: boolean | null
+          platform: string | null
+          published_at: string | null
+          source: Database["public"]["Enums"]["post_source"]
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          ai_generated_content?: string | null
+          ai_generated_type?: string | null
+          business_id: string
+          content: string
+          created_at?: string
+          external_id?: string | null
+          facebook_page_id?: string | null
+          facebook_post_id?: string | null
+          final_content?: string | null
+          final_type?: Database["public"]["Enums"]["post_type"] | null
+          id?: string
+          included?: boolean | null
+          platform?: string | null
+          published_at?: string | null
+          source: Database["public"]["Enums"]["post_source"]
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          ai_generated_content?: string | null
+          ai_generated_type?: string | null
+          business_id?: string
+          content?: string
+          created_at?: string
+          external_id?: string | null
+          facebook_page_id?: string | null
+          facebook_post_id?: string | null
+          final_content?: string | null
+          final_type?: Database["public"]["Enums"]["post_type"] | null
+          id?: string
+          included?: boolean | null
+          platform?: string | null
+          published_at?: string | null
+          source?: Database["public"]["Enums"]["post_source"]
+          updated_at?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts_collections: {
+        Row: {
+          collection_id: string
+          created_at: string | null
+          id: string
+          post_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string | null
+          id?: string
+          post_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_collections_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_collections_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_list_subscriptions: {
         Row: {
-          id: string;
-          profile_id: string;
-          list_id: string;
-          subscribed_at: string;
-          unsubscribed_at: string | null;
-        };
+          id: string
+          list_id: string | null
+          profile_id: string | null
+          subscribed_at: string | null
+          unsubscribed_at: string | null
+        }
         Insert: {
-          profile_id: string;
-          list_id: string;
-          subscribed_at?: string;
-          unsubscribed_at?: string | null;
-        };
+          id?: string
+          list_id?: string | null
+          profile_id?: string | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+        }
         Update: {
-          unsubscribed_at?: string | null;
-        };
-      };
+          id?: string
+          list_id?: string | null
+          profile_id?: string | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_list_subscriptions_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_list_subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: string
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          role: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      social_credentials: {
+        Row: {
+          connection_id: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_credentials_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "business_social_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      temp_facebook_pages: {
+        Row: {
+          access_token: string
+          business_id: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          page_id: string
+          page_name: string
+        }
+        Insert: {
+          access_token: string
+          business_id?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          page_id: string
+          page_name: string
+        }
+        Update: {
+          access_token?: string
+          business_id?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          page_id?: string
+          page_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temp_facebook_pages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zip_codes: {
         Row: {
-          id: string;
-          code: string;
-          city: string;
-          state: string;
-          is_active: boolean;
-          created_at: string;
-          updated_at: string | null;
-        };
+          city: string
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          state: string
+          updated_at: string | null
+        }
         Insert: {
-          code: string;
-          city: string;
-          state: string;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          city: string
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          state: string
+          updated_at?: string | null
+        }
         Update: {
-          city?: string;
-          state?: string;
-          is_active?: boolean;
-          updated_at?: string | null;
-        };
-      };
-    };
+          city?: string
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          state?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      handle_new_profile_subscription: {
-        Args: Record<string, never>;
-        Returns: void;
-      };
-    };
-  };
+      create_profile: {
+        Args: {
+          user_id: string
+          user_email: string
+        }
+        Returns: Json
+      }
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      business_role: "Owner" | "Staff"
+      post_source: "facebook" | "admin" | "platform"
+      post_type: "Promotion" | "Event" | "Update"
+      prompt_type: "content" | "type_id"
+      social_platform: "facebook"
+      template_type: "transactional" | "campaign"
+      user_role: "Admin" | "Business" | "Customer"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
+
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
