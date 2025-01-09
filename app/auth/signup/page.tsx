@@ -20,20 +20,20 @@ const isPasswordStrong = (password: string): boolean => {
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { user, loading, signUp } = useAuth();
+  const { user, isLoading, signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!isLoading && user) {
       router.replace("/home");
     }
-  }, [loading, user, router]);
+  }, [isLoading, user, router]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
@@ -55,7 +55,7 @@ export default function SignUpPage() {
     }
 
     setError(null);
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       await signUp(email, password);
@@ -64,7 +64,7 @@ export default function SignUpPage() {
       const message = err instanceof Error ? err.message : 'Signup failed';
       setError(message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -124,8 +124,8 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create account"}
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
