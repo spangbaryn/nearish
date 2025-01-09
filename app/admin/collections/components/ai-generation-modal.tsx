@@ -33,16 +33,20 @@ type PostData = {
   id: string;
   business_id: string;
   content: string;
-  final_content?: string | null;
-  final_type?: 'Promotion' | 'Event' | 'Update' | null;
-  included?: boolean;
-  source: "facebook" | "admin" | "platform";
-  ai_generated_content: string | null;
-  ai_generated_type: string | null;
   created_at: string;
-  updated_at?: string | null;
   external_id: string | null;
   facebook_page_id: string | null;
+  facebook_post_id: string | null;
+  final_content: string | null;
+  final_type: 'Promotion' | 'Event' | 'Update' | null;
+  included: boolean | null;
+  platform: string | null;
+  published_at: string | null;
+  source: "facebook" | "admin" | "platform";
+  updated_at: string | null;
+  url: string | null;
+  ai_generated_content: string | null;
+  ai_generated_type: string | null;
   businesses: {
     name: string;
   } | null;
