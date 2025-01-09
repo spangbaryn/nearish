@@ -12,19 +12,18 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading, signIn } = useAuth();
+  const { user, isLoading, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!isLoading && user) {
       window.location.href = "/home";
     }
-  }, [loading, user]);
+  }, [isLoading, user]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
@@ -35,13 +34,11 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
 
     try {
       await signIn(email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      setIsLoading(false);
     }
   };
 
@@ -82,8 +79,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+            <Button className="w-full" type="submit">
+              Sign in
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
