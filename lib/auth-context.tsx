@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user: data?.user ?? null,
-    loading: isLoading,
+    isLoading,
     error: error as Error | null,
     signIn: async (email: string, password: string) => {
       const { data: { session }, error } = await supabase.auth.signInWithPassword({ 
