@@ -91,30 +91,30 @@ export default function Home() {
   return (
     <div>
       <div className="min-h-screen bg-muted/15 p-4">
-        <div className="max-w-md mx-auto pt-8">
-          <div className="flex flex-col items-center mb-8">
+        <div className="max-w-md mx-auto py-4">
+          <div className="flex flex-col items-center mb-4">
             <img 
               src="https://ufkjyykwialeflrgutef.supabase.co/storage/v1/object/public/assets/logo/logo.svg" 
               alt="Nearish Logo" 
-              className="w-32 mb-4"
+              className="w-24 mb-2"
             />
-            <h1 className="text-2xl font-bold text-center">
+            <h1 className="text-xl font-bold text-center">
               Nearish Chattanooga Newsletter
             </h1>
           </div>
 
-          <Card className="mb-8">
-            <CardContent className="text-center pt-6">
+          <Card className="mb-4">
+            <CardContent className="text-center py-4">
               {!isSuccess ? (
-                <h2 className="text-black font-medium text-2xl">
+                <h2 className="text-foreground font-medium text-xl">
                   Your weekly summary of deals from {' '}
-                  <span className="bg-[linear-gradient(40deg,#ff0000,#ffff00,#248f47,#33bbff)] text-transparent bg-clip-text">
+                  <span className="bg-[linear-gradient(70deg,#ff0000,#ff8800,#ffd700,#248f47,#33bbff,#8A2BE2)] text-transparent bg-clip-text">
                     local
                   </span>
                   {' '}Chattanooga businesses
                 </h2>
               ) : (
-                <h2 className="text-black font-medium text-2xl">
+                <h2 className="text-black font-medium text-xl">
                   {isOutOfArea 
                     ? "It looks like you're not in the Chattanooga metro area. But don't worry, Nearish is growing fast."
                     : zipCodeStatus === false
@@ -136,7 +136,7 @@ export default function Home() {
                 }
                 createProfile.mutate({ email, zipCode })
               }}
-              className="flex flex-col gap-4"
+              className="space-y-3"
             >
               <div className="flex items-center space-x-2">
                 <Checkbox 
@@ -151,8 +151,8 @@ export default function Home() {
                   I'm human
                 </label>
               </div>
-              <div className="flex flex-col gap-4">
-                <div className="space-y-2">
+              <div className="space-y-3">
+                <div className="space-y-1.5">
                   <label
                     htmlFor="email"
                     className="text-sm font-medium leading-none"
@@ -167,7 +167,7 @@ export default function Home() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label
                     htmlFor="zipCode"
                     className="text-sm font-medium leading-none"
@@ -184,7 +184,7 @@ export default function Home() {
                     required
                   />
                 </div>
-                <Button type="submit" disabled={createProfile.isPending}>
+                <Button type="submit" className="w-full" disabled={createProfile.isPending}>
                   {createProfile.isPending ? "Submitting..." : "Submit"}
                 </Button>
               </div>
