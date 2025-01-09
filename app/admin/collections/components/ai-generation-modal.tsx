@@ -33,15 +33,19 @@ type PostData = {
   id: string;
   business_id: string;
   content: string;
-  final_content?: string;
-  final_type?: 'Promotion' | 'Event' | 'Update';
+  final_content?: string | null;
+  final_type?: 'Promotion' | 'Event' | 'Update' | null;
   included?: boolean;
   source: "facebook" | "admin" | "platform";
   ai_generated_content: string | null;
   ai_generated_type: string | null;
   created_at: string;
-  updated_at?: string;
-  businesses: { name: string; } | null;
+  updated_at?: string | null;
+  external_id: string | null;
+  facebook_page_id: string | null;
+  businesses: {
+    name: string;
+  } | null;
 }
 
 export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenerationModalProps) {
@@ -63,7 +67,7 @@ export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenera
     },
     enabled: !!collectionId
   })
-
+ 
   // Fetch all available prompts
   const { data: prompts, isLoading } = useQuery({
     queryKey: ['prompts'],
