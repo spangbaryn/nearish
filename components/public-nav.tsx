@@ -1,42 +1,49 @@
 import * as React from "react"
 import Link from "next/link"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const [isRippling, setIsRippling] = React.useState(false)
+  const [coords, setCoords] = React.useState({ x: -1, y: -1 })
+
+  const handleClick = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setCoords({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+    setIsRippling(true)
+  }
+
+  React.useEffect(() => {
+    if (isRippling) {
+      const timer = setTimeout(() => setIsRippling(false), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isRippling])
+
   return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
+    <Link 
+      href={href}
+      className="relative text-sm font-medium text-muted-foreground transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground group"
+      onClick={handleClick}
+    >
+      {children}
+      <span className="absolute inset-x-0 -bottom-0.5 h-px bg-foreground scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+      {isRippling && (
+        <span 
+          className="absolute rounded-full bg-foreground/5 animate-ripple"
+          style={{
+            left: coords.x,
+            top: coords.y,
+            transform: 'translate(-50%, -50%)'
+          }}
+        />
+      )}
+    </Link>
   )
-})
-ListItem.displayName = "ListItem"
+}
 
 export function PublicNav() {
   const { user } = useAuth()
@@ -44,29 +51,9 @@ export function PublicNav() {
   if (user) return null
 
   return (
-    <NavigationMenu className="justify-end">
-      <NavigationMenuList className="gap-2">
-        <NavigationMenuItem>
-          <Link href="/login" legacyBehavior passHref>
-            <NavigationMenuLink className={cn(
-              navigationMenuTriggerStyle(),
-              "bg-transparent hover:bg-transparent"
-            )}>
-              Login
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/business" legacyBehavior passHref>
-            <NavigationMenuLink className={cn(
-              navigationMenuTriggerStyle(),
-              "bg-transparent hover:bg-transparent"
-            )}>
-              Business Sign Up
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
+    <nav className="flex items-center gap-8">
+      <NavLink href="/business">Business Sign Up</NavLink>
+      <NavLink href="/login">Login</NavLink>
+    </nav>
   )
 } 

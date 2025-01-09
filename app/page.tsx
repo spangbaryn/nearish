@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { AuthError } from "@/lib/errors"
 import { Card, CardContent } from "@/components/ui/card"
 import { PublicNav } from "@/components/public-nav"
+import { Wordmark } from "@/components/ui/wordmark"
+import { Logo } from "@/components/ui/logo"
 
 export default function Home() {
   const [email, setEmail] = useState("")
@@ -93,11 +95,6 @@ export default function Home() {
       <div className="min-h-screen bg-muted/15 p-4">
         <div className="max-w-md mx-auto py-4">
           <div className="flex flex-col items-center mb-4">
-            <img 
-              src="https://ufkjyykwialeflrgutef.supabase.co/storage/v1/object/public/assets/logo/logo.svg" 
-              alt="Nearish Logo" 
-              className="w-24 mb-2"
-            />
             <h1 className="text-xl font-bold text-center">
               Nearish Chattanooga Newsletter
             </h1>
@@ -106,7 +103,7 @@ export default function Home() {
           <Card className="mb-4">
             <CardContent className="text-center py-4">
               {!isSuccess ? (
-                <h2 className="text-foreground font-medium text-xl">
+                <h2 className="text-foreground font-medium text-lg">
                   Your weekly summary of deals from {' '}
                   <span className="bg-[linear-gradient(70deg,#ff0000,#ff8800,#ffd700,#248f47,#33bbff,#8A2BE2)] text-transparent bg-clip-text">
                     local

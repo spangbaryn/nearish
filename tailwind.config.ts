@@ -68,7 +68,16 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		animation: {
+  			ripple: 'ripple 0.5s ease-out',
+  		},
+  		keyframes: {
+  			ripple: {
+  				'0%': { width: '0px', height: '0px', opacity: '0.5' },
+  				'100%': { width: '500px', height: '500px', opacity: '0' },
+  			},
+  		},
   	}
   },
   plugins: [
