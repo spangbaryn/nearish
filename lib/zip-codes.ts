@@ -79,7 +79,7 @@ export async function activateZipCode(
 
   // Deactivate any existing active status
   const { error: updateError } = await supabase
-    .from('zip_code_status')
+    .from('zip_code_status' as any)
     .update({ end_date: new Date().toISOString() })
     .eq('zip_code_id', zipCodeId)
     .is('end_date', null);
@@ -88,7 +88,7 @@ export async function activateZipCode(
 
   // Create new active status
   const { error: insertError } = await supabase
-    .from('zip_code_status')
+    .from('zip_code_status' as any)
     .insert({
       zip_code_id: zipCodeId,
       is_active: true,
