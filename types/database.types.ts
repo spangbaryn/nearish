@@ -319,7 +319,7 @@ export type Database = {
         Row: {
           ai_generated_content: string | null
           ai_generated_type: string | null
-          business_id: string
+          business_id: string | null
           content: string
           created_at: string
           external_id: string | null
@@ -338,7 +338,7 @@ export type Database = {
         Insert: {
           ai_generated_content?: string | null
           ai_generated_type?: string | null
-          business_id: string
+          business_id?: string | null
           content: string
           created_at?: string
           external_id?: string | null
@@ -357,7 +357,7 @@ export type Database = {
         Update: {
           ai_generated_content?: string | null
           ai_generated_type?: string | null
-          business_id?: string
+          business_id?: string | null
           content?: string
           created_at?: string
           external_id?: string | null
