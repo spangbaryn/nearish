@@ -3,7 +3,16 @@ import { AuthError } from "./errors"
 import type { Database } from "@/types/database.types"
 
 type ZipCode = Database["public"]["Tables"]["zip_codes"]["Row"]
-type ZipCodeStatus = Database["public"]["Tables"]["zip_code_status"]["Row"]
+type ZipCodeStatus = {
+  id: string
+  zip_code_id: string
+  is_active: boolean
+  start_date: string
+  end_date: string | null
+  campaign_id?: string
+  reason?: string
+  created_by: string
+}
 
 export async function isZipCodeActive(zipCode: string, campaignId?: string): Promise<boolean> {
   const { data: zipCodeData, error: zipError } = await supabase
