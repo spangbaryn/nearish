@@ -31,11 +31,18 @@ export async function getUserProfile(userId: string): Promise<User> {
 
   if (error) throw new AuthError('Failed to fetch profile');
   if (!data) throw new AuthError('Profile not found');
+  if (!isValidUserRole(data.role)) throw new AuthError('Invalid user role');
+
+  if (!data.email || !data.created_at) throw new AuthError('Missing required profile data');
 
   return {
     id: data.id,
     email: data.email,
-    role: data.role,
+    role: data.role as UserRole,
     created_at: data.created_at
   };
+}
+
+function isValidUserRole(role: any): role is UserRole {
+  return ['admin', 'business', 'customer'].includes(role);
 }
