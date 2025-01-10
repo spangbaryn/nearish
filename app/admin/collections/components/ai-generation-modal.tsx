@@ -49,7 +49,7 @@ type PostData = {
   ai_generated_type: string | null;
   businesses: {
     name: string;
-  } | null;
+  } | null | undefined;
 }
 
 export function AIGenerationModal({ open, onOpenChange, collectionId }: AIGenerationModalProps) {
