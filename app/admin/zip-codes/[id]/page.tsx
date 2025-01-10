@@ -14,7 +14,8 @@ import { useAuth } from "@/lib/auth-context"
 
 export default function EditZipCodePage() {
   const params = useParams()
-  if (!params.id || Array.isArray(params.id)) {
+  const id = params.id
+  if (!id || Array.isArray(id)) {
     throw new Error("Invalid or missing ID");
   }
   const router = useRouter()
@@ -22,12 +23,12 @@ export default function EditZipCodePage() {
   const { user } = useAuth()
 
   const { data: zipCode, isLoading } = useQuery({
-    queryKey: ['zip-codes', params.id],
+    queryKey: ['zip-codes', id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('zip_codes')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
       if (error) throw error
@@ -48,7 +49,7 @@ export default function EditZipCodePage() {
           is_active: data.is_active,
           updated_at: new Date().toISOString()
         })
-        .eq('id', params.id)
+        .eq('id', id)
 
       if (error) throw error
     },
