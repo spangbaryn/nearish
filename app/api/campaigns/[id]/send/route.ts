@@ -40,6 +40,10 @@ export async function POST(
       throw new ValidationError('Campaign not found')
     }
 
+    if (!campaign.email_templates?.content) {
+      throw new ValidationError('Template content not found')
+    }
+
     // Process template content with dynamic tags
     console.log('Processing template content...')
     const processedContent = await replaceEmailTags(
