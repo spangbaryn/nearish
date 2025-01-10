@@ -138,7 +138,7 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
         .from("posts")
         .select(`
           *,
-          businesses:business_id (
+          businesses (
             id,
             name
           )
@@ -196,7 +196,7 @@ export function PostsGrid({ collectionId }: PostsGridProps) {
           <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
             <span className="text-xs font-medium">Include</span>
             <Checkbox
-              checked={post.included}
+              checked={post.included ?? false}
               onCheckedChange={(checked) => {
                 updateIncludedStatus.mutate({
                   postId: post.id,
