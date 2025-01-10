@@ -25,7 +25,7 @@ export async function isZipCodeActive(zipCode: string, campaignId?: string): Pro
   if (!zipCodeData) return false;
 
   const query = supabase
-    .from('zip_code_status')
+    .from('zip_code_status' as any)
     .select('*')
     .eq('zip_code_id', zipCodeData.id)
     .eq('is_active', true)
