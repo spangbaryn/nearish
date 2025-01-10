@@ -103,7 +103,7 @@ export function FacebookFetchModal({ open, onOpenChange, collectionId }: Faceboo
 
           allPosts.push(...responseData.map((post: any) => ({
             business_id: connection.business_id,
-            source: 'facebook',
+            source: 'facebook' as const,
             external_id: post.id,
             content: post.message || '',
             final_content: post.message || '',
