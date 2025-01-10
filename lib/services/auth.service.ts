@@ -24,13 +24,24 @@ export class AuthService {
       .insert({
         id: userId,
         email,
-        role: 'customer' as UserRole
+        role: 'customer' as UserRole,
+        created_at: new Date().toISOString()
       })
       .select()
       .single();
 
     if (error) throw new AuthError('Failed to create profile');
-    return data;
+    if (!data) throw new AuthError('Profile not found');
+    if (!isValidUserRole(data.role)) throw new AuthError('Invalid user role');
+
+    if (!data.created_at) throw new AuthError('Missing creation timestamp');
+
+    return {
+      id: data.id,
+      email: data.email,
+      role: data.role as UserRole,
+      created_at: data.created_at
+    };
   }
 
   static async signIn(email: string, password: string): Promise<User> {
@@ -54,7 +65,18 @@ export class AuthService {
 
     if (error) throw new AuthError('Failed to fetch profile');
     if (!data) throw new AuthError('Profile not found');
+    if (!isValidUserRole(data.role)) throw new AuthError('Invalid user role');
+    if (!data.created_at) throw new AuthError('Missing creation timestamp');
 
-    return data;
+    return {
+      id: data.id,
+      email: data.email,
+      role: data.role as UserRole,
+      created_at: data.created_at
+    };
   }
+}
+
+function isValidUserRole(role: any): role is UserRole {
+  return ['admin', 'business', 'customer'].includes(role);
 }
