@@ -233,7 +233,7 @@ export default function BusinessSettingsPage() {
                           <div>
                             <p className="font-medium">{connection.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              Connected {new Date(connection.created_at).toLocaleDateString()}
+                              Connected {connection.created_at ? new Date(connection.created_at).toLocaleDateString() : 'Unknown date'}
                             </p>
                           </div>
                         </div>
