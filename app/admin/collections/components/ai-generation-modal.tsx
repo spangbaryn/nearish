@@ -31,7 +31,7 @@ interface AIGenerationModalProps {
 
 type PostData = {
   id: string;
-  business_id: string;
+  business_id: string | null;
   content: string;
   created_at: string;
   external_id: string | null;
