@@ -65,18 +65,16 @@ export function MainSidebar() {
           href: `/businesses/${business.id}`, 
           icon: LayoutDashboard 
         },
-        ...(role === 'owner' ? [
-          { 
-            title: "Settings", 
-            href: `/businesses/${business.id}/settings`, 
-            icon: Settings 
-          },
-          { 
-            title: "Team", 
-            href: `/businesses/${business.id}/team`, 
-            icon: Users 
-          }
-        ] : []),
+        { 
+          title: "Settings", 
+          href: `/businesses/${business.id}/settings`, 
+          icon: Settings 
+        },
+        { 
+          title: "Team", 
+          href: `/businesses/${business.id}/team`, 
+          icon: Users 
+        },
         { 
           title: "Posts", 
           href: `/businesses/${business.id}/posts`, 
