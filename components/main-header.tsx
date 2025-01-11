@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Logo } from "@/components/ui/logo"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -17,13 +18,17 @@ import {
   Settings,
   Bell,
   LogOut,
-  Mail
+  Mail,
+  Menu
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { MobileNav } from "@/components/mobile-nav"
 
 export function MainHeader() {
+  const [open, setOpen] = React.useState(false)
   const { user, signOut } = useAuth()
   
   const initials = user?.email
@@ -34,12 +39,28 @@ export function MainHeader() {
     ?.toUpperCase() ?? '?'
   
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center border-b bg-sidebar px-6">
+    <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-start border-b bg-sidebar px-6 pt-2">
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-4">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent 
+              side="bottom" 
+              className="h-[95%] -mt-14 rounded-t-xl [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:focus:outline-none"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation Menu</SheetTitle>
+              </SheetHeader>
+              <MobileNav onNavigate={() => setOpen(false)} />
+            </SheetContent>
+          </Sheet>
           <Logo />
         </div>
-        <Card className="flex items-center px-2 py-1 bg-white transition-shadow hover:shadow-md">
+        <Card className="flex items-center px-2 py-1 bg-white transition-shadow hover:shadow-md rounded-full">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
@@ -50,7 +71,7 @@ export function MainHeader() {
                   <AvatarImage src={user?.avatar_url ?? ''} alt={user?.email ?? ''} />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-                <span className="text-foreground hover:text-foreground">{user?.email}</span>
+                <span className="hidden md:inline text-foreground hover:text-foreground">{user?.email}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">

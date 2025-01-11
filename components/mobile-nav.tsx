@@ -1,20 +1,11 @@
-import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarTrigger
-} from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles, FileText, MapPin } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useQuery } from "@tanstack/react-query"
 import { getUserBusinesses } from "@/lib/business"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { LogOut } from "lucide-react"
+import { LayoutDashboard, Settings, Users, FileText, Mail, SendHorizontal, FolderOpen, MapPin, Sparkles, Palette } from "lucide-react"
 import type { BusinessRole } from '@/types/auth'
 import type { LucideIcon } from "lucide-react"
 
@@ -43,7 +34,11 @@ interface AdminRoute {
 
 type RouteSection = BusinessRoute | AdminRoute
 
-export function MainSidebar() {
+interface MobileNavProps {
+  onNavigate: () => void
+}
+
+export function MobileNav({ onNavigate }: MobileNavProps) {
   const { user, signOut } = useAuth()
   const isAdmin = user?.role === 'admin'
 
@@ -53,6 +48,7 @@ export function MainSidebar() {
     enabled: !!user?.id,
   })
 
+  // Reuse the same route generation logic from MainSidebar
   const getBusinessRoutes = (businesses: Awaited<ReturnType<typeof getUserBusinesses>> | undefined) => {
     if (!businesses) return []
     return businesses.map(({ business, role }) => ({
@@ -90,6 +86,7 @@ export function MainSidebar() {
     ...getBusinessRoutes(businesses),
     ...(isAdmin ? [{
       title: "Admin Tools",
+      name: "Admin",
       items: [
         { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { title: "Users", href: "/admin/users", icon: Users },
@@ -104,26 +101,31 @@ export function MainSidebar() {
   ]
 
   return (
-    <Sidebar className="pt-14">
-      <SidebarContent>
-        {routes.map((section) => (
-          <SidebarGroup key={section.title ?? section.id}>
-            <SidebarGroupLabel>
-              {section.title ?? section.name}
-            </SidebarGroupLabel>
-            {section.items.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
-                  <SidebarMenuButton>
-                    <item.icon className="h-4 w-4" />
-                    {item.title}
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-    </Sidebar>
+    <div className="flex h-full flex-col">
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-3">
+          {routes.map((section) => (
+            <div key={section.title ?? section.id} className="space-y-1">
+              <h4 className="font-medium text-sm text-muted-foreground px-2">
+                {section.title ?? section.name}
+              </h4>
+              <nav className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Link key={item.href} href={item.href} onClick={onNavigate}>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.title}
+                    </Button>
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   )
 } 

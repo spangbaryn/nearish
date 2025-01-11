@@ -30,7 +30,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
       onClick={handleClick}
     >
       {children}
-      <span className="absolute inset-x-0 -bottom-0.5 h-px bg-foreground scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+      <span className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-foreground scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
       {isRippling && (
         <span 
           className="absolute rounded-full bg-foreground/5 animate-ripple"
