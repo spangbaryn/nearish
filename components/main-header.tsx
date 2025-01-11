@@ -50,7 +50,7 @@ export function MainHeader() {
             </SheetTrigger>
             <SheetContent 
               side="bottom" 
-              className="h-[95%] -mt-14 rounded-t-xl [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:focus:outline-none"
+              className="h-[90%] -mt-10 rounded-t-xl [&>button]:hidden"
             >
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation Menu</SheetTitle>
