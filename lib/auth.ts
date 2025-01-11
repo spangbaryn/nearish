@@ -39,7 +39,8 @@ export async function getUserProfile(userId: string): Promise<User> {
     id: data.id,
     email: data.email,
     role: data.role as UserRole,
-    created_at: data.created_at
+    created_at: data.created_at,
+    avatar_url: data.avatar_url
   };
 }
 
