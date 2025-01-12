@@ -40,7 +40,7 @@ export async function getUserProfile(userId: string): Promise<User> {
     email: data.email,
     role: data.role as UserRole,
     created_at: data.created_at,
-    avatar_url: data.avatar_url || undefined
+    ...(data.avatar_url ? { avatar_url: data.avatar_url } : {})
   };
 }
 
