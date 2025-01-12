@@ -39,15 +39,12 @@ export default function SettingsPage() {
       if (updateError) throw updateError
 
       // Update profiles table
+      if (!user?.id) throw new Error('User ID is required');
+      
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          metadata: {
-            ...user?.metadata,
-            avatar_url: publicUrl
-          }
-        })
-        .eq('id', user?.id)
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id)
 
       if (profileError) throw profileError
 
