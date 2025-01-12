@@ -41,7 +41,12 @@ export default function SettingsPage() {
       // Update profiles table
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({
+          metadata: {
+            ...user?.metadata,
+            avatar_url: publicUrl
+          }
+        })
         .eq('id', user?.id)
 
       if (profileError) throw profileError
