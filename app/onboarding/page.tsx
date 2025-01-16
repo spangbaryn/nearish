@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { BusinessQualification } from "./components/business-qualification";
+import { BusinessSearch } from "./components/business-search";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +55,40 @@ export default function OnboardingPage() {
     }
   };
 
+  const renderStepContent = (step: number) => {
+    if (step === 1) {
+      return (
+        <BusinessQualification 
+          onComplete={() => completeStep(1)} 
+        />
+      );
+    }
+    if (step === 2) {
+      return (
+        <BusinessSearch 
+          onComplete={async (businessDetails) => {
+            // Save business details to database
+            const { error } = await supabase
+              .from('businesses')
+              .insert({
+                owner_id: user!.id,
+                name: businessDetails.name,
+                place_id: businessDetails.place_id,
+                address: businessDetails.formatted_address,
+                phone: businessDetails.phone_number,
+                website: businessDetails.website
+              });
+
+            if (!error) {
+              completeStep(2);
+            }
+          }} 
+        />
+      );
+    }
+    // ... handle other steps ...
+  };
+
   if (isLoading) return <LoadingSpinner />;
   if (!user) return null;
 
@@ -77,28 +111,19 @@ export default function OnboardingPage() {
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl">
-                {step === 1 ? "Basic Information" :
-                 step === 2 ? "Notifications" :
+                {step === 1 ? "Business Fit" :
+                 step === 2 ? "Find Your Business" :
                  "Preferences"}
               </CardTitle>
             </div>
             <CardDescription>
-              {step === 1 ? "Let's get to know you better" :
-               step === 2 ? "Choose how you want to be notified" :
+              {step === 1 ? "Please select all that apply. \"My business is ...\"" :
+               step === 2 ? "Search and select your business below." :
                "Customize your experience"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {currentStep === step && (
-              <Button 
-                className="w-full" 
-                onClick={() => completeStep(step)}
-              >
-                {step === 3 ? "Complete Setup" :
-                 step === 2 ? "Set Up Notifications" :
-                 "Complete Basic Info"}
-              </Button>
-            )}
+            {currentStep === step && renderStepContent(step)}
           </CardContent>
         </Card>
       ))}
