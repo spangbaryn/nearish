@@ -9,6 +9,8 @@ import { BusinessQualification } from "./components/business-qualification";
 import { BusinessSearch } from "./components/business-search";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { addBusinessMember } from "@/lib/business";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -39,19 +41,24 @@ export default function OnboardingPage() {
   };
 
   const completeStep = async (stepNumber: number) => {
-    setSteps(prev => ({ ...prev, [stepNumber]: true }));
-    
-    if (stepNumber === 3) {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ onboarded: true })
-        .eq('id', user!.id);
+    try {
+      setSteps(prev => ({ ...prev, [stepNumber]: true }));
+      
+      if (stepNumber === 3) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ onboarded: true })
+          .eq('id', user!.id);
 
-      if (!error) {
+        if (error) throw error;
         router.push('/home');
+      } else {
+        setCurrentStep(stepNumber + 1);
       }
-    } else {
-      setCurrentStep(stepNumber + 1);
+    } catch (error) {
+      console.error('Error completing step:', error);
+      toast.error('Failed to complete step. Please try again.');
+      setSteps(prev => ({ ...prev, [stepNumber]: false }));
     }
   };
 
@@ -67,22 +74,31 @@ export default function OnboardingPage() {
       return (
         <BusinessSearch 
           onComplete={async (businessDetails) => {
-            // Save business details to database
-            const { error } = await supabase
-              .from('businesses')
-              .insert({
-                owner_id: user!.id,
-                name: businessDetails.name,
-                place_id: businessDetails.place_id,
-                address: businessDetails.formatted_address,
-                phone: businessDetails.phone_number,
-                website: businessDetails.website
-              });
+            try {
+              // Insert directly into businesses table
+              const { data: business, error: businessError } = await supabase
+                .from('businesses')
+                .insert({
+                  name: businessDetails.name,
+                  place_id: businessDetails.place_id,
+                  formatted_address: businessDetails.formatted_address,
+                  phone_number: businessDetails.phone_number,
+                  website: businessDetails.website,
+                })
+                .select()
+                .single();
 
-            if (!error) {
+              if (businessError) throw businessError;
+              
+              // Add the current user as a business member with owner role
+              await addBusinessMember(business.id, user!.id, 'owner');
+              
               completeStep(2);
+            } catch (error: any) {
+              console.error('Error saving business:', error);
+              toast.error(error.message || 'Failed to save business details');
             }
-          }} 
+          }}
         />
       );
     }
@@ -113,13 +129,13 @@ export default function OnboardingPage() {
               <CardTitle className="text-2xl">
                 {step === 1 ? "Business Fit" :
                  step === 2 ? "Find Your Business" :
-                 "Preferences"}
+                 "Your Role"}
               </CardTitle>
             </div>
             <CardDescription>
               {step === 1 ? "Please select all that apply. \"My business is ...\"" :
                step === 2 ? "Search and select your business below." :
-               "Customize your experience"}
+               "This is the final step to getting your account perfected."}
             </CardDescription>
           </CardHeader>
           <CardContent>

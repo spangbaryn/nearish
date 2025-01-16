@@ -28,6 +28,7 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
   const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessDetails | null>(null);
   const { isLoaded, error } = useGooglePlaces();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSearch = useCallback(async (value: string) => {
     setSearch(value);
@@ -102,6 +103,20 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
       setIsSearching(false);
     }
   }, [isLoaded]);
+
+  const handleComplete = async () => {
+    if (!selectedBusiness) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onComplete(selectedBusiness);
+    } catch (error) {
+      console.error('Error saving business:', error);
+      toast.error('Failed to save business details. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!isLoaded) {
     return (
@@ -181,10 +196,17 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
 
       <Button 
         className="w-full mt-4" 
-        disabled={!selectedBusiness}
-        onClick={() => selectedBusiness && onComplete(selectedBusiness)}
+        disabled={!selectedBusiness || isSubmitting}
+        onClick={handleComplete}
       >
-        Continue
+        {isSubmitting ? (
+          <>
+            <LoadingSpinner className="mr-2 h-4 w-4" />
+            Saving...
+          </>
+        ) : (
+          'Continue'
+        )}
       </Button>
     </div>
   );
