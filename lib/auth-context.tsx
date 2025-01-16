@@ -1,107 +1,115 @@
 "use client";
 
-import { createContext, useContext, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { User, UserRole } from "@/types/auth";
-import { getUserProfile } from "@/lib/auth";
+import type { User } from "@/types/auth";
 import { AuthError } from "@/lib/errors";
 
-export type AuthContextType = {
+type AuthContextType = {
   user: User | null;
   isLoading: boolean;
-  error: Error | null;
-  signIn: (email: string, password: string) => Promise<User>;
-  signUp: (email: string, password: string) => Promise<User>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-async function fetchAuthState() {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) throw new AuthError(error.message);
-  
-  if (session?.user) {
-    const profile = await getUserProfile(session.user.id);
-    return { user: profile };
-  }
-  return { user: null };
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
-  
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['auth'],
-    queryFn: fetchAuthState,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: false
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Single function to handle profile creation/update
+  async function syncProfile(userId: string, email: string) {
+    // First try to get existing profile
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (existingProfile) {
+      setUser(existingProfile as User);
+      return;
+    }
+
+    // If no profile exists, create one
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        email,
+        role: 'customer',
+        created_at: new Date().toISOString(),
+        onboarded: false
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Profile sync error:', error);
+      return;
+    }
+
+    setUser(data as User);
+  }
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      queryClient.invalidateQueries({ queryKey: ['auth'] });
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        syncProfile(session.user.id, session.user.email!);
+      }
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [queryClient]);
-
-  const value = {
-    user: data?.user ?? null,
-    isLoading,
-    error: error as Error | null,
-    signIn: async (email: string, password: string) => {
-      const { data: { session }, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      if (error) throw new AuthError(error.message);
-      if (!session?.user) throw new AuthError('No session created');
-      
-      return getUserProfile(session.user.id);
-    },
-    signUp: async (email: string, password: string) => {
-      const { data: authData, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { 
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: { role: 'customer' }
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          await syncProfile(session.user.id, session.user.email!);
+        } else {
+          setUser(null);
         }
-      });
-      if (error) throw new AuthError(error.message);
-      if (!authData.user) throw new AuthError('No user data returned');
-
-      return {
-        id: authData.user.id,
-        email: authData.user.email!,
-        role: 'customer' as UserRole,
-        created_at: new Date().toISOString()
-      };
-    },
-    signOut: async () => {
-      try {
-        await supabase.auth.signOut();
-        window.location.href = '/auth/login';
-      } catch (error) {
-        console.error('Error signing out:', error);
       }
-    }
-  };
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      signIn: async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password 
+        });
+        if (error) throw new AuthError(error.message);
+      },
+      signUp: async (email, password) => {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { role: 'customer' }
+          }
+        });
+        if (error) throw new AuthError(error.message);
+      },
+      signOut: async () => {
+        await supabase.auth.signOut();
+      }
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-};
+}
 

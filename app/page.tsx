@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { PublicNav } from "@/components/public-nav"
 import { Wordmark } from "@/components/ui/wordmark"
 import { Logo } from "@/components/ui/logo"
+import { AuthService } from '@/lib/services/auth.service'
 
 export default function Home() {
   const [email, setEmail] = useState("")
@@ -30,7 +31,7 @@ export default function Home() {
         .eq('code', data.zipCode)
         .single();
 
-      if (zipError && zipError.code !== 'PGRST116') { // Not a "not found" error
+      if (zipError && zipError.code !== 'PGRST116') {
         throw new Error('Failed to check zip code');
       }
 
@@ -41,47 +42,29 @@ export default function Home() {
         return null;
       }
 
-      // Create auth user regardless of zip code status
       const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+      
+      try {
+        const user = await AuthService.signUp(email, password);
+        
+        // Update zip code after profile is created
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ zip_code: data.zipCode })
+          .eq('id', user.id);
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password,
-        options: {
-          data: { 
-            role: 'customer',
-            zip_code: data.zipCode 
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+        if (updateError) throw new AuthError('Failed to update zip code');
 
-      if (authError) {
-        if (authError.status === 409) {
+        setIsOutOfArea(false);
+        setZipCodeStatus(zipCodeData.is_active);
+        setIsSuccess(true);
+        return { user };
+      } catch (error) {
+        if (error instanceof AuthError && error.message.includes('already registered')) {
           throw new AuthError('This email is already registered. Please use a different email address.');
         }
-        throw new AuthError(authError.message);
+        throw error;
       }
-      if (!authData.user) throw new AuthError('No user data returned');
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: data.email,
-          role: 'customer',
-          zip_code: data.zipCode
-        })
-        .single();
-
-      if (profileError) throw new AuthError('Failed to create profile');
-
-      // Set state based on zip code status
-      setIsOutOfArea(false);
-      setZipCodeStatus(zipCodeData.is_active);
-      setIsSuccess(true);
-      return { user: authData.user };
     },
     onSuccess: (result) => {
       if (result?.user) {

@@ -467,6 +467,7 @@ export type Database = {
           role: string
           updated_at: string | null
           zip_code: string | null
+          onboarded: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -476,6 +477,7 @@ export type Database = {
           role: string
           updated_at?: string | null
           zip_code?: string | null
+          onboarded?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -485,6 +487,7 @@ export type Database = {
           role?: string
           updated_at?: string | null
           zip_code?: string | null
+          onboarded?: boolean
         }
         Relationships: []
       }

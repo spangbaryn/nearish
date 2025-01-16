@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { useAuth } from "@/lib/auth-context"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { PublicHeader } from "@/components/public-header"
+import { usePathname } from "next/navigation"
 
 export function RootLayoutClient({
   children,
@@ -13,6 +14,9 @@ export function RootLayoutClient({
   children: React.ReactNode
 }) {
   const { user, isLoading } = useAuth()
+  const pathname = usePathname()
+  const isAuthRoute = pathname?.startsWith('/auth')
+  const isOnboardingRoute = pathname?.startsWith('/onboarding')
 
   if (isLoading) {
     return (
@@ -20,6 +24,10 @@ export function RootLayoutClient({
         <LoadingSpinner />
       </div>
     )
+  }
+
+  if (isAuthRoute || isOnboardingRoute) {
+    return children
   }
 
   if (!user) {

@@ -40,7 +40,7 @@ export default function BusinessLandingPage() {
                 </div>
               </div>
               
-              <Link href="/signup">
+              <Link href="/business/signup">
                 <Button size="lg" className="w-full md:w-auto">
                   Get Started
                 </Button>

@@ -15,64 +15,63 @@ export async function middleware(req: NextRequest) {
     // Handle auth pages layout and redirects
     if (req.nextUrl.pathname.startsWith('/auth')) {
       if (session) {
-        // If user is authenticated, set main layout and redirect to home
-        const response = NextResponse.redirect(new URL('/home', req.url))
-        response.headers.set('x-layout', 'main')
-        return response
+        // Check if user needs onboarding
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarded')
+          .eq('id', session.user.id)
+          .single()
+
+        // If profile exists but not onboarded, redirect to onboarding
+        if (!profile?.onboarded) {
+          return NextResponse.redirect(new URL('/onboarding', req.url))
+        }
+
+        // Otherwise redirect to home
+        return NextResponse.redirect(new URL('/home', req.url))
       }
-      const response = NextResponse.next()
-      response.headers.set('x-layout', 'auth')
-      return response
+      return NextResponse.next()
     }
 
-    // Protected routes (everything except /, /auth/*, and /business)
+    // Protected routes (except onboarding)
     if (!req.nextUrl.pathname.startsWith('/auth') && 
+        !req.nextUrl.pathname.startsWith('/onboarding') &&
         req.nextUrl.pathname !== '/' && 
         req.nextUrl.pathname !== '/business') {
       if (!session) {
         return NextResponse.redirect(new URL('/auth/login', req.url))
       }
-      // Set main layout for authenticated routes
-      const response = NextResponse.next()
-      response.headers.set('x-layout', 'main')
-      return response
+
+      // Check if user needs onboarding
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarded')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!profile?.onboarded) {
+        return NextResponse.redirect(new URL('/onboarding', req.url))
+      }
+
+      return NextResponse.next()
     }
 
-    // Handle root route
-    if (session && req.nextUrl.pathname === '/') {
-      return NextResponse.redirect(new URL('/home', req.url))
-    }
-
-    // For API routes, ensure there's a session
-    if (req.nextUrl.pathname.startsWith('/api/')) {
+    // For onboarding route, just check auth
+    if (req.nextUrl.pathname.startsWith('/onboarding')) {
       if (!session) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        )
+        return NextResponse.redirect(new URL('/auth/login', req.url))
       }
-      return res
-    }
-
-    if (req.nextUrl.pathname.startsWith('/admin')) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/', req.url))
-      }
+      const response = NextResponse.next()
+      response.headers.set('x-layout', 'auth')  // Set auth layout for onboarding
+      return response
     }
 
     return res
   } catch (error) {
     if (error instanceof AuthError) {
-      if (req.nextUrl.pathname.startsWith('/api/')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 401 }
-        )
-      }
-      console.error('Auth middleware error:', error.message)
+      return NextResponse.redirect(new URL('/auth/login', req.url))
     }
-    return res
+    throw error
   }
 }
 
