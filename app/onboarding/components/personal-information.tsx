@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 
 interface PersonalInformationProps {
@@ -20,16 +19,15 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [position, setPosition] = useState("");
-  const [isOwner, setIsOwner] = useState<boolean | null>(null);
 
   const handleSubmit = () => {
-    if (!firstName || !lastName || !position || isOwner === null) return;
+    if (!firstName || !lastName || !position) return;
     
     onComplete({
       firstName,
       lastName,
       position,
-      isOwner
+      isOwner: position.toLowerCase() === "owner"
     });
   };
 
@@ -66,28 +64,11 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
             placeholder="Manager"
           />
         </div>
-
-        <div className="space-y-2">
-          <Label>Are you an owner of {businessName}?</Label>
-          <RadioGroup
-            value={isOwner?.toString()}
-            onValueChange={(value) => setIsOwner(value === "true")}
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="true" id="owner-yes" />
-              <Label htmlFor="owner-yes">Yes</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="false" id="owner-no" />
-              <Label htmlFor="owner-no">No</Label>
-            </div>
-          </RadioGroup>
-        </div>
       </div>
 
       <Button 
         className="w-full" 
-        disabled={!firstName || !lastName || !position || isOwner === null}
+        disabled={!firstName || !lastName || !position}
         onClick={handleSubmit}
       >
         Complete
