@@ -50,8 +50,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 flex items-start justify-center px-4 pt-[15vh]">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl">Sign in</CardTitle>
+          <CardDescription>
             Enter your email and password to sign in to your account
           </CardDescription>
         </CardHeader>
@@ -88,7 +88,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/auth/signup" className="text-primary hover:underline">
+            <Link href="/auth/signup" className="text-secondary hover:underline">
               Sign up
             </Link>
           </div>

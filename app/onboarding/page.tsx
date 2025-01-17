@@ -14,11 +14,15 @@ import { addBusinessMember } from "@/lib/business";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PersonalInformation } from "./components/personal-information";
 
+type Steps = {
+  [key: number]: boolean;
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [steps, setSteps] = useState({
+  const [steps, setSteps] = useState<Steps>({
     1: false,
     2: false,
     3: false
@@ -149,8 +153,8 @@ export default function OnboardingPage() {
     }
   };
 
+  if (!user && !isLoading) return null;
   if (isLoading) return <LoadingSpinner />;
-  if (!user) return null;
 
   return (
     <div className="w-full max-w-[600px] relative">

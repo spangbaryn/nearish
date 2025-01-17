@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function OnboardingLayout({
   children,
@@ -12,20 +12,23 @@ export default function OnboardingLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        // Force a hard reload if still loading after 2 seconds
-        window.location.reload();
+    const checkAuth = async () => {
+      if (!isLoading) {
+        if (!user) {
+          router.replace('/auth/login');
+        }
+        setAuthChecked(true);
       }
-    }, 2000);
+    };
 
+    const timeoutId = setTimeout(checkAuth, 100);
     return () => clearTimeout(timeoutId);
-  }, [isLoading]);
+  }, [isLoading, user, router]);
 
-  // If loading for less than 2 seconds, show spinner
-  if (isLoading) {
+  if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
@@ -33,12 +36,11 @@ export default function OnboardingLayout({
     );
   }
 
-  // If no user, middleware will handle redirect
   if (!user) return null;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50">
-      <div className="min-h-screen flex items-start justify-center px-4 pt-[10vh]">
+      <div className="min-h-screen flex items-start justify-center px-4 pt-[15vh]">
         {children}
       </div>
     </main>

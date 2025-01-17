@@ -18,7 +18,7 @@ export function RootLayoutClient({
   const isAuthRoute = pathname?.startsWith('/auth')
   const isOnboardingRoute = pathname?.startsWith('/onboarding')
 
-  if (isLoading) {
+  if (isLoading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />

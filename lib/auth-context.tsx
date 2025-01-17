@@ -19,11 +19,10 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
-  // Single function to handle profile creation/update
   async function syncProfile(userId: string, email: string) {
-    // First try to get existing profile
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('*')
@@ -35,7 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // If no profile exists, create one
     const { data, error } = await supabase
       .from('profiles')
       .insert({
@@ -57,27 +55,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        syncProfile(session.user.id, session.user.email!);
+        syncProfile(session.user.id, session.user.email!).finally(() => {
+          setIsLoading(false);
+          setIsInitialized(true);
+        });
+      } else {
+        setIsLoading(false);
+        setIsInitialized(true);
       }
-      setIsLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isInitialized) return;
+        
+        setIsLoading(true);
         if (session?.user) {
           await syncProfile(session.user.id, session.user.email!);
         } else {
           setUser(null);
         }
+        setIsLoading(false);
       }
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isInitialized]);
 
   return (
     <AuthContext.Provider value={{
