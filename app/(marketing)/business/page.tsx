@@ -7,7 +7,7 @@ import Link from "next/link"
 export default function BusinessLandingPage() {
   return (
     <div>
-      <div className="min-h-screen bg-muted/15 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 p-4">
         <div className="max-w-4xl mx-auto pt-8">
           <div className="flex flex-col items-center mb-8">
             <img 

@@ -16,12 +16,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isLoading && user) {
-      window.location.href = "/home";
+      router.replace("/home");
     }
-  }, [isLoading, user]);
+  }, [isLoading, user, router]);
 
   if (isLoading) {
     return (
@@ -34,17 +35,20 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsSubmitting(true);
 
     try {
       await signIn(email, password);
+      router.replace("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center p-4 pt-24">
-      <Card className="w-full max-w-sm">
+    <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 flex items-start justify-center px-4 pt-[15vh]">
+      <Card className="w-full max-w-[400px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
@@ -63,9 +67,8 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="name@example.com"
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -75,12 +78,12 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
-            <Button className="w-full" type="submit">
-              Sign in
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

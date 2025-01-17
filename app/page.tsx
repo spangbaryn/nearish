@@ -13,6 +13,7 @@ import { PublicNav } from "@/components/public-nav"
 import { Wordmark } from "@/components/ui/wordmark"
 import { Logo } from "@/components/ui/logo"
 import { AuthService } from '@/lib/services/auth.service'
+import Image from "next/image"
 
 export default function Home() {
   const [email, setEmail] = useState("")
@@ -42,42 +43,88 @@ export default function Home() {
         return null;
       }
 
-      const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-      
       try {
-        const user = await AuthService.signUp(email, password);
-        
-        // Update zip code after profile is created
-        const { error: updateError } = await supabase
+        // First try to find existing profile
+        const { data: existingProfile, error: lookupError } = await supabase
           .from('profiles')
-          .update({ zip_code: data.zipCode })
-          .eq('id', user.id);
+          .select('id')
+          .eq('email', data.email)
+          .maybeSingle();
 
-        if (updateError) throw new AuthError('Failed to update zip code');
+        if (lookupError) {
+          throw new Error('Failed to check existing profile');
+        }
+
+        let profileId;
+
+        if (existingProfile) {
+          profileId = existingProfile.id;
+        } else {
+          // Create new profile if doesn't exist
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              email: data.email,
+              zip_code: data.zipCode,
+              role: 'customer',
+              created_at: new Date().toISOString(),
+              onboarded: false
+            })
+            .select()
+            .single();
+
+          if (profileError) {
+            throw new Error('Failed to create profile');
+          }
+          profileId = profile.id;
+        }
+
+        // Subscribe to newsletter list
+        const { error: subscriptionError } = await supabase
+          .from('profile_list_subscriptions')
+          .upsert({
+            profile_id: profileId,
+            list_id: process.env.NEXT_PUBLIC_NEWSLETTER_LIST_ID!,
+            subscribed_at: new Date().toISOString(),
+            unsubscribed_at: null
+          }, {
+            onConflict: 'profile_id,list_id'
+          });
+
+        if (subscriptionError) {
+          console.error('Subscription error:', subscriptionError);
+          throw new Error('Failed to subscribe to newsletter');
+        }
 
         setIsOutOfArea(false);
         setZipCodeStatus(zipCodeData.is_active);
         setIsSuccess(true);
-        return { user };
+        
+        return { success: true };
       } catch (error) {
-        if (error instanceof AuthError && error.message.includes('already registered')) {
-          throw new AuthError('This email is already registered. Please use a different email address.');
+        if (error instanceof Error) {
+          throw error;
         }
-        throw error;
-      }
-    },
-    onSuccess: (result) => {
-      if (result?.user) {
-        toast.success("Thanks! I'll be in touch soon. 🙌");
+        throw new Error('Failed to sign up');
       }
     }
   });
 
   return (
     <div>
-      <div className="min-h-screen bg-muted/15 p-4">
-        <div className="max-w-md mx-auto py-4">
+      <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 p-4">
+        <div className="max-w-md mx-auto" style={{ paddingTop: '15vh' }}>
           <div className="flex flex-col items-center mb-4">
+            <div className="mb-6">
+              <Image
+                src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
+                alt="Nearish Logo"
+                width={240}
+                height={70}
+                className="h-20 w-auto"
+                priority
+              />
+            </div>
             <h1 className="text-2xl font-bold text-center">
               Nearish Chattanooga Newsletter
             </h1>
@@ -87,11 +134,7 @@ export default function Home() {
             <CardContent className="text-center py-4">
               {!isSuccess ? (
                 <h2 className="text-foreground font-medium text-lg">
-                  A weekly summary of deals from {' '}
-                  <span className="bg-[linear-gradient(70deg,#ff0000,#ff8800,#ffd700,#248f47,#33bbff,#8A2BE2)] text-transparent bg-clip-text">
-                    local
-                  </span>
-                  {' '}Chattanooga ❤️ businesses
+                  A weekly summary of deals from local Chattanooga businesses nearest you.
                 </h2>
               ) : (
                 <h2 className="text-black font-medium text-xl">
@@ -111,10 +154,10 @@ export default function Home() {
               onSubmit={(e) => {
                 e.preventDefault()
                 if (!isChecked) {
-                  toast.error("Please verify you're human")
-                  return
+                  toast.error("Please confirm you're human");
+                  return;
                 }
-                createProfile.mutate({ email, zipCode })
+                createProfile.mutate({ email, zipCode });
               }}
               className="space-y-3"
             >

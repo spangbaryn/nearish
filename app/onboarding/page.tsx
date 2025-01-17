@@ -158,7 +158,7 @@ export default function OnboardingPage() {
         <Card 
           key={step}
           className={cn(
-            "absolute left-1/2 bg-white rounded-lg shadow-lg transition-all duration-300",
+            "absolute left-1/2 rounded-lg shadow-lg transition-all duration-300",
             getCardWidth(step),
             "-translate-x-1/2",
             step === currentStep ? "opacity-100" : "opacity-85",

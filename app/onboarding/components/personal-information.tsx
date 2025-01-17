@@ -41,7 +41,6 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder="John"
             />
           </div>
           <div className="space-y-2">
@@ -50,7 +49,6 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
               id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              placeholder="Doe"
             />
           </div>
         </div>
@@ -61,7 +59,6 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
             id="position"
             value={position}
             onChange={(e) => setPosition(e.target.value)}
-            placeholder="Manager"
           />
         </div>
       </div>

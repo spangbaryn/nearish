@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@/types/auth";
 import { AuthError } from "@/lib/errors";
+import { useRouter } from "next/navigation";
 
 type AuthContextType = {
   user: User | null;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Single function to handle profile creation/update
   async function syncProfile(userId: string, email: string) {
@@ -100,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       signOut: async () => {
         await supabase.auth.signOut();
+        router.push('/auth/login');
       }
     }}>
       {children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Wordmark } from "@/components/ui/wordmark";
 import { Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { AuthService } from "@/lib/services/auth.service";
+import { toast } from "sonner";
 
 const isEmailValid = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -32,35 +33,6 @@ export default function SignUpPage() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.replace("/onboarding");
-    }
-  }, [isLoading, user, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>
-              We've sent you a confirmation link. Please check your email to continue.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,21 +50,26 @@ export default function SignUpPage() {
     setIsSubmitting(true);
 
     try {
-      await signUp(email, password);
-      
-      // Instead of navigating immediately, wait for email confirmation
-      setIsSuccess(true);
-    } catch (err) {
-      console.error('Signup error:', err);
-      const message = err instanceof Error ? err.message : 'Signup failed';
-      setError(message);
-    } finally {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Immediately redirect to onboarding instead of waiting for auth state change
+      router.replace('/onboarding');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign up');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 flex items-start justify-center px-4 pt-[15vh]">
       <Card className="w-full max-w-[400px]">
         <CardHeader className="space-y-8 pb-4">
           <div className="pt-2">
@@ -139,7 +116,6 @@ export default function SignUpPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
