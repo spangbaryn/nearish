@@ -11,7 +11,6 @@ interface PersonalInformationProps {
     firstName: string;
     lastName: string;
     position: string;
-    isOwner: boolean;
   }) => void;
 }
 
@@ -26,8 +25,7 @@ export function PersonalInformation({ businessName, onComplete }: PersonalInform
     onComplete({
       firstName,
       lastName,
-      position,
-      isOwner: position.toLowerCase() === "owner"
+      position
     });
   };
 

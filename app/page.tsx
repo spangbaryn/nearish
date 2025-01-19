@@ -112,8 +112,8 @@ export default function Home() {
 
   return (
     <div>
-      <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50 p-4">
-        <div className="max-w-md mx-auto" style={{ paddingTop: '15vh' }}>
+      <div className="min-h-screen bg-gradient-to-br from-muted/50 via-background to-muted/50">
+        <div className="max-w-md mx-auto">
           <div className="flex flex-col items-center mb-4">
             <div className="mb-6">
               <Image

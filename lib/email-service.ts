@@ -16,7 +16,7 @@ export class EmailServiceError extends Error {
   }
 }
 
-function createMailgunClient() {
+export function createMailgunClient() {
   const mailgun = new Mailgun(formData);
   return mailgun.client({ 
     username: 'api', 

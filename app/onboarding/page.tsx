@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { addBusinessMember } from "@/lib/business";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PersonalInformation } from "./components/personal-information";
+import type { BusinessRole } from '@/types/auth';
 
 type Steps = {
   [key: number]: boolean;
@@ -29,6 +30,24 @@ export default function OnboardingPage() {
   });
   const [businessName, setBusinessName] = useState<string>("");
   const [businessId, setBusinessId] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const checkOnboarding = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarded')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.onboarded) {
+        router.push('/home');
+      }
+    };
+
+    checkOnboarding();
+  }, [user, router]);
 
   const getCardWidth = (step: number) => {
     const stepsAhead = step - currentStep;
@@ -130,17 +149,30 @@ export default function OnboardingPage() {
 
               if (profileError) throw profileError;
 
-              // Then update the business member with role information
-              const { error: memberError } = await supabase
+              // Check if business member exists
+              const { data: existingMember } = await supabase
                 .from('business_members')
-                .update({ 
-                  position: data.position,
-                  is_owner: data.isOwner
-                })
+                .select('id')
                 .eq('business_id', businessId)
-                .eq('profile_id', user!.id);
+                .eq('profile_id', user!.id)
+                .single();
 
-              if (memberError) throw memberError;
+              if (!existingMember) {
+                // Create business member if it doesn't exist
+                await addBusinessMember(businessId, user!.id, 'owner');
+              } else {
+                // Update existing business member
+                const { error: memberError } = await supabase
+                  .from('business_members')
+                  .update({ 
+                    role: 'staff',
+                    position: data.position
+                  })
+                  .eq('business_id', businessId)
+                  .eq('profile_id', user!.id);
+
+                if (memberError) throw memberError;
+              }
               
               completeStep(3);
             } catch (error: any) {

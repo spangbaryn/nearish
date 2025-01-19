@@ -25,4 +25,16 @@ export interface AuthState {
   user: User | null
   loading: boolean
   error?: Error | null
+}
+
+export interface TeamMember {
+  id: string;
+  role: BusinessRole;
+  profile: {
+    id: string;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  };
 } 

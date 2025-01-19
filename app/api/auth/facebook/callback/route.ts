@@ -25,7 +25,7 @@ export async function GET(request: Request) {
         page_id: page.id,
         page_name: page.name,
         access_token: page.access_token,
-        expires_at: new Date(Date.now() + 3600000).toISOString() // 1 hour
+        expires_at: new Date(Date.now() + 3600000).toISOString()
       }))
     )
 

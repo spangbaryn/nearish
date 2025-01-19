@@ -33,9 +33,11 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
 
-    // Protected routes (except onboarding)
+    // Protected routes (except onboarding and invite)
     if (!req.nextUrl.pathname.startsWith('/auth') && 
         !req.nextUrl.pathname.startsWith('/onboarding') &&
+        !req.nextUrl.pathname.startsWith('/invite') &&
+        !req.nextUrl.pathname.startsWith('/auth/callback') &&
         req.nextUrl.pathname !== '/' && 
         req.nextUrl.pathname !== '/business') {
       if (!session) {

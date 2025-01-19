@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { User } from "@/types/auth";
 import { AuthError } from "@/lib/errors";
 import { useRouter } from "next/navigation";
+import { debounce } from "lodash";
 
 type AuthContextType = {
   user: User | null;
@@ -22,7 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
-  async function syncProfile(userId: string, email: string) {
+  // Debounce the profile sync function
+  const debouncedSyncProfile = debounce(async (userId: string, email: string) => {
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('*')
@@ -52,28 +54,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setUser(data as User);
-  }
+  }, 1000); // 1 second delay
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        syncProfile(session.user.id, session.user.email!).finally(() => {
+    let mounted = true;
+
+    const initialize = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && mounted) {
+          await debouncedSyncProfile(session.user.id, session.user.email!);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        if (mounted) {
           setIsLoading(false);
           setIsInitialized(true);
-        });
-      } else {
-        setIsLoading(false);
-        setIsInitialized(true);
+        }
       }
-    });
+    };
+
+    initialize();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!isInitialized) return;
+        if (!isInitialized || !mounted) return;
         
-        setIsLoading(true);
         if (session?.user) {
-          await syncProfile(session.user.id, session.user.email!);
+          await debouncedSyncProfile(session.user.id, session.user.email!);
         } else {
           setUser(null);
         }
@@ -81,7 +90,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      debouncedSyncProfile.cancel();
+    };
   }, [isInitialized]);
 
   return (

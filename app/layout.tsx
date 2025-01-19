@@ -6,6 +6,9 @@ import "./styles/globals.css"
 import { RootLayoutClient } from "@/components/root-layout-client"
 import { Toaster } from 'sonner'
 import { AuthProvider } from "@/lib/auth-context"
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: "Nearish",
@@ -19,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${inter.className} min-h-screen bg-background`}>
         <Providers>
           <RootLayoutClient>
             {children}
