@@ -1,3 +1,5 @@
+import { syncPlaceData } from "../../../actions/sync-place"
+
 export type Json =
   | string
   | number
@@ -127,25 +129,25 @@ export type Database = {
       }
       businesses: {
         Row: {
-          created_at: string | null
-          description: string | null
           id: string
+          created_at: string
           name: string
-          updated_at: string | null
+          place_id: string
+          brand_color: string | null
+          description: string | null
         }
         Insert: {
-          created_at?: string | null
-          description?: string | null
           id?: string
           name: string
-          updated_at?: string | null
+          place_id: string
+          brand_color?: string
+          description?: string | null
         }
         Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
           name?: string
-          updated_at?: string | null
+          place_id?: string
+          brand_color?: string
+          description?: string | null
         }
         Relationships: []
       }
@@ -593,6 +595,38 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      places: {
+        Row: {
+          id: string
+          place_id: string
+          name: string
+          formatted_address: string
+          phone_number: string | null
+          website: string | null
+          last_synced_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          place_id: string
+          name: string
+          formatted_address: string
+          phone_number?: string | null
+          website?: string | null
+          last_synced_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          place_id?: string
+          name?: string
+          formatted_address?: string
+          phone_number?: string | null
+          website?: string | null
+          last_synced_at?: string
+          created_at?: string
+        }
       }
     }
     Views: {

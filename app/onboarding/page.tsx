@@ -10,10 +10,11 @@ import { BusinessSearch } from "./components/business-search";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { addBusinessMember } from "@/lib/business";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PersonalInformation } from "./components/personal-information";
 import type { BusinessRole } from '@/types/auth';
+import { BusinessService } from "@/lib/services/business.service";
+import { extractDominantColor } from "../lib/utils/color";
 
 type Steps = {
   [key: number]: boolean;
@@ -89,6 +90,38 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleBusinessSetup = async (businessDetails: any) => {
+    try {
+      if (!businessDetails.id) throw new Error('Business ID is required');
+      
+      // Extract dominant color from website favicon
+      let brandColor = '#000000';
+      if (businessDetails.website) {
+        const faviconUrl = `${businessDetails.website}/favicon.ico`;
+        // We'll implement this function next
+        brandColor = await extractDominantColor(faviconUrl);
+      }
+      
+      // Update business with brand color
+      const { error: updateError } = await supabase
+        .from('businesses')
+        .update({ brand_color: brandColor })
+        .eq('id', businessDetails.id);
+
+      if (updateError) throw updateError;
+      
+      await BusinessService.createBusinessMember(businessDetails.id, user!.id, 'owner');
+      
+      setBusinessName(businessDetails.name);
+      setBusinessId(businessDetails.id);
+      
+      completeStep(2);
+    } catch (error: any) {
+      console.error('Error in business setup:', error);
+      toast.error(error.message || 'Failed to setup business');
+    }
+  };
+
   const renderStepContent = (step: number) => {
     if (step === 1) {
       return (
@@ -100,34 +133,7 @@ export default function OnboardingPage() {
     if (step === 2) {
       return (
         <BusinessSearch 
-          onComplete={async (businessDetails) => {
-            try {
-              const { data: business, error: businessError } = await supabase
-                .from('businesses')
-                .insert({
-                  name: businessDetails.name,
-                  place_id: businessDetails.place_id,
-                  formatted_address: businessDetails.formatted_address,
-                  phone_number: businessDetails.phone_number,
-                  website: businessDetails.website,
-                })
-                .select()
-                .single();
-
-              if (businessError) throw businessError;
-              
-              await addBusinessMember(business.id, user!.id, 'owner');
-              
-              // Store business details for next step
-              setBusinessName(business.name);
-              setBusinessId(business.id);
-              
-              completeStep(2);
-            } catch (error: any) {
-              console.error('Error saving business:', error);
-              toast.error(error.message || 'Failed to save business details');
-            }
-          }}
+          onComplete={handleBusinessSetup}
         />
       );
     }
@@ -149,30 +155,7 @@ export default function OnboardingPage() {
 
               if (profileError) throw profileError;
 
-              // Check if business member exists
-              const { data: existingMember } = await supabase
-                .from('business_members')
-                .select('id')
-                .eq('business_id', businessId)
-                .eq('profile_id', user!.id)
-                .single();
-
-              if (!existingMember) {
-                // Create business member if it doesn't exist
-                await addBusinessMember(businessId, user!.id, 'owner');
-              } else {
-                // Update existing business member
-                const { error: memberError } = await supabase
-                  .from('business_members')
-                  .update({ 
-                    role: 'staff',
-                    position: data.position
-                  })
-                  .eq('business_id', businessId)
-                  .eq('profile_id', user!.id);
-
-                if (memberError) throw memberError;
-              }
+             
               
               completeStep(3);
             } catch (error: any) {

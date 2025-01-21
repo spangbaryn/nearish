@@ -231,7 +231,7 @@ export default function BusinessSettingsPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{connection.name}</p>
+                            <p className="font-medium text-secondary hover:text-secondary/80">{connection.name}</p>
                             <p className="text-sm text-muted-foreground">
                               Connected {connection.created_at ? new Date(connection.created_at).toLocaleDateString() : 'Unknown date'}
                             </p>

@@ -1,6 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { BusinessService } from '@/lib/services/business.service'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -26,88 +27,54 @@ export async function GET(request: NextRequest) {
 
     // Get the invite first to determine role
     let role = 'customer'; // lowercase to match database
+    let invite = null;
     if (inviteToken) {
-      const { data: invite } = await supabase
+      invite = await supabase
         .from('team_invites')
-        .select<'*, business:businesses!inner(id)', { 
-          business: { id: string }, 
-          role: string,
-          first_name: string,
-          last_name: string 
-        }>('*, business:businesses!inner(id)')
+        .select('*, business:businesses!inner(id)')
         .eq('token', inviteToken)
         .single();
       
-      if (invite?.business?.id) {
-        role = 'business'; // lowercase to match database
+      if (invite?.data) {
+        role = 'business';
+        
+        // Create or update profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: session.user.id,
+            email: session.user.email,
+            first_name: invite.data.first_name,
+            last_name: invite.data.last_name,
+            role: role,
+            created_at: new Date().toISOString(),
+            onboarded: true
+          });
+
+        if (profileError) throw profileError;
+
+        // Add them as a business member
+        const { error: memberError } = await supabase
+          .from('business_members')
+          .insert({
+            business_id: invite.data.business.id,
+            profile_id: session.user.id,
+            role: invite.data.role,
+            created_at: new Date().toISOString()
+          });
+
+        if (memberError) throw memberError;
+
+        // Mark invite as accepted
+        const { error: inviteError } = await supabase
+          .from('team_invites')
+          .update({ status: 'accepted' })
+          .eq('token', inviteToken);
+
+        if (inviteError) throw inviteError;
+
+        return NextResponse.redirect(new URL('/home', requestUrl.origin));
       }
-    }
-
-    // Create or update profile with upsert
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: session.user.id,
-        email: session.user.email,
-        role: role,
-        created_at: new Date().toISOString(),
-        onboarded: true
-      }, { 
-        onConflict: 'id'
-      });
-
-    if (profileError) throw profileError;
-
-    if (inviteToken) {
-      // Get the invite details first to get role and business ID
-      const { data: invite } = await supabase
-        .from('team_invites')
-        .select<'*, business:businesses!inner(id)', { 
-          business: { id: string }, 
-          role: string,
-          first_name: string,
-          last_name: string 
-        }>('*, business:businesses!inner(id)')
-        .eq('token', inviteToken)
-        .single();
-
-      if (!invite?.business?.id) throw new Error('Invalid invite data');
-
-      // Mark the invite as accepted
-      const { error: updateInviteError } = await supabase
-        .from('team_invites')
-        .update({ 
-          accepted_at: new Date().toISOString() 
-        })
-        .eq('token', inviteToken);
-
-      if (updateInviteError) throw updateInviteError;
-
-      // Create business member association
-      const { error: memberError } = await supabase
-        .from('business_members')
-        .insert({
-          business_id: invite.business.id,
-          profile_id: session.user.id,
-          role: invite.role || 'staff'
-        });
-
-      if (memberError) throw memberError;
-
-      // Update profile with name from invite
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          first_name: invite.first_name,
-          last_name: invite.last_name
-        })
-        .eq('id', session.user.id);
-
-      if (profileError) throw profileError;
-
-      return NextResponse.redirect(
-        new URL('/home', requestUrl.origin)
-      );
     }
 
     return NextResponse.redirect(new URL('/onboarding', requestUrl.origin));

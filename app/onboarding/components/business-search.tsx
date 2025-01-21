@@ -1,14 +1,17 @@
+/// <reference types="google.maps" />
+
 "use client";
 
 import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Phone, Globe } from "lucide-react";
+import { Search, MapPin, Phone, Globe, Image } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useGooglePlaces } from "@/lib/hooks/use-google-places";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface BusinessDetails {
   place_id: string;
@@ -16,6 +19,8 @@ interface BusinessDetails {
   formatted_address: string;
   phone_number?: string;
   website?: string;
+  id?: string;
+  logo_url?: string;
 }
 
 interface BusinessSearchProps {
@@ -73,11 +78,13 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
         service.getDetails(
           { 
             placeId, 
-            fields: ['name', 'formatted_address', 'formatted_phone_number', 'website'] 
+            fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'photos'] 
           },
           (result, status) => {
             if (status === window.google.maps.places.PlacesServiceStatus.OK && result) {
-              resolve(result);
+              // Get the first photo if available
+              const logoUrl = result.photos?.[0]?.getUrl({ maxWidth: 500 });
+              resolve({ ...result, logoUrl });
             } else {
               reject(new Error('Failed to fetch place details'));
             }
@@ -90,7 +97,8 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
         name: place.name!,
         formatted_address: place.formatted_address!,
         phone_number: place.formatted_phone_number,
-        website: place.website
+        website: place.website,
+        logo_url: place.logoUrl
       };
 
       setSelectedBusiness(businessDetails);
@@ -109,10 +117,41 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
     
     setIsSubmitting(true);
     try {
-      await onComplete(selectedBusiness);
-    } catch (error) {
+      // First, create/update the place record
+      const { data: placeRecord, error: placeError } = await supabase
+        .from('places')
+        .upsert({
+          place_id: selectedBusiness.place_id,
+          name: selectedBusiness.name,
+          formatted_address: selectedBusiness.formatted_address,
+          phone_number: selectedBusiness.phone_number || null,
+          website: selectedBusiness.website || null,
+          logo_url: selectedBusiness.logo_url || null,
+          last_synced_at: new Date().toISOString()
+        }, {
+          onConflict: 'place_id'
+        })
+        .select()
+        .single();
+
+      if (placeError) throw placeError;
+
+      // Then, create the business record with just the name and place_id
+      const { data: business, error: businessError } = await supabase
+        .from('businesses')
+        .insert({
+          name: selectedBusiness.name,
+          place_id: selectedBusiness.place_id
+        })
+        .select()
+        .single();
+
+      if (businessError) throw businessError;
+
+      await onComplete({ ...selectedBusiness, id: business.id });
+    } catch (error: any) {
       console.error('Error saving business:', error);
-      toast.error('Failed to save business details. Please try again.');
+      toast.error(error.message || 'Failed to save business details');
     } finally {
       setIsSubmitting(false);
     }
@@ -171,24 +210,37 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
       {selectedBusiness && (
         <Card className="mt-4">
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold text-lg">{selectedBusiness.name}</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                {selectedBusiness.formatted_address}
+            <div className="flex items-start gap-4">
+              {selectedBusiness.logo_url && (
+                <div className="flex-shrink-0">
+                  <img 
+                    src={selectedBusiness.logo_url} 
+                    alt={selectedBusiness.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-grow">
+                <h3 className="font-semibold text-lg">{selectedBusiness.name}</h3>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {selectedBusiness.formatted_address}
+                  </div>
+                  {selectedBusiness.phone_number && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      {selectedBusiness.phone_number}
+                    </div>
+                  )}
+                  {selectedBusiness.website && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      {selectedBusiness.website}
+                    </div>
+                  )}
+                </div>
               </div>
-              {selectedBusiness.phone_number && (
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  {selectedBusiness.phone_number}
-                </div>
-              )}
-              {selectedBusiness.website && (
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  {selectedBusiness.website}
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -210,4 +262,18 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
       </Button>
     </div>
   );
+}
+
+async function createPlace(placeDetails: BusinessDetails) {
+  const { data: business, error: businessError } = await supabase
+    .from('businesses')
+    .insert({
+      name: placeDetails.name,
+      place_id: placeDetails.place_id
+    })
+    .select()
+    .single();
+
+  if (businessError) throw businessError;
+  return business;
 } 

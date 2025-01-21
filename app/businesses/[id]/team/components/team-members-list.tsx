@@ -18,6 +18,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { BusinessRole } from "@/types/auth"
 import { useAuth } from "@/lib/auth-context"
 import { supabase } from "@/lib/supabase"
+import { BusinessService } from '@/lib/services/business.service'
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Info as InfoIconLucide } from "lucide-react"
 
 interface TeamMember {
   id: string;
@@ -54,20 +57,38 @@ export function TeamMembersList({ businessId }: { businessId: string }) {
     enabled: !!user?.id
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (profileId: string) => removeBusinessMember(businessId, profileId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business-members', businessId] })
-      toast.success('Team member removed')
-    }
-  })
+  const ownerCount = members?.filter(member => member.role === 'owner').length || 0;
 
   const updateRoleMutation = useMutation({
-    mutationFn: ({ profileId, role }: { profileId: string, role: BusinessRole }) => 
-      updateBusinessMemberRole(businessId, profileId, role),
+    mutationFn: ({ profileId, role }: { profileId: string, role: BusinessRole }) => {
+      if (role !== 'owner' && ownerCount <= 1) {
+        throw new Error('Cannot remove the last owner')
+      }
+      return updateBusinessMemberRole(businessId, profileId, role)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-members', businessId] })
       toast.success('Role updated')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update role')
+    }
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: (profileId: string) => {
+      const member = members?.find(m => m.profile.id === profileId)
+      if (member?.role === 'owner' && ownerCount <= 1) {
+        throw new Error('Cannot remove the last owner')
+      }
+      return removeBusinessMember(businessId, profileId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['business-members', businessId] })
+      toast.success('Team member removed')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to remove member')
     }
   })
 
@@ -99,23 +120,36 @@ export function TeamMembersList({ businessId }: { businessId: string }) {
             </TableCell>
             <TableCell>
               {currentMember?.role === 'owner' ? (
-                <Select
-                  value={member.role}
-                  onValueChange={(role) => 
-                    updateRoleMutation.mutate({ 
-                      profileId: member.profile.id, 
-                      role: role as BusinessRole 
-                    })
-                  }
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="owner">Owner</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={member.role}
+                    onValueChange={(role) => 
+                      updateRoleMutation.mutate({ 
+                        profileId: member.profile.id, 
+                        role: role as BusinessRole 
+                      })
+                    }
+                    disabled={member.role === 'owner' && ownerCount <= 1}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="owner">Owner</SelectItem>
+                      <SelectItem value="staff">Staff</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {member.role === 'owner' && ownerCount <= 1 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIconLucide className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Cannot remove the last owner
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               ) : (
                 <span className="capitalize">{member.role}</span>
               )}

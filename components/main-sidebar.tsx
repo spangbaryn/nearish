@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles, FileText, MapPin } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Settings, Menu, LogOut, Mail, SendHorizontal, FolderOpen, Palette, Sparkles, FileText, MapPin, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
 import { getUserBusinesses } from "@/lib/business"
@@ -64,6 +64,11 @@ export function MainSidebar() {
           title: "Dashboard", 
           href: `/businesses/${business.id}`, 
           icon: LayoutDashboard 
+        },
+        {
+          title: "Business Page",
+          href: `/businesses/${business.id}/profile`,
+          icon: Store
         },
         { 
           title: "Settings", 

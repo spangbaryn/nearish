@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -18,17 +18,18 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      router.replace("/home");
+    }
+  }, [user, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
-  }
-
-  if (user) {
-    router.replace("/home");
-    return null;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -38,7 +39,6 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.replace("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setIsSubmitting(false);

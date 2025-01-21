@@ -25,36 +25,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Debounce the profile sync function
   const debouncedSyncProfile = debounce(async (userId: string, email: string) => {
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .single();
 
-    if (existingProfile) {
-      setUser(existingProfile as User);
-      return;
-    }
+      if (error && error.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email,
+            role: 'customer',
+            created_at: new Date().toISOString(),
+            onboarded: false
+          })
+          .select()
+          .single();
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert({
-        id: userId,
-        email,
-        role: 'customer',
-        created_at: new Date().toISOString(),
-        onboarded: false
-      })
-      .select()
-      .single();
+        if (createError) throw createError;
+        setUser(newProfile as User);
+        return;
+      }
 
-    if (error) {
+      if (error) throw error;
+      setUser(profile as User);
+    } catch (error) {
       console.error('Profile sync error:', error);
-      return;
     }
-
-    setUser(data as User);
-  }, 1000); // 1 second delay
+  }, 1000);
 
   useEffect(() => {
     let mounted = true;
@@ -111,10 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp: async (email, password) => {
         const { error } = await supabase.auth.signUp({
           email,
-          password,
-          options: {
-            data: { role: 'customer' }
-          }
+          password
         });
         if (error) throw new AuthError(error.message);
       },
