@@ -120,13 +120,11 @@ export default function BusinessProfilePage() {
         <div className="absolute max-w-4xl w-full mx-auto inset-x-0 px-8">
           <div className="relative">
             <div className="absolute -bottom-16 flex flex-col gap-2">
-              {business.logo_url && (
-                <img
-                  src={`${business.logo_url}?t=${Date.now()}`}
-                  alt={business.name}
-                  className="w-32 h-32 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
-                />
-              )}
+              <img
+                src={business.logo_url || business.place.logo_url}
+                alt={business.name}
+                className="w-32 h-32 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
+              />
               <LogoUpload 
                 businessId={businessId}
                 currentLogo={business.logo_url}
