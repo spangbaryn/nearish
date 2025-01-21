@@ -15,6 +15,7 @@ import { BusinessCover } from "../../../components/ui/business-cover"
 import { syncPlaceData } from "@/app/actions/sync-place"
 import { ColorPicker } from "../../../components/ui/color-picker"
 import { Database } from "@/types/database.types"
+import { LogoUpload } from "../../../components/ui/logo-upload"
 
 type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
   place: {
@@ -92,6 +93,20 @@ export default function BusinessProfilePage() {
     }
   })
 
+  const logoMutation = useMutation({
+    mutationFn: async (logoUrl: string) => {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ logo_url: logoUrl })
+        .eq('id', businessId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['business-profile', businessId] })
+    }
+  })
+
   if (isLoading) return <LoadingSpinner />
   if (!business) return null
 
@@ -104,13 +119,20 @@ export default function BusinessProfilePage() {
         />
         <div className="absolute max-w-4xl w-full mx-auto inset-x-0 px-8">
           <div className="relative">
-            {business.place.logo_url && (
-              <img
-                src={business.place.logo_url}
-                alt={business.name}
-                className="absolute -bottom-16 w-32 h-32 rounded-xl border-4 border-background shadow-lg object-cover"
+            <div className="absolute -bottom-16 flex flex-col gap-2">
+              {business.logo_url && (
+                <img
+                  src={`${business.logo_url}?t=${Date.now()}`}
+                  alt={business.name}
+                  className="w-32 h-32 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
+                />
+              )}
+              <LogoUpload 
+                businessId={businessId}
+                currentLogo={business.logo_url}
+                onSuccess={(logoUrl) => logoMutation.mutate(logoUrl)}
               />
-            )}
+            </div>
           </div>
         </div>
       </div>
