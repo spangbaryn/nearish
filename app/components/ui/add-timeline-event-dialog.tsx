@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -16,6 +16,7 @@ import { VideoUpload } from "../ui/video-upload"
 import { Video } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { VideoRecorder } from "../ui/video-recorder"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -33,6 +34,7 @@ type EventFormValues = z.infer<typeof eventFormSchema>
 
 export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -85,9 +87,27 @@ export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
     form.setValue('video', videoData)
   }
 
+  useEffect(() => {
+    const handleRecordingState = (e: CustomEvent<boolean>) => {
+      setIsRecording(e.detail)
+    }
+
+    window.addEventListener('recordingStateChange', handleRecordingState as EventListener)
+    return () => {
+      window.removeEventListener('recordingStateChange', handleRecordingState as EventListener)
+    }
+  }, [])
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen && !isRecording) {
+          setOpen(false)
+        }
+      }}
+    >
+      <DialogTrigger asChild onClick={() => setOpen(true)}>
         <Button variant="outline" size="sm">
           <Plus className="w-4 h-4 mr-2" />
           Add Event

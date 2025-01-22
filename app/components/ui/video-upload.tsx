@@ -1,11 +1,13 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Video, X } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { VideoRecorder } from "./video-recorder"
 
 interface VideoUploadProps {
   onSuccess: (data: {
@@ -24,6 +26,13 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
   const [progress, setProgress] = useState(0)
   const [fileName, setFileName] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isRecording, setIsRecording] = useState(false)
+
+  // Pass isRecording state up to parent
+  useEffect(() => {
+    const event = new CustomEvent('recordingStateChange', { detail: isRecording })
+    window.dispatchEvent(event)
+  }, [isRecording])
 
   const handleClick = () => {
     if (fileName) return // Prevent clicking if file already uploaded
@@ -111,7 +120,7 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
     }
   }
 
-  return (
+  const renderUploadTab = () => (
     <div 
       className={cn(
         "relative border-2 border-dashed rounded-lg p-4 hover:border-primary transition-colors",
@@ -150,5 +159,23 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
         <Progress value={progress} className="mt-4" />
       )}
     </div>
+  )
+
+  return (
+    <Tabs defaultValue="upload" className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="upload">Upload Video</TabsTrigger>
+        <TabsTrigger value="record">Record Video</TabsTrigger>
+      </TabsList>
+      <TabsContent value="upload">
+        {renderUploadTab()}
+      </TabsContent>
+      <TabsContent value="record" forceMount>
+        <VideoRecorder 
+          onSuccess={onSuccess}
+          onRecordingChange={setIsRecording}
+        />
+      </TabsContent>
+    </Tabs>
   )
 }

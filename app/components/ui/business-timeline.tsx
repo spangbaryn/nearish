@@ -72,8 +72,12 @@ export function BusinessTimeline({
               onClick={() => setSelectedEvent(event)}
             >
               <CardContent className="p-4">
-                <time className="text-sm text-muted-foreground">
-                  {new Date(event.date).toLocaleDateString()}
+                <time className="text-xs text-muted-foreground/60">
+                  {new Date(event.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
                 </time>
                 <h3 className="font-semibold mt-2">{event.title}</h3>
                 {event.video_playback_id && (
