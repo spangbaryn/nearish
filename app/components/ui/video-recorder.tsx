@@ -3,8 +3,24 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { Video, StopCircle } from "lucide-react"
+import { Video, StopCircle, Settings } from "lucide-react"
 import { MuxVideoPlayer } from "./mux-video-player"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface VideoRecorderProps {
   onSuccess: (data: {
@@ -17,32 +33,76 @@ interface VideoRecorderProps {
   onRecordingChange?: (isRecording: boolean) => void
 }
 
+interface MediaDevice {
+  deviceId: string
+  label: string
+}
+
 export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordedVideo, setRecordedVideo] = useState<{
     playbackId: string;
     thumbnailUrl: string;
   } | null>(null)
+  const [videoDevices, setVideoDevices] = useState<MediaDevice[]>([])
+  const [audioDevices, setAudioDevices] = useState<MediaDevice[]>([])
+  const [selectedVideo, setSelectedVideo] = useState<string>('')
+  const [selectedAudio, setSelectedAudio] = useState<string>('')
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    initializeCamera()
-    return () => {
-      // Cleanup: stop all tracks when component unmounts
+    getMediaDevices()
+  }, [])
+
+  useEffect(() => {
+    if (selectedVideo || selectedAudio) {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop())
       }
+      initializeCamera()
     }
-  }, [])
+  }, [selectedVideo, selectedAudio])
+
+  const getMediaDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      
+      const videoInputs = devices
+        .filter(device => device.kind === 'videoinput')
+        .map(device => ({
+          deviceId: device.deviceId,
+          label: device.label || `Camera ${device.deviceId.slice(0, 5)}`
+        }))
+      
+      const audioInputs = devices
+        .filter(device => device.kind === 'audioinput')
+        .map(device => ({
+          deviceId: device.deviceId,
+          label: device.label || `Microphone ${device.deviceId.slice(0, 5)}`
+        }))
+
+      setVideoDevices(videoInputs)
+      setAudioDevices(audioInputs)
+      
+      // Set defaults to the system default devices
+      const defaultVideo = videoInputs.find(device => device.deviceId === 'default') || videoInputs[0]
+      const defaultAudio = audioInputs.find(device => device.deviceId === 'default') || audioInputs[0]
+      
+      if (defaultVideo) setSelectedVideo(defaultVideo.deviceId)
+      if (defaultAudio) setSelectedAudio(defaultAudio.deviceId)
+    } catch (error) {
+      console.error('Error getting devices:', error)
+    }
+  }
 
   const initializeCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
-        audio: true 
+        video: selectedVideo ? { deviceId: selectedVideo } : true,
+        audio: selectedAudio ? { deviceId: selectedAudio } : true
       })
       
       streamRef.current = stream
@@ -156,11 +216,45 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         className="w-full aspect-video bg-muted rounded-lg"
       />
       
+      {!recordedVideo && !isRecording && (
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Camera</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
+                {videoDevices.map(device => (
+                  <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                    {device.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Microphone</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
+                {audioDevices.map(device => (
+                  <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                    {device.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+      
       {!recordedVideo && (
         <Button 
           type="button"
           onClick={isRecording ? stopRecording : startRecording}
           className="w-full"
+          variant="secondary"
         >
           {isRecording ? (
             <>

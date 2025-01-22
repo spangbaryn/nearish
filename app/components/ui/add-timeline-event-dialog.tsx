@@ -16,7 +16,7 @@ import { VideoUpload } from "../ui/video-upload"
 import { Video } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { VideoRecorder } from "../ui/video-recorder"
+import { ErrorBoundary } from "@/components/error-boundary"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -32,7 +32,7 @@ const eventFormSchema = z.object({
 
 type EventFormValues = z.infer<typeof eventFormSchema>
 
-export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
+function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const queryClient = useQueryClient()
@@ -87,14 +87,15 @@ export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
     form.setValue('video', videoData)
   }
 
-  useEffect(() => {
-    const handleRecordingState = (e: CustomEvent<boolean>) => {
-      setIsRecording(e.detail)
-    }
+  const handleRecordingChange = (recording: boolean) => {
+    setIsRecording(recording)
+  }
 
-    window.addEventListener('recordingStateChange', handleRecordingState as EventListener)
+  useEffect(() => {
     return () => {
-      window.removeEventListener('recordingStateChange', handleRecordingState as EventListener)
+      // Cleanup function to ensure state is reset
+      setOpen(false)
+      setIsRecording(false)
     }
   }, [])
 
@@ -102,12 +103,17 @@ export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
     <Dialog 
       open={open} 
       onOpenChange={(isOpen) => {
-        if (!isOpen && !isRecording) {
-          setOpen(false)
+        if (!isOpen) {
+          // Only close if not recording
+          if (!isRecording) {
+            setOpen(false)
+          }
+        } else {
+          setOpen(true)
         }
       }}
     >
-      <DialogTrigger asChild onClick={() => setOpen(true)}>
+      <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plus className="w-4 h-4 mr-2" />
           Add Event
@@ -150,7 +156,10 @@ export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
             />
             <div className="space-y-2">
               <Label>Video (optional)</Label>
-              <VideoUpload onSuccess={handleVideoUpload} />
+              <VideoUpload 
+                onSuccess={handleVideoUpload} 
+                onRecordingChange={handleRecordingChange}
+              />
               {form.watch('video') && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Video className="w-4 h-4" />
@@ -165,5 +174,13 @@ export function AddTimelineEventDialog({ businessId }: { businessId: string }) {
         </Form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+export function AddTimelineEventDialog(props: { businessId: string }) {
+  return (
+    <ErrorBoundary>
+      <AddTimelineEventDialogContent businessId={props.businessId} />
+    </ErrorBoundary>
   )
 } 
