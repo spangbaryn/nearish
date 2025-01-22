@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Video, StopCircle } from "lucide-react"
+import { MuxVideoPlayer } from "./mux-video-player"
 
 interface VideoRecorderProps {
   onSuccess: (data: {
@@ -18,22 +19,49 @@ interface VideoRecorderProps {
 
 export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
+  const [recordedVideo, setRecordedVideo] = useState<{
+    playbackId: string;
+    thumbnailUrl: string;
+  } | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const chunksRef = useRef<Blob[]>([])
+  const streamRef = useRef<MediaStream | null>(null)
 
-  const startRecording = async () => {
+  useEffect(() => {
+    initializeCamera()
+    return () => {
+      // Cleanup: stop all tracks when component unmounts
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [])
+
+  const initializeCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: true, 
         audio: true 
       })
       
+      streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
+    } catch (error: any) {
+      toast.error('Failed to access camera')
+      console.error('Camera error:', error)
+    }
+  }
 
-      const mediaRecorder = new MediaRecorder(stream)
+  const startRecording = async () => {
+    try {
+      if (!streamRef.current) {
+        await initializeCamera()
+      }
+
+      const mediaRecorder = new MediaRecorder(streamRef.current!)
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
 
@@ -43,10 +71,14 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         }
       }
 
-      mediaRecorder.start(1000)
+      // Set recording state before starting the recorder
       setIsRecording(true)
       onRecordingChange?.(true)
+      
+      mediaRecorder.start(1000)
     } catch (error: any) {
+      setIsRecording(false)
+      onRecordingChange?.(false)
       toast.error('Failed to start recording')
       console.error('Recording error:', error)
     }
@@ -89,14 +121,20 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
 
       if (!asset) throw new Error('Video processing timeout')
 
-      onSuccess({
+      const videoData = {
         assetId: asset.id,
         playbackId: asset.playback_id,
         thumbnailUrl: asset.thumbnail_url,
         duration: asset.duration,
         status: asset.status
-      })
+      }
 
+      setRecordedVideo({
+        playbackId: asset.playback_id,
+        thumbnailUrl: asset.thumbnail_url
+      })
+      
+      onSuccess(videoData)
       setIsRecording(false)
       onRecordingChange?.(false)
       if (videoRef.current) {
@@ -117,22 +155,26 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         muted
         className="w-full aspect-video bg-muted rounded-lg"
       />
-      <Button 
-        onClick={isRecording ? stopRecording : startRecording}
-        variant={isRecording ? "destructive" : "outline"}
-      >
-        {isRecording ? (
-          <>
-            <StopCircle className="w-4 h-4 mr-2" />
-            Stop Recording
-          </>
-        ) : (
-          <>
-            <Video className="w-4 h-4 mr-2" />
-            Start Recording
-          </>
-        )}
-      </Button>
+      
+      {!recordedVideo && (
+        <Button 
+          type="button"
+          onClick={isRecording ? stopRecording : startRecording}
+          className="w-full"
+        >
+          {isRecording ? (
+            <>
+              <StopCircle className="w-4 h-4 mr-2" />
+              Stop Recording
+            </>
+          ) : (
+            <>
+              <Video className="w-4 h-4 mr-2" />
+              Start Recording
+            </>
+          )}
+        </Button>
+      )}
     </div>
   )
 } 
