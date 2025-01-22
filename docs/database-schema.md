@@ -254,3 +254,23 @@ Stores AI prompts used for generating responses.
 - Ensures all new users are automatically subscribed to the Weekly Roundup list
 - Runs after profile creation to maintain referential integrity
 - Uses SECURITY DEFINER to ensure proper permissions
+
+### **Business Timeline Events**
+
+Stores key milestones and events in a business's history.
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key, Not Null | Unique identifier for the event |
+| `business_id` | UUID | Foreign Key -> businesses(id) | Associated business |
+| `title` | VARCHAR(255) | Not Null | Event title |
+| `date` | TIMESTAMP | Not Null | When the event occurred |
+| `created_by` | UUID | Foreign Key -> profiles(id) | User who created the event |
+| `created_at` | TIMESTAMP | Default: CURRENT_TIMESTAMP | When the event was created |
+| `updated_at` | TIMESTAMP | | Last update timestamp |
+
+**Context**:
+- Events are displayed chronologically on the business profile
+- Used to build a visual timeline of business milestones
+- Simple, focused event entries with just title and date
+- Supports the "Our Story" feature on business profiles

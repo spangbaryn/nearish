@@ -1,21 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useRef } from "react"
 import { Upload } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
+import { cn } from "@/lib/utils"
 
 interface LogoUploadProps {
   businessId: string
-  currentLogo?: string
-  onSuccess: (logoUrl: string) => void
+  currentLogo?: string | null
+  onSuccess: (url: string) => void
   className?: string
 }
 
 export function LogoUpload({ businessId, currentLogo, onSuccess, className }: LogoUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleClick = () => {
+    fileInputRef.current?.click()
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -28,10 +32,8 @@ export function LogoUpload({ businessId, currentLogo, onSuccess, className }: Lo
 
     setIsUploading(true)
     try {
-      // Always use .jpg extension for consistency
       const filePath = `${businessId}/logo.jpg`
 
-      // Upload to storage with upsert: true to replace existing file
       const { error: uploadError } = await supabase.storage
         .from('business-logos')
         .upload(filePath, file, { 
@@ -41,7 +43,6 @@ export function LogoUpload({ businessId, currentLogo, onSuccess, className }: Lo
 
       if (uploadError) throw uploadError
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('business-logos')
         .getPublicUrl(filePath)
@@ -57,20 +58,23 @@ export function LogoUpload({ businessId, currentLogo, onSuccess, className }: Lo
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className={cn("relative", className)}
-      disabled={isUploading}
+    <div 
+      className={cn("group relative cursor-pointer", className)}
+      onClick={handleClick}
     >
       <input
+        ref={fileInputRef}
         type="file"
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        className="hidden"
         accept="image/*"
         onChange={handleUpload}
       />
-      <Upload className="h-4 w-4 mr-2" />
-      {isUploading ? "Uploading..." : currentLogo ? "Replace Logo" : "Upload Logo"}
-    </Button>
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+        <div className="text-white flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          <span>{isUploading ? "Uploading..." : "Replace Logo"}</span>
+        </div>
+      </div>
+    </div>
   )
 } 

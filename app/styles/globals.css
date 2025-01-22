@@ -162,3 +162,56 @@
     margin-bottom: 16px !important;
   }
 }
+
+.timeline-item {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.timeline-item:hover {
+  background-color: hsl(var(--muted));
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -6px;
+}
+
+.vis-timeline {
+  border: none;
+  background: transparent;
+}
+
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-panel.vis-right {
+  border: none;
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+  border-color: hsl(var(--border) / 0.2);
+}
+
+.vis-time-axis .vis-grid.vis-major {
+  border-color: hsl(var(--border));
+}
+
+.timeline-connector {
+  position: absolute;
+  top: 50%;
+  right: -1rem;
+  width: calc(100% + 2rem);
+  height: 2px;
+  background-color: hsl(var(--border));
+  transform: translateY(-50%);
+  z-index: -1;
+}

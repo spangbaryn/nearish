@@ -628,6 +628,50 @@ export type Database = {
           created_at?: string
         }
       }
+      business_timeline_events: {
+        Row: {
+          id: string
+          business_id: string
+          title: string
+          description: string | null
+          date: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          title: string
+          description?: string | null
+          date: string
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          title?: string
+          description?: string | null
+          date?: string
+          created_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_timeline_events_business_id_fkey"
+            columns: ["business_id"]
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_timeline_events_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
