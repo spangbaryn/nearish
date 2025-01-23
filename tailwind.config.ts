@@ -71,12 +71,17 @@ export default {
   		},
   		animation: {
   			ripple: 'ripple 0.5s ease-out',
+  			pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
   		},
   		keyframes: {
   			ripple: {
   				'0%': { width: '0px', height: '0px', opacity: '0.5' },
   				'100%': { width: '500px', height: '500px', opacity: '0' },
   			},
+  			pulse: {
+  				'0%, 100%': { opacity: 1 },
+  				'50%': { opacity: .5 }
+  			}
   		},
   	}
   },
@@ -84,4 +89,6 @@ export default {
     require('@tailwindcss/typography'),
     require("tailwindcss-animate")
   ],
+
+  
 } satisfies Config;

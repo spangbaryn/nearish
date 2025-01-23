@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { VideoRecorder } from "./video-recorder"
 import { MuxVideoPlayer } from "./mux-video-player"
+import { VideoPreviewSkeleton } from "./video-preview-skeleton"
 
 interface VideoUploadProps {
   onSuccess: (data: {
@@ -22,17 +23,21 @@ interface VideoUploadProps {
   maxSize?: number // in MB
 }
 
-export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUploadProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [fileName, setFileName] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function VideoUpload({ onSuccess, onRecordingChange, className, maxSize = 100 }: VideoUploadProps) {
+  const [isLoading, setIsLoading] = useState(true)
   const [isRecording, setIsRecording] = useState(false)
+  const [recordedVideoData, setRecordedVideoData] = useState<RecordedVideoData | null>(null)
   const [hasRecordedVideo, setHasRecordedVideo] = useState(false)
-  const [recordedVideoData, setRecordedVideoData] = useState<{
-    playbackId: string;
-    thumbnailUrl: string;
-  } | null>(null)
+  const [progress, setProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const event = new CustomEvent('recordingStateChange', { detail: isRecording })
@@ -54,7 +59,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
       return
     }
 
-    setFileName(file.name)
     setIsUploading(true)
     try {
       const response = await fetch('/api/videos/upload', {
@@ -108,7 +112,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
     } catch (error: any) {
       console.error('Upload error:', error)
       toast.error(error.message || 'Failed to upload video')
-      setFileName(null)
     } finally {
       setIsUploading(false)
       setProgress(0)
@@ -117,49 +120,55 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
 
   return (
     <div className="space-y-4">
-      {!recordedVideoData ? (
-        <VideoRecorder 
-          onSuccess={handleRecordingSuccess}
-          onRecordingChange={setIsRecording}
-        />
+      {isLoading ? (
+        <VideoPreviewSkeleton />
       ) : (
-        <div className="mt-4">
-          <MuxVideoPlayer 
-            playbackId={recordedVideoData.playbackId}
-            className="rounded-lg"
-          />
-        </div>
-      )}
-      
-      {!hasRecordedVideo && (
         <>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-muted" />
+          {!recordedVideoData ? (
+            <VideoRecorder 
+              onSuccess={handleRecordingSuccess}
+              onRecordingChange={setIsRecording}
+            />
+          ) : (
+            <div className="mt-4">
+              <MuxVideoPlayer 
+                playbackId={recordedVideoData.playbackId}
+                className="rounded-lg"
+              />
             </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">
-                or{" "}
-                <span 
-                  className="text-secondary cursor-pointer hover:underline" 
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  upload a video
-                </span>
-              </span>
-            </div>
-          </div>
+          )}
+          
+          {!hasRecordedVideo && (
+            <>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-muted" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    or{" "}
+                    <span 
+                      className="text-secondary cursor-pointer hover:underline" 
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      upload a video
+                    </span>
+                  </span>
+                </div>
+              </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            accept="video/*"
-            onChange={handleUpload}
-          />
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="video/*"
+                onChange={handleUpload}
+              />
 
-          {isUploading && (
-            <Progress value={progress} className="mt-4" />
+              {isUploading && (
+                <Progress value={progress} className="mt-4" />
+              )}
+            </>
           )}
         </>
       )}

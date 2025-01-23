@@ -22,6 +22,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { VideoPreviewSkeleton } from "../ui/video-preview-skeleton"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -40,6 +41,8 @@ type EventFormValues = z.infer<typeof eventFormSchema>
 function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+  const [hasRecorded, setHasRecorded] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -90,17 +93,20 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     status: string
   }) => {
     form.setValue('video', videoData)
+    setHasRecorded(true)
   }
 
   const handleRecordingChange = (recording: boolean) => {
     setIsRecording(recording)
   }
 
+
+
   useEffect(() => {
     return () => {
-      // Cleanup function to ensure state is reset
       setOpen(false)
       setIsRecording(false)
+      setHasRecorded(false)
     }
   }, [])
 
@@ -108,18 +114,15 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     <Dialog 
       open={open} 
       onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          // Only close if not recording
-          if (!isRecording) {
-            // Stop all media tracks
-            const videoElement = document.querySelector('video');
-            if (videoElement && videoElement.srcObject) {
-              const stream = videoElement.srcObject as MediaStream;
-              stream.getTracks().forEach(track => track.stop());
-              videoElement.srcObject = null;
-            }
-            setOpen(false);
+        if (!isOpen && !isRecording) {
+          const videoElement = document.querySelector('video');
+          if (videoElement && videoElement.srcObject) {
+            const stream = videoElement.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
           }
+          setOpen(false);
+          setHasRecorded(false);
         } else {
           setOpen(true);
         }
@@ -135,87 +138,81 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
         <DialogHeader>
           <DialogTitle>Add Timeline Event</DialogTitle>
           <DialogDescription>
-            Add a new event to your business timeline.
+            {!hasRecorded ? 'Record a video for your timeline event.' : 'Fill in the event details.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <VideoUpload 
+              onSuccess={handleVideoUpload} 
+              onRecordingChange={handleRecordingChange}
             />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <div className="flex gap-2">
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                      value={field.value ? new Date(field.value).getMonth() : new Date().getMonth()}
-                      onChange={(e) => {
-                        const currentDate = field.value ? new Date(field.value) : new Date();
-                        currentDate.setMonth(parseInt(e.target.value));
-                        field.onChange(currentDate.toISOString());
-                      }}
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <option key={i} value={i}>
-                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                      value={field.value ? new Date(field.value).getFullYear() : new Date().getFullYear()}
-                      onChange={(e) => {
-                        const currentDate = field.value ? new Date(field.value) : new Date();
-                        currentDate.setFullYear(parseInt(e.target.value));
-                        field.onChange(currentDate.toISOString());
-                      }}
-                    >
-                      {Array.from(
-                        { length: new Date().getFullYear() - 1899 },
-                        (_, i) => new Date().getFullYear() - i
-                      ).map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="space-y-2">
-              <Label>
-                Video <span className="text-destructive">*</span>
-              </Label>
-              <VideoUpload 
-                onSuccess={handleVideoUpload} 
-                onRecordingChange={handleRecordingChange}
-              />
-              {form.watch('video') && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Video className="w-4 h-4" />
-                  <span>Video uploaded successfully</span>
-                </div>
-              )}
-            </div>
-            <Button type="submit" className="w-full" disabled={createEventMutation.isPending}>
-              Add Event
-            </Button>
+            
+            {hasRecorded && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date</FormLabel>
+                      <div className="flex gap-2">
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                          value={field.value ? new Date(field.value).getMonth() : new Date().getMonth()}
+                          onChange={(e) => {
+                            const currentDate = field.value ? new Date(field.value) : new Date();
+                            currentDate.setMonth(parseInt(e.target.value));
+                            field.onChange(currentDate.toISOString());
+                          }}
+                        >
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                          value={field.value ? new Date(field.value).getFullYear() : new Date().getFullYear()}
+                          onChange={(e) => {
+                            const currentDate = field.value ? new Date(field.value) : new Date();
+                            currentDate.setFullYear(parseInt(e.target.value));
+                            field.onChange(currentDate.toISOString());
+                          }}
+                        >
+                          {Array.from(
+                            { length: new Date().getFullYear() - 1899 },
+                            (_, i) => new Date().getFullYear() - i
+                          ).map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={createEventMutation.isPending}>
+                  Add Event
+                </Button>
+              </>
+            )}
           </form>
         </Form>
       </DialogContent>

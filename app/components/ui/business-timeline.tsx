@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { EditTimelineEventDialog } from "./edit-timeline-event-dialog"
 
 type TimelineEvent = Database['public']['Tables']['business_timeline_events']['Row'] & {
   created_by: Database['public']['Tables']['profiles']['Row']
@@ -76,11 +77,16 @@ export function BusinessTimeline({ businessId, events }: { businessId: string, e
                 )}
                 <Card 
                   className={cn(
-                    "min-w-[200px] cursor-pointer transition-colors relative",
+                    "min-w-[200px] cursor-pointer transition-colors relative group",
                     selectedEvent?.id === event.id && "border-primary"
                   )}
-                  onClick={() => setSelectedEvent(event)}
+                  onClick={(e) => {
+                    if (!(e.target as HTMLElement).closest('.edit-button')) {
+                      setSelectedEvent(event)
+                    }
+                  }}
                 >
+                  <EditTimelineEventDialog event={event} className="edit-button" />
                   <CardContent className="p-4 pb-10">
                     <time className="text-xs text-muted-foreground/60">
                       {new Date(event.date).toLocaleDateString('en-US', {

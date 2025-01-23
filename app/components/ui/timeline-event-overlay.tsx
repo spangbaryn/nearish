@@ -14,6 +14,7 @@ interface TimelineEventOverlayProps {
     title: string
     date: string
     video_playback_id?: string
+    description?: string
   }>
   currentEventId: string
   onClose: () => void
@@ -61,14 +62,14 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
     >
       {/* Header */}
       <div className="flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm">
-      <Image
-                src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
-                alt="Nearish Logo"
-                width={240}
-                height={70}
-                className="h-20 w-auto"
-                priority
-              />
+        <Image
+          src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
+          alt="Nearish Logo"
+          width={240}
+          height={70}
+          className="h-20 w-auto"
+          priority
+        />
         <Button
           variant="ghost"
           size="icon"
@@ -96,25 +97,26 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
         {/* Video Player */}
         <div className="w-full max-w-2xl mx-auto px-4">
           {currentEvent.video_playback_id && (
-            <>
-              <MuxVideoPlayer 
-                playbackId={currentEvent.video_playback_id}
-                autoPlay={true}
-                onEnded={handleVideoEnded}
-              />
-              <Card className="mt-4">
-                <CardContent className="p-4">
-                  <time className="text-xs text-muted-foreground/60">
-                    {new Date(currentEvent.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </time>
-                  <h3 className="font-semibold mt-2">{currentEvent.title}</h3>
-                </CardContent>
-              </Card>
-            </>
+            <MuxVideoPlayer 
+              playbackId={currentEvent.video_playback_id}
+              autoPlay={true}
+              onEnded={handleVideoEnded}
+            />
           )}
+          <Card className="mt-4">
+            <CardContent className="p-4">
+              <time className="text-xs text-muted-foreground/60">
+                {new Date(currentEvent.date).toLocaleDateString('en-US', {
+                  month: 'short',
+                  year: 'numeric'
+                })}
+              </time>
+              <h3 className="font-semibold mt-2">{currentEvent.title}</h3>
+              {currentEvent.description && (
+                <p className="mt-2 text-sm text-muted-foreground">{currentEvent.description}</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <Button
