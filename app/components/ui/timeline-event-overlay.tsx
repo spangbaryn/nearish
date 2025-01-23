@@ -61,13 +61,14 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
     >
       {/* Header */}
       <div className="flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm">
-        <Image
-          src="/neerish-logo.svg"
-          alt="Neerish Logo"
-          width={120}
-          height={40}
-          className="dark:invert"
-        />
+      <Image
+                src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
+                alt="Nearish Logo"
+                width={240}
+                height={70}
+                className="h-20 w-auto"
+                priority
+              />
         <Button
           variant="ghost"
           size="icon"

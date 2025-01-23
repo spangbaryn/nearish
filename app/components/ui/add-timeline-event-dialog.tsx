@@ -32,7 +32,7 @@ const eventFormSchema = z.object({
     thumbnailUrl: z.string(),
     duration: z.number().optional(),
     status: z.string().optional()
-  }).optional()
+  }).required("Video is required")
 })
 
 type EventFormValues = z.infer<typeof eventFormSchema>
@@ -199,7 +199,9 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
               )}
             />
             <div className="space-y-2">
-              <Label>Video (optional)</Label>
+              <Label>
+                Video <span className="text-destructive">*</span>
+              </Label>
               <VideoUpload 
                 onSuccess={handleVideoUpload} 
                 onRecordingChange={handleRecordingChange}

@@ -8,6 +8,8 @@ import { MuxVideoPlayer } from "./mux-video-player"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 type TimelineEvent = Database['public']['Tables']['business_timeline_events']['Row'] & {
   created_by: Database['public']['Tables']['profiles']['Row']
@@ -20,6 +22,12 @@ type TimelineEvent = Database['public']['Tables']['business_timeline_events']['R
 
 export function BusinessTimeline({ businessId, events }: { businessId: string, events: TimelineEvent[] }) {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
+
+  console.log('Timeline Events:', events.map(e => ({
+    id: e.id,
+    title: e.title,
+    created_by: e.created_by
+  })))
 
   const shouldShowYear = (event: TimelineEvent, index: number) => {
     const currentYear = new Date(event.date).getFullYear()
@@ -50,48 +58,68 @@ export function BusinessTimeline({ businessId, events }: { businessId: string, e
   )
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className="mt-8 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Our Story</h2>
         <AddTimelineEventDialog businessId={businessId} />
       </div>
       
-      <div className="flex gap-4 overflow-x-auto pb-12 relative">
-        {sortedEvents.map((event, index) => (
-          <div key={event.id} className="relative">
-            {shouldShowYear(event, index) && (
-              <div className="absolute -bottom-12 left-0 text-2xl font-bold text-muted-foreground/20">
-                {new Date(event.date).getFullYear()}
-              </div>
-            )}
-            <Card 
-              className={cn(
-                "min-w-[200px] cursor-pointer transition-colors",
-                selectedEvent?.id === event.id && "border-primary"
-              )}
-              onClick={() => setSelectedEvent(event)}
-            >
-              <CardContent className="p-4">
-                <time className="text-xs text-muted-foreground/60">
-                  {new Date(event.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    year: 'numeric'
-                  })}
-                </time>
-                <h3 className="font-semibold mt-2">{event.title}</h3>
-                {event.video_playback_id && (
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    Click to play video
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex gap-4 overflow-x-auto pb-12 relative">
+            {sortedEvents.map((event, index) => (
+              <div key={event.id} className="relative flex-shrink-0">
+                {shouldShowYear(event, index) && (
+                  <div className="absolute -bottom-12 left-0 text-2xl font-bold text-muted-foreground/20">
+                    {new Date(event.date).getFullYear()}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-            {index < events.length - 1 && (
-              <div className="timeline-connector" />
-            )}
+                <Card 
+                  className={cn(
+                    "min-w-[200px] cursor-pointer transition-colors relative",
+                    selectedEvent?.id === event.id && "border-primary"
+                  )}
+                  onClick={() => setSelectedEvent(event)}
+                >
+                  <CardContent className="p-4 pb-10">
+                    <time className="text-xs text-muted-foreground/60">
+                      {new Date(event.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </time>
+                    <h3 className="font-semibold mt-2">{event.title}</h3>
+                    {event.thumbnail_url && (
+                      <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-md">
+                        <Image
+                          src={event.thumbnail_url}
+                          alt={`Thumbnail for ${event.title}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 right-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage 
+                          src={event.created_by?.avatar_url} 
+                          alt={event.created_by?.full_name || 'User'} 
+                        />
+                        <AvatarFallback>
+                          {event.created_by?.full_name?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                  </CardContent>
+                </Card>
+                {index < events.length - 1 && (
+                  <div className="timeline-connector" />
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
 
       {selectedEvent && (
         <TimelineEventOverlay 

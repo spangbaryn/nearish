@@ -215,3 +215,12 @@
     left: 0;
   }
 }
+
+.timeline-connector {
+  position: absolute;
+  top: 50%;
+  right: -2rem;
+  width: 2rem;
+  height: 2px;
+  background-color: hsl(var(--border));
+}
