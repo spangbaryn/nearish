@@ -22,7 +22,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { VideoPreviewSkeleton } from "../ui/video-preview-skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -33,16 +33,35 @@ const eventFormSchema = z.object({
     thumbnailUrl: z.string(),
     duration: z.number().optional(),
     status: z.string().optional()
-  }).required("Video is required")
+  }).required()
 })
 
 type EventFormValues = z.infer<typeof eventFormSchema>
+
+function FormFieldsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-10" /> {/* Title label */}
+        <Skeleton className="h-10 w-full rounded-md" /> {/* Title input */}
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-10" /> {/* Date label */}
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-full rounded-md" /> {/* Month select */}
+          <Skeleton className="h-10 w-full rounded-md" /> {/* Year select */}
+        </div>
+      </div>
+      <Skeleton className="h-10 w-full rounded-md" /> {/* Submit button */}
+    </div>
+  )
+}
 
 function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [hasRecorded, setHasRecorded] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isVideoProcessing, setIsVideoProcessing] = useState(false)
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -52,6 +71,14 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
       date: new Date().toISOString().split('T')[0],
     }
   })
+
+  const resetStates = () => {
+    setOpen(false)
+    setIsRecording(false)
+    setHasRecorded(false)
+    setIsVideoProcessing(false)
+    form.reset()
+  }
 
   const createEventMutation = useMutation({
     mutationFn: async (data: EventFormValues) => {
@@ -76,8 +103,7 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     },
     onSuccess: () => {
       toast.success("Event added successfully")
-      setOpen(false)
-      form.reset()
+      resetStates()
       queryClient.invalidateQueries({ queryKey: ['business-timeline', businessId] })
     },
     onError: (error: any) => {
@@ -85,22 +111,24 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     }
   })
 
-  const handleVideoUpload = (videoData: { 
-    assetId: string, 
-    playbackId: string, 
+  const handleRecordingChange = (recording: boolean) => {
+    setIsRecording(recording)
+    if (!recording) {
+      setIsVideoProcessing(true)
+      setHasRecorded(true)
+    }
+  }
+
+  const handleVideoUpload = (videoData: {
+    assetId: string,
+    playbackId: string,
     thumbnailUrl: string,
     duration: number,
     status: string
   }) => {
+    setIsVideoProcessing(false)
     form.setValue('video', videoData)
-    setHasRecorded(true)
   }
-
-  const handleRecordingChange = (recording: boolean) => {
-    setIsRecording(recording)
-  }
-
-
 
   useEffect(() => {
     return () => {
@@ -121,8 +149,7 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
             stream.getTracks().forEach(track => track.stop());
             videoElement.srcObject = null;
           }
-          setOpen(false);
-          setHasRecorded(false);
+          resetStates();
         } else {
           setOpen(true);
         }
@@ -134,7 +161,7 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
           Add Event
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Timeline Event</DialogTitle>
           <DialogDescription>
@@ -208,8 +235,12 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={createEventMutation.isPending}>
-                  Add Event
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={createEventMutation.isPending || isVideoProcessing || !form.watch('title')}
+                >
+                  {isVideoProcessing ? "Processing video..." : "Add Event"}
                 </Button>
               </>
             )}

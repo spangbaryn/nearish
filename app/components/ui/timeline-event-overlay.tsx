@@ -80,7 +80,7 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center relative">
+      <div className="flex-1 flex items-center justify-center relative overflow-hidden">
         {/* Navigation Buttons */}
         <Button
           variant="ghost"
@@ -95,15 +95,20 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
         </Button>
 
         {/* Video Player */}
-        <div className="w-full max-w-2xl mx-auto px-4">
-          {currentEvent.video_playback_id && (
-            <MuxVideoPlayer 
-              playbackId={currentEvent.video_playback_id}
-              autoPlay={true}
-              onEnded={handleVideoEnded}
-            />
-          )}
-          <Card className="mt-4">
+        <div className="w-full max-w-2xl mx-auto px-4 flex flex-col h-full max-h-[calc(100vh-12rem)] py-4">
+          <div className="flex-1 min-h-0">
+            {currentEvent.video_playback_id && (
+              <div className="h-full flex items-center">
+                <MuxVideoPlayer 
+                  playbackId={currentEvent.video_playback_id}
+                  autoPlay={true}
+                  onEnded={handleVideoEnded}
+                  className="w-full h-auto max-h-full"
+                />
+              </div>
+            )}
+          </div>
+          <Card className="mt-4 shrink-0">
             <CardContent className="p-4">
               <time className="text-xs text-muted-foreground/60">
                 {new Date(currentEvent.date).toLocaleDateString('en-US', {

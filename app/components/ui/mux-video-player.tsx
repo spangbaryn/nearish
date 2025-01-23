@@ -17,8 +17,8 @@ export function MuxVideoPlayer({
   onEnded 
 }: MuxVideoPlayerProps) {
   return (
-    <div className="max-w-sm mx-auto">
-      <div className="aspect-[9/16] relative shadow-2xl rounded-2xl overflow-hidden">
+    <div className="w-full h-full">
+      <div className="aspect-[9/16] relative shadow-2xl rounded-2xl overflow-hidden h-full">
         <MuxPlayer
           streamType="on-demand"
           playbackId={playbackId}

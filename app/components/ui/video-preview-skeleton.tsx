@@ -6,7 +6,7 @@ export function VideoPreviewSkeleton() {
   return (
     <div className="space-y-4">
       <div className="aspect-w-9 aspect-h-16">
-        <Skeleton className="w-full h-full rounded-xl" />
+        <Skeleton className="w-full h-full rounded-lg" />
       </div>
       <div className="flex justify-center">
         <Skeleton className="h-10 w-32 rounded-lg" />

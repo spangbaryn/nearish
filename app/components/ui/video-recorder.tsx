@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { VideoProcessingSkeleton } from "./video-processing-skeleton"
 
 interface VideoRecorderProps {
   onSuccess: (data: {
@@ -48,23 +49,39 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
   const [audioDevices, setAudioDevices] = useState<MediaDevice[]>([])
   const [selectedVideo, setSelectedVideo] = useState<string>('')
   const [selectedAudio, setSelectedAudio] = useState<string>('')
+  const [countdown, setCountdown] = useState<number | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
-    getMediaDevices()
+    if (!isRecording && !isProcessing && !recordedVideo) {
+      getMediaDevices()
+    }
+    
+    // Cleanup function to stop all tracks when component unmounts
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
+        tracks?.forEach(track => track.stop())
+        videoRef.current.srcObject = null
+      }
+    }
   }, [])
 
   useEffect(() => {
     if (selectedVideo || selectedAudio) {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
+      if (!isRecording && !isProcessing && !recordedVideo) {
+        initializeCamera()
       }
-      initializeCamera()
     }
-  }, [selectedVideo, selectedAudio])
+  }, [selectedVideo, selectedAudio, isRecording, isProcessing, recordedVideo])
 
   const getMediaDevices = async () => {
     try {
@@ -125,6 +142,13 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         await initializeCamera()
       }
 
+      // Start countdown
+      setCountdown(3)
+      for (let i = 2; i >= 0; i--) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        setCountdown(i)
+      }
+      
       const mediaRecorder = new MediaRecorder(streamRef.current!)
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
@@ -137,11 +161,13 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
 
       setIsRecording(true)
       onRecordingChange?.(true)
+      setCountdown(null)
       
       mediaRecorder.start(1000)
     } catch (error: any) {
       setIsRecording(false)
       onRecordingChange?.(false)
+      setCountdown(null)
       toast.error('Failed to start recording')
       console.error('Recording error:', error)
     }
@@ -149,12 +175,19 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
 
   const stopRecording = async () => {
     if (!mediaRecorderRef.current) return
+    setIsProcessing(true)
+    onRecordingChange?.(false)
 
     try {
       mediaRecorderRef.current.stop()
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
       if (videoRef.current?.srcObject) {
-        const tracks = videoRef.current.srcObject as MediaStream
-        tracks?.getTracks().forEach(track => track.stop())
+        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
+        tracks?.forEach(track => track.stop())
+        videoRef.current.srcObject = null
       }
 
       const blob = new Blob(chunksRef.current, { type: 'video/webm' })
@@ -206,10 +239,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
       
       onSuccess(videoData)
       setIsRecording(false)
-      onRecordingChange?.(false)
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
-      }
+      setIsProcessing(false)
     } catch (error: any) {
       toast.error(error.message || 'Failed to stop recording')
       console.error('Recording error:', error)
@@ -217,20 +247,57 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
   }
 
   return (
-    <div className="space-y-4">
-      <div className="aspect-w-9 aspect-h-16">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover bg-muted rounded-lg"
-        />
-      </div>
-      
-      {!recordedVideo && (
-        <div className="relative">
-          <div className="absolute right-0">
+    <div className="flex flex-col space-y-4">
+      {isProcessing ? (
+        <VideoProcessingSkeleton />
+      ) : recordedVideo ? (
+        <div className="flex-1 min-h-0">
+          <div className="flex items-center justify-center">
+            <div className="w-full max-w-[280px]">
+              <MuxVideoPlayer playbackId={recordedVideo.playbackId} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 min-h-0">
+            <div className="flex items-center justify-center">
+              <div className="w-full max-w-[280px] relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover bg-gray-200 rounded-lg"
+                />
+                {countdown !== null && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <span className="text-8xl font-bold text-white">{countdown || "GO!"}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between px-4">
+            <Button 
+              type="button"
+              onClick={isRecording ? stopRecording : startRecording}
+              variant="secondary"
+            >
+              {isRecording ? (
+                <>
+                  <StopCircle className="w-4 h-4 mr-2" />
+                  Stop Recording
+                </>
+              ) : (
+                <>
+                  <Video className="w-4 h-4 mr-2" />
+                  Start Recording
+                </>
+              )}
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -260,26 +327,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="flex justify-center">
-            <Button 
-              type="button"
-              onClick={isRecording ? stopRecording : startRecording}
-              variant="secondary"
-            >
-              {isRecording ? (
-                <>
-                  <StopCircle className="w-4 h-4 mr-2" />
-                  Stop Recording
-                </>
-              ) : (
-                <>
-                  <Video className="w-4 h-4 mr-2" />
-                  Start Recording
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        </>
       )}
     </div>
   )

@@ -8,25 +8,31 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { VideoRecorder } from "./video-recorder"
 import { MuxVideoPlayer } from "./mux-video-player"
-import { VideoPreviewSkeleton } from "./video-preview-skeleton"
+import { VideoProcessingSkeleton } from "./video-processing-skeleton"
+import { Database } from "@/types/database.types"
+
+type BusinessTimelineEvent = Database["public"]["Tables"]["business_timeline_events"]["Row"]
+
+type VideoData = {
+  assetId: string
+  playbackId: string
+  thumbnailUrl: string
+  duration: number
+  status: string
+}
 
 interface VideoUploadProps {
-  onSuccess: (data: {
-    assetId: string,
-    playbackId: string,
-    thumbnailUrl: string,
-    duration: number,
-    status: string
-  }) => void
+  onSuccess: (data: VideoData) => void
   onRecordingChange?: (recording: boolean) => void
   className?: string
   maxSize?: number // in MB
 }
 
-export function VideoUpload({ onSuccess, onRecordingChange, className, maxSize = 100 }: VideoUploadProps) {
+export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className, maxSize = 100 }: VideoUploadProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isRecording, setIsRecording] = useState(false)
-  const [recordedVideoData, setRecordedVideoData] = useState<RecordedVideoData | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [recordedVideoData, setRecordedVideoData] = useState<VideoData | null>(null)
   const [hasRecordedVideo, setHasRecordedVideo] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
@@ -44,7 +50,16 @@ export function VideoUpload({ onSuccess, onRecordingChange, className, maxSize =
     window.dispatchEvent(event)
   }, [isRecording])
 
-  const handleRecordingSuccess = (data: any) => {
+  const handleRecordingChange = (recording: boolean) => {
+    setIsRecording(recording)
+    onRecordingChange?.(recording)
+    if (!recording) {
+      setIsProcessing(true)
+    }
+  }
+
+  const handleRecordingSuccess = (data: VideoData) => {
+    setIsProcessing(false)
     setHasRecordedVideo(true)
     setRecordedVideoData(data)
     onSuccess(data)
@@ -119,27 +134,31 @@ export function VideoUpload({ onSuccess, onRecordingChange, className, maxSize =
   }
 
   return (
-    <div className="space-y-4">
-      {isLoading ? (
-        <VideoPreviewSkeleton />
+    <div className="flex flex-col space-y-4">
+      {isProcessing ? (
+        <VideoProcessingSkeleton />
       ) : (
         <>
           {!recordedVideoData ? (
             <VideoRecorder 
               onSuccess={handleRecordingSuccess}
-              onRecordingChange={setIsRecording}
+              onRecordingChange={handleRecordingChange}
             />
           ) : (
-            <div className="mt-4">
-              <MuxVideoPlayer 
-                playbackId={recordedVideoData.playbackId}
-                className="rounded-lg"
-              />
+            <div className="flex-1 min-h-0">
+              <div className="flex items-center justify-center">
+                <div className="w-full max-w-[280px]">
+                  <MuxVideoPlayer 
+                    playbackId={recordedVideoData.playbackId}
+                    className="rounded-lg"
+                  />
+                </div>
+              </div>
             </div>
           )}
           
           {!hasRecordedVideo && (
-            <>
+            <div className="mt-4">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-muted" />
@@ -156,19 +175,7 @@ export function VideoUpload({ onSuccess, onRecordingChange, className, maxSize =
                   </span>
                 </div>
               </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept="video/*"
-                onChange={handleUpload}
-              />
-
-              {isUploading && (
-                <Progress value={progress} className="mt-4" />
-              )}
-            </>
+            </div>
           )}
         </>
       )}

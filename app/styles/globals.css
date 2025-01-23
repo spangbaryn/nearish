@@ -186,18 +186,24 @@
   bottom: -6px;
 }
 
-
-
 .timeline-connector {
   position: absolute;
   top: 50%;
-  right: -1rem;
-  width: calc(100% + 2rem);
+  right: -2rem;
+  width: 4rem;
   height: 2px;
   background-color: hsl(var(--border));
   transform: translateY(-50%);
-  z-index: -1;
+  z-index: 0;
+  pointer-events: none;
 }
+
+.timeline-card {
+  position: relative;
+  z-index: 1;
+}
+
+
 
 @layer utilities {
   .aspect-w-9 {
@@ -214,13 +220,4 @@
     bottom: 0;
     left: 0;
   }
-}
-
-.timeline-connector {
-  position: absolute;
-  top: 50%;
-  right: -2rem;
-  width: 2rem;
-  height: 2px;
-  background-color: hsl(var(--border));
 }

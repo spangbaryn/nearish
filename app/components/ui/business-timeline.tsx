@@ -77,7 +77,7 @@ export function BusinessTimeline({ businessId, events }: { businessId: string, e
                 )}
                 <Card 
                   className={cn(
-                    "min-w-[200px] cursor-pointer transition-colors relative group",
+                    "timeline-card min-w-[200px] cursor-pointer transition-colors relative group bg-white",
                     selectedEvent?.id === event.id && "border-primary"
                   )}
                   onClick={(e) => {
@@ -88,13 +88,13 @@ export function BusinessTimeline({ businessId, events }: { businessId: string, e
                 >
                   <EditTimelineEventDialog event={event} className="edit-button" />
                   <CardContent className="p-4 pb-10">
-                    <time className="text-xs text-muted-foreground/60">
+                    <h3 className="font-semibold">{event.title}</h3>
+                    <time className="text-xs text-muted-foreground/60 block mt-1">
                       {new Date(event.date).toLocaleDateString('en-US', {
                         month: 'short',
                         year: 'numeric'
                       })}
                     </time>
-                    <h3 className="font-semibold mt-2">{event.title}</h3>
                     {event.thumbnail_url && (
                       <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-md">
                         <Image
