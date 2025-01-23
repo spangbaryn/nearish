@@ -87,7 +87,6 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
       setVideoDevices(videoInputs)
       setAudioDevices(audioInputs)
       
-      // Set defaults to the system default devices
       const defaultVideo = videoInputs.find(device => device.deviceId === 'default') || videoInputs[0]
       const defaultAudio = audioInputs.find(device => device.deviceId === 'default') || audioInputs[0]
       
@@ -101,7 +100,12 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
   const initializeCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: selectedVideo ? { deviceId: selectedVideo } : true,
+        video: {
+          deviceId: selectedVideo ? { exact: selectedVideo } : undefined,
+          aspectRatio: 9/16,
+          width: { ideal: 1080 },
+          height: { ideal: 1920 }
+        },
         audio: selectedAudio ? { deviceId: selectedAudio } : true
       })
       
@@ -131,7 +135,6 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         }
       }
 
-      // Set recording state before starting the recorder
       setIsRecording(true)
       onRecordingChange?.(true)
       
@@ -161,6 +164,11 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         method: 'POST'
       })
       
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to get upload URL')
+      }
+      
       const { uploadUrl, assetId } = await response.json()
       if (!uploadUrl || !assetId) throw new Error('Failed to get upload URL')
 
@@ -170,16 +178,18 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
       })
 
       let asset = null
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 30; i++) {
         const assetResponse = await fetch(`/api/videos/${assetId}`)
         if (assetResponse.ok) {
           asset = await assetResponse.json()
-          if (asset.playback_id) break
+          if (asset.status === 'ready' && asset.playback_id) break
         }
         await new Promise(resolve => setTimeout(resolve, 2000))
       }
 
-      if (!asset) throw new Error('Video processing timeout')
+      if (!asset || asset.status !== 'ready') {
+        throw new Error('Video processing timeout')
+      }
 
       const videoData = {
         assetId: asset.id,
@@ -201,74 +211,76 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         videoRef.current.srcObject = null
       }
     } catch (error: any) {
-      toast.error('Failed to stop recording')
-      console.error(error)
+      toast.error(error.message || 'Failed to stop recording')
+      console.error('Recording error:', error)
     }
   }
 
   return (
     <div className="space-y-4">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full aspect-video bg-muted rounded-lg"
-      />
-      
-      {!recordedVideo && !isRecording && (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Camera</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
-                {videoDevices.map(device => (
-                  <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                    {device.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Microphone</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
-                {audioDevices.map(device => (
-                  <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                    {device.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+      <div className="aspect-w-9 aspect-h-16">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover bg-muted rounded-lg"
+        />
+      </div>
       
       {!recordedVideo && (
-        <Button 
-          type="button"
-          onClick={isRecording ? stopRecording : startRecording}
-          className="w-full"
-          variant="secondary"
-        >
-          {isRecording ? (
-            <>
-              <StopCircle className="w-4 h-4 mr-2" />
-              Stop Recording
-            </>
-          ) : (
-            <>
-              <Video className="w-4 h-4 mr-2" />
-              Start Recording
-            </>
-          )}
-        </Button>
+        <div className="relative">
+          <div className="absolute right-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Camera</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
+                  {videoDevices.map(device => (
+                    <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                      {device.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Microphone</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
+                  {audioDevices.map(device => (
+                    <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                      {device.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex justify-center">
+            <Button 
+              type="button"
+              onClick={isRecording ? stopRecording : startRecording}
+              variant="secondary"
+            >
+              {isRecording ? (
+                <>
+                  <StopCircle className="w-4 h-4 mr-2" />
+                  Stop Recording
+                </>
+              ) : (
+                <>
+                  <Video className="w-4 h-4 mr-2" />
+                  Start Recording
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )
-} 
+}

@@ -17,6 +17,11 @@ import { Video } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -106,10 +111,17 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
         if (!isOpen) {
           // Only close if not recording
           if (!isRecording) {
-            setOpen(false)
+            // Stop all media tracks
+            const videoElement = document.querySelector('video');
+            if (videoElement && videoElement.srcObject) {
+              const stream = videoElement.srcObject as MediaStream;
+              stream.getTracks().forEach(track => track.stop());
+              videoElement.srcObject = null;
+            }
+            setOpen(false);
           }
         } else {
-          setOpen(true)
+          setOpen(true);
         }
       }}
     >
@@ -145,11 +157,43 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                      value={field.value ? new Date(field.value).getMonth() : new Date().getMonth()}
+                      onChange={(e) => {
+                        const currentDate = field.value ? new Date(field.value) : new Date();
+                        currentDate.setMonth(parseInt(e.target.value));
+                        field.onChange(currentDate.toISOString());
+                      }}
+                    >
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option key={i} value={i}>
+                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                      value={field.value ? new Date(field.value).getFullYear() : new Date().getFullYear()}
+                      onChange={(e) => {
+                        const currentDate = field.value ? new Date(field.value) : new Date();
+                        currentDate.setFullYear(parseInt(e.target.value));
+                        field.onChange(currentDate.toISOString());
+                      }}
+                    >
+                      {Array.from(
+                        { length: new Date().getFullYear() - 1899 },
+                        (_, i) => new Date().getFullYear() - i
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

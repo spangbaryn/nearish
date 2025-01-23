@@ -15,6 +15,7 @@ export async function POST() {
       cors_origin: '*',
       new_asset_settings: {
         playback_policy: ['public'],
+        normalize_audio: true
       },
     })
 

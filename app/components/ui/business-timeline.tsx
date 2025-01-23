@@ -2,22 +2,23 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { AddTimelineEventDialog } from "./add-timeline-event-dialog"
+import { TimelineEventOverlay } from "./timeline-event-overlay"
 import { Database } from "@/types/database.types"
 import { MuxVideoPlayer } from "./mux-video-player"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 type TimelineEvent = Database['public']['Tables']['business_timeline_events']['Row'] & {
   created_by: Database['public']['Tables']['profiles']['Row']
+  video_asset_id?: string
+  video_playback_id?: string
+  thumbnail_url?: string
+  video_duration?: number
+  video_status?: string
 }
 
-export function BusinessTimeline({ 
-  businessId,
-  events 
-}: { 
-  businessId: string
-  events: TimelineEvent[]
-}) {
+export function BusinessTimeline({ businessId, events }: { businessId: string, events: TimelineEvent[] }) {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
 
   const shouldShowYear = (event: TimelineEvent, index: number) => {
@@ -44,7 +45,6 @@ export function BusinessTimeline({
     )
   }
 
-  // Sort events by date
   const sortedEvents = [...events].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
@@ -75,7 +75,6 @@ export function BusinessTimeline({
                 <time className="text-xs text-muted-foreground/60">
                   {new Date(event.date).toLocaleDateString('en-US', {
                     month: 'short',
-                    day: 'numeric',
                     year: 'numeric'
                   })}
                 </time>
@@ -94,18 +93,17 @@ export function BusinessTimeline({
         ))}
       </div>
 
-      {selectedEvent?.video_playback_id && (
-        <Card>
-          <CardContent className="p-4">
-            <MuxVideoPlayer 
-              playbackId={selectedEvent.video_playback_id}
-              className="w-full aspect-video rounded-lg"
-            />
-          </CardContent>
-        </Card>
+      {selectedEvent && (
+        <TimelineEventOverlay 
+          events={sortedEvents.filter(e => e.video_playback_id)}
+          currentEventId={selectedEvent.id}
+          onClose={() => setSelectedEvent(null)}
+          onEventChange={(eventId) => {
+            const newEvent = events.find(e => e.id === eventId)
+            if (newEvent) setSelectedEvent(newEvent)
+          }}
+        />
       )}
-
-      {console.log('Selected Event:', selectedEvent)}
     </div>
   )
 } 

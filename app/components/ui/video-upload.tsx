@@ -17,6 +17,7 @@ interface VideoUploadProps {
     duration: number,
     status: string
   }) => void
+  onRecordingChange?: (recording: boolean) => void
   className?: string
   maxSize?: number // in MB
 }
@@ -33,7 +34,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
     thumbnailUrl: string;
   } | null>(null)
 
-  // Pass isRecording state up to parent
   useEffect(() => {
     const event = new CustomEvent('recordingStateChange', { detail: isRecording })
     window.dispatchEvent(event)
@@ -57,7 +57,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
     setFileName(file.name)
     setIsUploading(true)
     try {
-      // Get upload URL from Mux
       const response = await fetch('/api/videos/upload', {
         method: 'POST'
       })
@@ -68,7 +67,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
         throw new Error(data.error || 'Failed to get upload URL')
       }
       
-      // Upload to Mux
       const uploadResponse = await fetch(data.uploadUrl, {
         method: 'PUT',
         body: file,
@@ -81,7 +79,6 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
         throw new Error('Failed to upload video')
       }
 
-      // Poll for asset details
       let asset = null
       for (let i = 0; i < 10; i++) {
         const assetResponse = await fetch(`/api/videos/${data.assetId}`)
@@ -129,7 +126,7 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
         <div className="mt-4">
           <MuxVideoPlayer 
             playbackId={recordedVideoData.playbackId}
-            className="w-full aspect-video rounded-lg"
+            className="rounded-lg"
           />
         </div>
       )}
@@ -140,57 +137,30 @@ export function VideoUpload({ onSuccess, className, maxSize = 100 }: VideoUpload
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-muted" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-xs">
               <span className="bg-background px-2 text-muted-foreground">
-                Or upload a video
+                or{" "}
+                <span 
+                  className="text-secondary cursor-pointer hover:underline" 
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  upload a video
+                </span>
               </span>
             </div>
           </div>
 
-          <div 
-            className={cn(
-              "relative border-2 border-dashed rounded-lg p-4 hover:border-primary transition-colors",
-              !fileName && "cursor-pointer",
-              className
-            )}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept="video/*"
-              onChange={handleUpload}
-            />
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <Video className="h-8 w-8" />
-              {fileName ? (
-                <div className="flex items-center gap-2">
-                  <span>{fileName}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4 p-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setFileName(null)
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = ''
-                      }
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <p>Click to upload video</p>
-              )}
-            </div>
-            
-            {isUploading && (
-              <Progress value={progress} className="mt-4" />
-            )}
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="video/*"
+            onChange={handleUpload}
+          />
+
+          {isUploading && (
+            <Progress value={progress} className="mt-4" />
+          )}
         </>
       )}
     </div>

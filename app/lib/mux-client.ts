@@ -41,5 +41,20 @@ export const muxClient = {
       body: JSON.stringify({ type: 'publisher' }),
     })
     return response.json()
+  },
+  async createAsset() {
+    const response = await fetch(`${baseUrl}/video/v1/assets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify({
+        playback_policy: ['public'],
+        normalize_audio: true
+      }),
+    })
+    const json = await response.json()
+    return { data: json.data }
   }
 }
