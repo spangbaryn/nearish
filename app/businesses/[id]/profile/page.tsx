@@ -140,7 +140,7 @@ export default function BusinessProfilePage() {
         <BusinessCover 
           color={business?.brand_color} 
           onColorChange={(color) => colorMutation.mutate(color)}
-          className="h-[200px]"
+          className="h-[120px]"
         />
         
         <div className="max-w-4xl mx-auto px-8">
@@ -209,6 +209,7 @@ export default function BusinessProfilePage() {
           <BusinessTimeline 
             businessId={businessId}
             events={timelineEvents || []}
+            color={business?.brand_color}
           />
 
           <div className="mt-8 space-y-4">

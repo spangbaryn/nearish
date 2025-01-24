@@ -36,6 +36,7 @@ export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className
   const [hasRecordedVideo, setHasRecordedVideo] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -52,10 +53,11 @@ export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className
 
   const handleRecordingChange = (recording: boolean) => {
     setIsRecording(recording)
-    onRecordingChange?.(recording)
-    if (!recording) {
-      setIsProcessing(true)
-    }
+    onRecordingChange(recording)
+  }
+
+  const handleCountdownChange = (count: number | null) => {
+    setCountdown(count)
   }
 
   const handleRecordingSuccess = (data: VideoData) => {
@@ -133,6 +135,12 @@ export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className
     }
   }
 
+  const resetRecording = () => {
+    setRecordedVideoData(null)
+    setHasRecordedVideo(false)
+    setIsProcessing(false)
+  }
+
   return (
     <div className="flex flex-col space-y-4">
       {isProcessing ? (
@@ -143,6 +151,8 @@ export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className
             <VideoRecorder 
               onSuccess={handleRecordingSuccess}
               onRecordingChange={handleRecordingChange}
+              onCountdownChange={handleCountdownChange}
+              onReset={resetRecording}
             />
           ) : (
             <div className="flex-1 min-h-0">
@@ -157,7 +167,7 @@ export function VideoUpload({ onSuccess, onRecordingChange = () => {}, className
             </div>
           )}
           
-          {!hasRecordedVideo && (
+          {!hasRecordedVideo && !isRecording && !countdown && (
             <div className="mt-4">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

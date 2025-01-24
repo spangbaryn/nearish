@@ -23,6 +23,7 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Skeleton } from "@/components/ui/skeleton"
+import { MuxVideoPlayer } from "../ui/mux-video-player"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -170,13 +171,8 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-4">
-            <VideoUpload 
-              onSuccess={handleVideoUpload} 
-              onRecordingChange={handleRecordingChange}
-            />
-            
             {hasRecorded && (
-              <>
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="title"
@@ -212,37 +208,24 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
                             </option>
                           ))}
                         </select>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                          value={field.value ? new Date(field.value).getFullYear() : new Date().getFullYear()}
-                          onChange={(e) => {
-                            const currentDate = field.value ? new Date(field.value) : new Date();
-                            currentDate.setFullYear(parseInt(e.target.value));
-                            field.onChange(currentDate.toISOString());
-                          }}
-                        >
-                          {Array.from(
-                            { length: new Date().getFullYear() - 1899 },
-                            (_, i) => new Date().getFullYear() - i
-                          ).map((year) => (
-                            <option key={year} value={year}>
-                              {year}
-                            </option>
-                          ))}
-                        </select>
                       </div>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={createEventMutation.isPending || isVideoProcessing || !form.watch('title')}
-                >
-                  {isVideoProcessing ? "Processing video..." : "Add Event"}
+              </div>
+            )}
+            
+            <VideoUpload 
+              onSuccess={handleVideoUpload} 
+              onRecordingChange={handleRecordingChange}
+            />
+            
+            {hasRecorded && (
+              <div className="mt-4">
+                <Button type="submit" className="w-full">
+                  Create Event
                 </Button>
-              </>
+              </div>
             )}
           </form>
         </Form>

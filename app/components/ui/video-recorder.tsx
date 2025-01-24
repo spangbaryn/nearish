@@ -32,6 +32,8 @@ interface VideoRecorderProps {
     status: string
   }) => void
   onRecordingChange?: (isRecording: boolean) => void
+  onCountdownChange?: (countdown: number | null) => void
+  onReset?: () => void
 }
 
 interface MediaDevice {
@@ -39,7 +41,7 @@ interface MediaDevice {
   label: string
 }
 
-export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderProps) {
+export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange, onReset }: VideoRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordedVideo, setRecordedVideo] = useState<{
     playbackId: string;
@@ -82,6 +84,10 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
       }
     }
   }, [selectedVideo, selectedAudio, isRecording, isProcessing, recordedVideo])
+
+  useEffect(() => {
+    onCountdownChange?.(countdown)
+  }, [countdown, onCountdownChange])
 
   const getMediaDevices = async () => {
     try {
@@ -253,7 +259,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
       ) : recordedVideo ? (
         <div className="flex-1 min-h-0">
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-[280px]">
+            <div className="w-full max-w-[540px]">
               <MuxVideoPlayer playbackId={recordedVideo.playbackId} />
             </div>
           </div>
@@ -262,7 +268,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
         <>
           <div className="flex-1 min-h-0">
             <div className="flex items-center justify-center">
-              <div className="w-full max-w-[280px] relative">
+              <div className="w-full max-w-[540px] relative">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -279,53 +285,84 @@ export function VideoRecorder({ onSuccess, onRecordingChange }: VideoRecorderPro
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-4">
-            <Button 
-              type="button"
-              onClick={isRecording ? stopRecording : startRecording}
-              variant="secondary"
-            >
-              {isRecording ? (
+          <div className="flex items-center justify-center">
+            <div className="w-full max-w-[540px] relative">
+              {!countdown && (
                 <>
-                  <StopCircle className="w-4 h-4 mr-2" />
-                  Stop Recording
-                </>
-              ) : (
-                <>
-                  <Video className="w-4 h-4 mr-2" />
-                  Start Recording
+                  <div className="absolute right-4 -top-14">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Camera</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
+                          {videoDevices.map(device => (
+                            <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                              {device.label}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Microphone</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
+                          {audioDevices.map(device => (
+                            <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                              {device.label}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex justify-center gap-4">
+                    <Button 
+                      type="button"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      variant={isRecording ? "destructive" : "secondary"}
+                    >
+                      {isRecording ? (
+                        <>
+                          <StopCircle className="w-4 h-4 mr-2" />
+                          Stop Recording
+                        </>
+                      ) : (
+                        <>
+                          <Video className="w-4 h-4 mr-2" />
+                          Start Recording
+                        </>
+                      )}
+                    </Button>
+                    {isRecording && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (streamRef.current) {
+                            streamRef.current.getTracks().forEach(track => track.stop())
+                            streamRef.current = null
+                          }
+                          if (videoRef.current?.srcObject) {
+                            const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
+                            tracks?.forEach(track => track.stop())
+                            videoRef.current.srcObject = null
+                          }
+                          setIsRecording(false)
+                          onRecordingChange?.(false)
+                          onReset?.()
+                        }}
+                      >
+                        Start Over
+                      </Button>
+                    )}
+                  </div>
                 </>
               )}
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Camera</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
-                  {videoDevices.map(device => (
-                    <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                      {device.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Microphone</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
-                  {audioDevices.map(device => (
-                    <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                      {device.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            </div>
           </div>
         </>
       )}

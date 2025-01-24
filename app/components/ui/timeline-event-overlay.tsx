@@ -95,33 +95,34 @@ export function TimelineEventOverlay({ events, currentEventId, onClose, onEventC
         </Button>
 
         {/* Video Player */}
-        <div className="w-full max-w-2xl mx-auto px-4 flex flex-col h-full max-h-[calc(100vh-12rem)] py-4">
-          <div className="flex-1 min-h-0">
+        <div className="w-full h-full flex flex-col justify-center px-4 py-8">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             {currentEvent.video_playback_id && (
-              <div className="h-full flex items-center">
-                <MuxVideoPlayer 
-                  playbackId={currentEvent.video_playback_id}
-                  autoPlay={true}
-                  onEnded={handleVideoEnded}
-                  className="w-full h-auto max-h-full"
-                />
-              </div>
+              <MuxVideoPlayer 
+                playbackId={currentEvent.video_playback_id}
+                autoPlay={true}
+                onEnded={handleVideoEnded}
+              />
             )}
           </div>
-          <Card className="mt-4 shrink-0">
-            <CardContent className="p-4">
-              <time className="text-xs text-muted-foreground/60">
-                {new Date(currentEvent.date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: 'numeric'
-                })}
-              </time>
-              <h3 className="font-semibold mt-2">{currentEvent.title}</h3>
+          <div className="max-w-2xl mx-auto w-full mt-8 px-4">
+            <div className="bg-background/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-2xl font-semibold">{currentEvent.title}</h3>
+                <time className="text-sm text-muted-foreground/80">
+                  {new Date(currentEvent.date).toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </time>
+              </div>
               {currentEvent.description && (
-                <p className="mt-2 text-sm text-muted-foreground">{currentEvent.description}</p>
+                <p className="mt-3 text-muted-foreground/90 leading-relaxed">
+                  {currentEvent.description}
+                </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <Button

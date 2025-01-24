@@ -17,7 +17,7 @@ export function BusinessCover({ color = "#000000", className, onColorChange }: B
   return (
     <div 
       className={cn(
-        "w-full h-48 relative overflow-hidden bg-white group",
+        "w-full h-32 relative overflow-hidden bg-white group",
         className
       )}
       onMouseEnter={() => setIsHovered(true)}

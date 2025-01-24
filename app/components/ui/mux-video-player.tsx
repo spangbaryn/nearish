@@ -17,19 +17,22 @@ export function MuxVideoPlayer({
   onEnded 
 }: MuxVideoPlayerProps) {
   return (
-    <div className="w-full h-full">
-      <div className="aspect-[9/16] relative shadow-2xl rounded-2xl overflow-hidden h-full">
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="aspect-[9/16] relative w-full max-w-md max-h-[70vh] shadow-[0_0_40px_rgba(0,0,0,0.15)] rounded-[2rem] overflow-hidden">
         <MuxPlayer
           streamType="on-demand"
           playbackId={playbackId}
-          className={cn("absolute inset-0 h-full w-full", className)}
+          className={cn("absolute inset-0", className)}
           metadata={{
             video_title: "Timeline Event Video",
           }}
           style={{
-            objectFit: "cover",
+            height: "100%",
             width: "100%",
-            height: "100%"
+            objectFit: "cover",
+            '--media-object-fit': 'cover',
+            '--controls-backdrop-color': 'rgba(0, 0, 0, 0.4)',
+            '--bottom-controls-margin': '1.5rem',
           }}
           autoPlay={autoPlay}
           onEnded={onEnded}
