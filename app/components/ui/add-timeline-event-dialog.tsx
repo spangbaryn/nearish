@@ -24,7 +24,14 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MuxVideoPlayer } from "../ui/mux-video-player"
-import { VideoState, VideoData, VideoStateType } from "@/lib/video-states"
+
+interface VideoData {
+  assetId: string
+  playbackId: string
+  thumbnailUrl: string
+  duration?: number
+  status?: string
+}
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),

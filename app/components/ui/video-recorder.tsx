@@ -22,7 +22,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { VideoProcessingSkeleton } from "./video-processing-skeleton"
-import { VideoData } from "@/lib/video-states"
+
+interface VideoData {
+  assetId: string
+  playbackId: string
+  thumbnailUrl: string
+  duration?: number
+  status?: string
+}
 
 interface VideoRecorderProps {
   onSuccess: (data: VideoData) => void

@@ -10,9 +10,16 @@ import { VideoRecorder } from "./video-recorder"
 import { MuxVideoPlayer } from "./mux-video-player"
 import { VideoProcessingSkeleton } from "./video-processing-skeleton"
 import { Database } from "@/types/database.types"
-import { VideoState, VideoStateType, VideoData } from "../../lib/video-states"
 
 type BusinessTimelineEvent = Database["public"]["Tables"]["business_timeline_events"]["Row"]
+
+interface VideoData {
+  assetId: string
+  playbackId: string
+  thumbnailUrl: string
+  duration?: number
+  status?: string
+}
 
 interface VideoUploadProps {
   onSuccess: (data: VideoData) => void
