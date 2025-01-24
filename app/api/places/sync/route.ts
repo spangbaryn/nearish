@@ -1,26 +1,20 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
-import { getPlaceDetails } from "@/lib/google-places"
+import { syncPlaceData } from "@/app/actions/sync-place"
 
 export async function POST(request: Request) {
   const { placeId } = await request.json()
   const supabase = createRouteHandlerClient({ cookies })
 
   try {
-    const placeDetails = await getPlaceDetails(placeId)
+    const placeDetails = await syncPlaceData(placeId)
     
+    // Get the updated place record
     const { data, error } = await supabase
       .from('places')
-      .update({
-        name: placeDetails.name,
-        formatted_address: placeDetails.formatted_address,
-        phone_number: placeDetails.formatted_phone_number,
-        website: placeDetails.website,
-        last_synced_at: new Date().toISOString()
-      })
-      .eq('place_id', placeId)
       .select()
+      .eq('place_id', placeId)
       .single()
 
     if (error) throw error
