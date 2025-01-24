@@ -28,6 +28,7 @@ interface VideoRecorderProps {
   onSuccess: (data: VideoData) => void
   onRecordingChange?: (isRecording: boolean, fromStartOver?: boolean) => void
   onCountdownChange?: (countdown: number | null) => void
+  onInitialized?: () => void
 }
 
 interface MediaDevice {
@@ -35,7 +36,7 @@ interface MediaDevice {
   label: string
 }
 
-export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange }: VideoRecorderProps) {
+export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange, onInitialized }: VideoRecorderProps) {
   const [countdown, setCountdown] = useState<number | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -48,19 +49,35 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange 
   const [selectedAudio, setSelectedAudio] = useState<string>('')
 
   useEffect(() => {
-    if (!isRecording) {
-      getMediaDevices()
+    const initialize = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const videoDevices = devices.filter(device => device.kind === 'videoinput')
+        const audioDevices = devices.filter(device => device.kind === 'audioinput')
+        
+        setVideoDevices(videoDevices)
+        setAudioDevices(audioDevices)
+        
+        if (videoDevices.length > 0) {
+          setSelectedVideo(videoDevices[0].deviceId)
+        }
+        if (audioDevices.length > 0) {
+          setSelectedAudio(audioDevices[0].deviceId)
+        }
+
+        await initializeCamera()
+        onInitialized?.()
+      } catch (error) {
+        console.error('Failed to initialize devices:', error)
+        onInitialized?.() // Call even on error to prevent infinite loading
+      }
     }
-    
+
+    initialize()
+
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
-      }
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
-        tracks?.forEach(track => track.stop())
-        videoRef.current.srcObject = null
       }
     }
   }, [])
@@ -76,6 +93,20 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange 
   useEffect(() => {
     onCountdownChange?.(countdown)
   }, [countdown, onCountdownChange])
+
+  useEffect(() => {
+    initializeCamera()
+    
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current = null
+      }
+    }
+  }, [])
 
   const getMediaDevices = async () => {
     try {
@@ -126,9 +157,11 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
+      onInitialized?.()
     } catch (error: any) {
       toast.error('Failed to access camera')
       console.error('Camera error:', error)
+      onInitialized?.()
     }
   }
 

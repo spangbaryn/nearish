@@ -61,29 +61,25 @@ export function VideoUpload({
     <div className="flex flex-col h-full">
       {isProcessing ? (
         <VideoProcessingSkeleton />
+      ) : !hasRecordedVideo ? (
+        <VideoRecorder
+          onSuccess={handleRecordingSuccess}
+          onRecordingChange={handleRecordingChange}
+          onCountdownChange={setCountdown}
+        />
       ) : (
         <>
-          {!hasRecordedVideo ? (
-            <VideoRecorder 
-              onSuccess={handleRecordingSuccess}
-              onRecordingChange={handleRecordingChange}
-              onCountdownChange={setCountdown}
-            />
-          ) : (
-            <>
-              <div className="flex-1">
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-full max-w-[280px] min-h-0 flex-1">
-                    <MuxVideoPlayer 
-                      playbackId={recordedVideoData!.playbackId}
-                      className="rounded-lg"
-                    />
-                  </div>
-                </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-center h-full">
+              <div className="w-full max-w-[280px] min-h-0 flex-1">
+                <MuxVideoPlayer 
+                  playbackId={recordedVideoData!.playbackId}
+                  className="rounded-lg"
+                />
               </div>
-              {children}
-            </>
-          )}
+            </div>
+          </div>
+          {children}
           
           {!isRecording && !hasRecordedVideo && !countdown && (
             <div className="mt-4">
