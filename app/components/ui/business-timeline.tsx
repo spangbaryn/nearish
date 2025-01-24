@@ -213,9 +213,9 @@ export function BusinessTimeline({
   )
 
   return (
-    <div className="timeline-section">
-      <div className="mt-4 space-y-4">
-        <div className="flex items-center justify-between">
+    <div className="timeline-section mt-16">
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-foreground">Our Story</h2>
           <Button 
             variant="outline" 
@@ -226,32 +226,15 @@ export function BusinessTimeline({
             Add Event
           </Button>
         </div>
-        
+
         <div className="storybook-timeline" style={{ 
           color: color,
           '--timeline-color-rgb': `${hexToRgb(color)}`,
           '--timeline-color': color
         } as React.CSSProperties}>
-          <div className="relative">
-            <div className="timeline-connector" />
-            
-            <div 
-              className="relative"
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-            >
-              {/* Left Arrow */}
-              {canScroll && isHovering && !isAtStart && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
-                  onClick={() => scrollTimeline('left')}
-                >
-                  <ChevronLeft className="h-4 w-4" style={{ color: color }} />
-                </Button>
-              )}
-
+          <div className="w-full">
+            <div className="relative">
+              <div className="timeline-connector" />
               <div 
                 ref={timelineRef}
                 className="flex gap-4 overflow-x-auto overflow-y-hidden py-16 px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
@@ -263,7 +246,7 @@ export function BusinessTimeline({
                 {sortedEvents.map((event, index) => (
                   <div key={event.id} className="relative">
                     {shouldShowYear(event, index) && (
-                      <div className="absolute bottom-[-3rem] left-0 text-2xl font-bold text-muted-foreground/20">
+                      <div className="timeline-year">
                         {new Date(event.date).getFullYear()}
                       </div>
                     )}
@@ -354,8 +337,19 @@ export function BusinessTimeline({
                   </div>
                 ))}
               </div>
-
-              {/* Right Arrow */}
+              
+              {/* Navigation Arrows */}
+              {canScroll && isHovering && !isAtStart && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
+                  onClick={() => scrollTimeline('left')}
+                >
+                  <ChevronLeft className="h-4 w-4" style={{ color: color }} />
+                </Button>
+              )}
+              
               {canScroll && isHovering && !isAtEnd && (
                 <Button
                   variant="ghost"

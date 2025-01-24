@@ -192,6 +192,8 @@
   z-index: 2;
   background-color: white;
   animation: floating 3s ease-in-out infinite;
+  height: fit-content;
+  min-width: 200px;
 }
 
 @keyframes floating {
@@ -217,11 +219,11 @@
 }
 
 .timeline-card-container.offset-up {
-  transform: translateY(-24px);
+  transform: translateY(-32px);
 }
 
 .timeline-card-container.offset-down {
-  transform: translateY(24px);
+  transform: translateY(32px);
 }
 
 @layer utilities {
@@ -260,46 +262,37 @@
   pointer-events: none;
 }
 
+.timeline-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  height: 100%;
+}
+
 .timeline-connector {
   position: absolute;
   top: 50%;
   left: 0;
   right: 0;
-  height: 3px;
-  background-image: repeating-linear-gradient(
-    45deg,
-    hsl(var(--muted-foreground)/0.2),
-    hsl(var(--muted-foreground)/0.2) 2px,
-    transparent 2px,
-    transparent 4px
-  );
+  height: 2px;
+  background-image: 
+    linear-gradient(90deg, 
+      transparent 0%,
+      hsl(var(--muted-foreground)/0.1) 15%,
+      hsl(var(--muted-foreground)/0.1) 85%,
+      transparent 100%
+    );
   transform: translateY(-50%);
-}
-
-.timeline-section {
-  position: relative;
-  padding: 2rem 0;
-}
-
-.timeline-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    hsl(var(--background)) 15%,
-    hsl(var(--background)) 85%,
-    transparent
-  );
-  opacity: 0.7;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .storybook-timeline {
   position: relative;
   z-index: 1;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
   background: linear-gradient(
     to bottom,
     white,
@@ -334,18 +327,15 @@
   border-radius: 0 8px 0 8px;
 }
 
-.timeline-connector {
+/* Add this new class */
+.timeline-year {
   position: absolute;
-  top: 50%;
+  bottom: -4rem;  /* Increased from -3rem */
   left: 0;
-  right: 0;
-  height: 2px;
-  background-image: 
-    linear-gradient(90deg, 
-      transparent 0%,
-      hsl(var(--muted-foreground)/0.1) 15%,
-      hsl(var(--muted-foreground)/0.1) 85%,
-      transparent 100%
-    );
-  transform: translateY(-50%);
+  text-align: left;
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground)/0.2);
+  white-space: nowrap;
 }
