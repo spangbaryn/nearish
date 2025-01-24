@@ -60,10 +60,9 @@ function FormFieldsSkeleton() {
 }
 
 function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
+  const [step, setStep] = useState<'RECORD' | 'DETAILS'>('RECORD')
+  const [videoData, setVideoData] = useState<VideoData | null>(null)
   const [open, setOpen] = useState(false)
-  const [videoState, setVideoState] = useState<VideoStateType>({
-    state: 'INITIAL'
-  })
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -76,7 +75,8 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
 
   const resetStates = () => {
     setOpen(false)
-    setVideoState({ state: 'INITIAL' })
+    setStep('RECORD')
+    setVideoData(null)
     form.reset()
   }
 
@@ -111,24 +111,10 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     }
   })
 
-  const handleRecordingChange = (recording: boolean, fromStartOver: boolean = false) => {
-    if (fromStartOver) {
-      setVideoState({ state: 'INITIAL' })
-      return
-    }
-
-    if (recording) {
-      setVideoState({ state: 'RECORDING' })
-    } else {
-      setVideoState({ state: 'PROCESSING' })
-    }
-  }
-
   const handleVideoUpload = (data: VideoData) => {
-    setVideoState({
-      state: 'COMPLETED',
-      data
-    })
+    setVideoData(data)
+    form.setValue('video', data)
+    setStep('DETAILS')
   }
 
   useEffect(() => {
@@ -149,13 +135,23 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
         <DialogHeader>
           <DialogTitle>Add Timeline Event</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(createEventMutation.mutate)} className="space-y-4">
-            <VideoUpload 
-              onSuccess={handleVideoUpload}
-              onRecordingChange={handleRecordingChange}
-              videoState={videoState}
-            >
+        
+        {step === 'RECORD' && (
+          <VideoUpload 
+            onSuccess={handleVideoUpload}
+          />
+        )}
+
+        {step === 'DETAILS' && videoData && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(createEventMutation.mutate)} className="space-y-4">
+              <div className="w-full max-w-[280px] mx-auto">
+                <MuxVideoPlayer 
+                  playbackId={videoData.playbackId}
+                  className="rounded-lg"
+                />
+              </div>
+
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -174,22 +170,64 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
                   control={form.control}
                   name="date"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                          value={field.value ? new Date(field.value).getMonth() : new Date().getMonth()}
+                          onChange={(e) => {
+                            const currentDate = field.value ? new Date(field.value) : new Date();
+                            currentDate.setMonth(parseInt(e.target.value));
+                            field.onChange(currentDate.toISOString());
+                          }}
+                        >
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i} value={i}>
+                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                          value={field.value ? new Date(field.value).getFullYear() : new Date().getFullYear()}
+                          onChange={(e) => {
+                            const currentDate = field.value ? new Date(field.value) : new Date();
+                            currentDate.setFullYear(parseInt(e.target.value));
+                            field.onChange(currentDate.toISOString());
+                          }}
+                        >
+                          {Array.from(
+                            { length: new Date().getFullYear() - 1899 },
+                            (_, i) => new Date().getFullYear() - i
+                          ).map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setStep('RECORD')}
+                >
+                  Back
+                </Button>
+                <Button type="submit" className="flex-1">
                   Create Event
                 </Button>
               </div>
-            </VideoUpload>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   )

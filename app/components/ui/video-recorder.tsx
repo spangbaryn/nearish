@@ -238,6 +238,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange 
   const handleStartOver = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop()
+      mediaRecorderRef.current = null
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
@@ -249,8 +250,9 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange 
       videoRef.current.srcObject = null
     }
     setIsRecording(false)
-    onRecordingChange?.(false, true)
     chunksRef.current = []
+    onRecordingChange?.(false, true)
+    initializeCamera()
   }
 
   return (

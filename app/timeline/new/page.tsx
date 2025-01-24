@@ -35,6 +35,7 @@ export default function NewTimelineEventPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [hasRecorded, setHasRecorded] = useState(false)
   const [isVideoProcessing, setIsVideoProcessing] = useState(false)
+  const [showFields, setShowFields] = useState(false)
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -117,8 +118,21 @@ export default function NewTimelineEventPage() {
         <div className="w-full max-w-[540px]">
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-8">
-              {hasRecorded && (
-                <div className="space-y-6">
+              <VideoUpload 
+                onSuccess={(data) => {
+                  handleVideoUpload(data)
+                  setShowFields(true)
+                }}
+                onRecordingChange={(recording, fromStartOver) => {
+                  handleRecordingChange(recording)
+                  if (fromStartOver) {
+                    setShowFields(false)
+                  }
+                }}
+              />
+              
+              {showFields && (
+                <div className="space-y-4 mt-4">
                   <FormField
                     control={form.control}
                     name="title"
@@ -180,14 +194,7 @@ export default function NewTimelineEventPage() {
                 </div>
               )}
               
-              <div className="w-full max-w-[540px] mx-auto">
-                <VideoUpload 
-                  onSuccess={handleVideoUpload} 
-                  onRecordingChange={handleRecordingChange}
-                />
-              </div>
-              
-              {hasRecorded && (
+              {showFields && (
                 <div>
                   <Button type="submit" className="w-full">
                     Create Event
