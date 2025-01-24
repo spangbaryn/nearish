@@ -227,11 +227,16 @@ export function BusinessTimeline({
           </Button>
         </div>
 
-        <div className="storybook-timeline" style={{ 
-          color: color,
-          '--timeline-color-rgb': `${hexToRgb(color)}`,
-          '--timeline-color': color
-        } as React.CSSProperties}>
+        <div 
+          className="storybook-timeline" 
+          style={{ 
+            color: color,
+            '--timeline-color-rgb': `${hexToRgb(color)}`,
+            '--timeline-color': color
+          } as React.CSSProperties}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
           <div className="w-full">
             <div className="relative">
               <div className="timeline-connector" />
