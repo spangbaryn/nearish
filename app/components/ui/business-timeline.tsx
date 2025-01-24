@@ -241,8 +241,7 @@ export function BusinessTimeline({
                         <Card 
                           className="timeline-card min-w-[200px] cursor-pointer transition-colors relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20"
                           onClick={(e) => {
-                            // Only handle card click if not clicking the dropdown
-                            if (!e.target.closest('.dropdown-trigger')) {
+                            if (!(e.target as HTMLElement).closest('.dropdown-trigger')) {
                               handleCardClick(e, event)
                             }
                           }}

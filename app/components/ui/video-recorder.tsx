@@ -27,8 +27,8 @@ interface VideoData {
   assetId: string
   playbackId: string
   thumbnailUrl: string
-  duration?: number
-  status?: string
+  duration: number | null
+  status: string | null
 }
 
 interface VideoRecorderProps {
@@ -263,8 +263,8 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         assetId: asset.id,
         playbackId: asset.playback_id,
         thumbnailUrl: asset.thumbnail_url,
-        duration: asset.duration,
-        status: asset.status
+        duration: asset.duration || null,
+        status: asset.status || null
       }
 
       onSuccess(videoData)

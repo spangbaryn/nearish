@@ -17,8 +17,8 @@ interface VideoData {
   assetId: string
   playbackId: string
   thumbnailUrl: string
-  duration?: number
-  status?: string
+  duration: number | null
+  status: string | null
 }
 
 interface VideoUploadProps {

@@ -29,8 +29,8 @@ interface VideoData {
   assetId: string
   playbackId: string
   thumbnailUrl: string
-  duration?: number
-  status?: string
+  duration: number | null
+  status: string | null
 }
 
 const eventFormSchema = z.object({
@@ -40,8 +40,8 @@ const eventFormSchema = z.object({
     assetId: z.string(),
     playbackId: z.string(),
     thumbnailUrl: z.string(),
-    duration: z.number().optional(),
-    status: z.string().optional()
+    duration: z.number().nullish(),
+    status: z.string().nullish()
   }).required()
 })
 
@@ -151,7 +151,9 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
 
         {step === 'DETAILS' && videoData && (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(createEventMutation.mutate)} className="space-y-4">
+            <form onSubmit={form.handleSubmit((data) => {
+              createEventMutation.mutate(data)
+            })} className="space-y-4">
               <div className="w-full max-w-[280px] mx-auto">
                 <MuxVideoPlayer 
                   playbackId={videoData.playbackId}
