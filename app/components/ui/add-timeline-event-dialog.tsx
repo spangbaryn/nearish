@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MuxVideoPlayer } from "../ui/mux-video-player"
+import { VideoState, VideoData, VideoStateType } from "@/lib/video-states"
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -60,9 +61,9 @@ function FormFieldsSkeleton() {
 
 function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [hasRecorded, setHasRecorded] = useState(false)
-  const [isVideoProcessing, setIsVideoProcessing] = useState(false)
+  const [videoState, setVideoState] = useState<VideoStateType>({
+    state: 'INITIAL'
+  })
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -75,9 +76,7 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
 
   const resetStates = () => {
     setOpen(false)
-    setIsRecording(false)
-    setHasRecorded(false)
-    setIsVideoProcessing(false)
+    setVideoState({ state: 'INITIAL' })
     form.reset()
   }
 
@@ -112,66 +111,51 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     }
   })
 
-  const handleRecordingChange = (recording: boolean) => {
-    setIsRecording(recording)
-    if (!recording) {
-      setIsVideoProcessing(true)
-      setHasRecorded(true)
+  const handleRecordingChange = (recording: boolean, fromStartOver: boolean = false) => {
+    if (fromStartOver) {
+      setVideoState({ state: 'INITIAL' })
+      return
+    }
+
+    if (recording) {
+      setVideoState({ state: 'RECORDING' })
+    } else {
+      setVideoState({ state: 'PROCESSING' })
     }
   }
 
-  const handleVideoUpload = (videoData: {
-    assetId: string,
-    playbackId: string,
-    thumbnailUrl: string,
-    duration: number,
-    status: string
-  }) => {
-    setIsVideoProcessing(false)
-    form.setValue('video', videoData)
+  const handleVideoUpload = (data: VideoData) => {
+    setVideoState({
+      state: 'COMPLETED',
+      data
+    })
   }
 
   useEffect(() => {
     return () => {
       setOpen(false)
-      setIsRecording(false)
-      setHasRecorded(false)
     }
   }, [])
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(isOpen) => {
-        if (!isOpen && !isRecording) {
-          const videoElement = document.querySelector('video');
-          if (videoElement && videoElement.srcObject) {
-            const stream = videoElement.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
-          }
-          resetStates();
-        } else {
-          setOpen(true);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={resetStates}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plus className="w-4 h-4 mr-2" />
           Add Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Timeline Event</DialogTitle>
-          <DialogDescription>
-            {!hasRecorded ? 'Record a video for your timeline event.' : 'Fill in the event details.'}
-          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-4">
-            {hasRecorded && (
+          <form onSubmit={form.handleSubmit(createEventMutation.mutate)} className="space-y-4">
+            <VideoUpload 
+              onSuccess={handleVideoUpload}
+              onRecordingChange={handleRecordingChange}
+              videoState={videoState}
+            >
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -190,43 +174,20 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
                   control={form.control}
                   name="date"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Date</FormLabel>
-                      <div className="flex gap-2">
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                          value={field.value ? new Date(field.value).getMonth() : new Date().getMonth()}
-                          onChange={(e) => {
-                            const currentDate = field.value ? new Date(field.value) : new Date();
-                            currentDate.setMonth(parseInt(e.target.value));
-                            field.onChange(currentDate.toISOString());
-                          }}
-                        >
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <option key={i} value={i}>
-                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-            )}
-            
-            <VideoUpload 
-              onSuccess={handleVideoUpload} 
-              onRecordingChange={handleRecordingChange}
-            />
-            
-            {hasRecorded && (
-              <div className="mt-4">
                 <Button type="submit" className="w-full">
                   Create Event
                 </Button>
               </div>
-            )}
+            </VideoUpload>
           </form>
         </Form>
       </DialogContent>

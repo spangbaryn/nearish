@@ -22,18 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { VideoProcessingSkeleton } from "./video-processing-skeleton"
+import { VideoData } from "@/lib/video-states"
 
 interface VideoRecorderProps {
-  onSuccess: (data: {
-    assetId: string,
-    playbackId: string,
-    thumbnailUrl: string,
-    duration: number,
-    status: string
-  }) => void
-  onRecordingChange?: (isRecording: boolean) => void
+  onSuccess: (data: VideoData) => void
+  onRecordingChange?: (isRecording: boolean, fromStartOver?: boolean) => void
   onCountdownChange?: (countdown: number | null) => void
-  onReset?: () => void
 }
 
 interface MediaDevice {
@@ -41,29 +35,23 @@ interface MediaDevice {
   label: string
 }
 
-export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange, onReset }: VideoRecorderProps) {
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordedVideo, setRecordedVideo] = useState<{
-    playbackId: string;
-    thumbnailUrl: string;
-  } | null>(null)
-  const [videoDevices, setVideoDevices] = useState<MediaDevice[]>([])
-  const [audioDevices, setAudioDevices] = useState<MediaDevice[]>([])
-  const [selectedVideo, setSelectedVideo] = useState<string>('')
-  const [selectedAudio, setSelectedAudio] = useState<string>('')
+export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange }: VideoRecorderProps) {
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [videoDevices, setVideoDevices] = useState<MediaDevice[]>([])
+  const [audioDevices, setAudioDevices] = useState<MediaDevice[]>([])
+  const [selectedVideo, setSelectedVideo] = useState<string>('')
+  const [selectedAudio, setSelectedAudio] = useState<string>('')
 
   useEffect(() => {
-    if (!isRecording && !isProcessing && !recordedVideo) {
+    if (!isRecording) {
       getMediaDevices()
     }
     
-    // Cleanup function to stop all tracks when component unmounts
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop())
@@ -79,11 +67,11 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   useEffect(() => {
     if (selectedVideo || selectedAudio) {
-      if (!isRecording && !isProcessing && !recordedVideo) {
+      if (!isRecording) {
         initializeCamera()
       }
     }
-  }, [selectedVideo, selectedAudio, isRecording, isProcessing, recordedVideo])
+  }, [selectedVideo, selectedAudio, isRecording])
 
   useEffect(() => {
     onCountdownChange?.(countdown)
@@ -122,15 +110,17 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   const initializeCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const constraints = {
         video: {
           deviceId: selectedVideo ? { exact: selectedVideo } : undefined,
-          aspectRatio: 9/16,
           width: { ideal: 1080 },
-          height: { ideal: 1920 }
+          height: { ideal: 1920 },
+          aspectRatio: { ideal: 0.5625 } // 9:16 aspect ratio
         },
         audio: selectedAudio ? { deviceId: selectedAudio } : true
-      })
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
       
       streamRef.current = stream
       if (videoRef.current) {
@@ -148,7 +138,6 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         await initializeCamera()
       }
 
-      // Start countdown
       setCountdown(3)
       for (let i = 2; i >= 0; i--) {
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -181,7 +170,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   const stopRecording = async () => {
     if (!mediaRecorderRef.current) return
-    setIsProcessing(true)
+    setIsRecording(false)
     onRecordingChange?.(false)
 
     try {
@@ -238,134 +227,127 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         status: asset.status
       }
 
-      setRecordedVideo({
-        playbackId: asset.playback_id,
-        thumbnailUrl: asset.thumbnail_url
-      })
-      
       onSuccess(videoData)
-      setIsRecording(false)
-      setIsProcessing(false)
     } catch (error: any) {
       toast.error(error.message || 'Failed to stop recording')
       console.error('Recording error:', error)
+      onRecordingChange?.(false, true)
     }
+  }
+
+  const handleStartOver = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
+      tracks?.forEach(track => track.stop())
+      videoRef.current.srcObject = null
+    }
+    setIsRecording(false)
+    onRecordingChange?.(false, true)
+    chunksRef.current = []
   }
 
   return (
     <div className="flex flex-col space-y-4">
-      {isProcessing ? (
-        <VideoProcessingSkeleton />
-      ) : recordedVideo ? (
-        <div className="flex-1 min-h-0">
-          <div className="flex items-center justify-center">
-            <div className="w-full max-w-[540px]">
-              <MuxVideoPlayer playbackId={recordedVideo.playbackId} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex-1 min-h-0">
-            <div className="flex items-center justify-center">
-              <div className="w-full max-w-[540px] relative">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover bg-gray-200 rounded-lg"
-                />
-                {countdown !== null && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <span className="text-8xl font-bold text-white">{countdown || "GO!"}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center">
-            <div className="w-full max-w-[540px] relative">
-              {!countdown && (
-                <>
-                  <div className="absolute right-4 -top-14">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Camera</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
-                          {videoDevices.map(device => (
-                            <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                              {device.label}
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Microphone</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
-                          {audioDevices.map(device => (
-                            <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
-                              {device.label}
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="flex justify-center gap-4">
-                    <Button 
-                      type="button"
-                      onClick={isRecording ? stopRecording : startRecording}
-                      variant={isRecording ? "destructive" : "secondary"}
-                    >
-                      {isRecording ? (
-                        <>
-                          <StopCircle className="w-4 h-4 mr-2" />
-                          Stop Recording
-                        </>
-                      ) : (
-                        <>
-                          <Video className="w-4 h-4 mr-2" />
-                          Start Recording
-                        </>
-                      )}
-                    </Button>
-                    {isRecording && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          if (streamRef.current) {
-                            streamRef.current.getTracks().forEach(track => track.stop())
-                            streamRef.current = null
-                          }
-                          if (videoRef.current?.srcObject) {
-                            const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
-                            tracks?.forEach(track => track.stop())
-                            videoRef.current.srcObject = null
-                          }
-                          setIsRecording(false)
-                          onRecordingChange?.(false)
-                          onReset?.()
-                        }}
-                      >
-                        Start Over
-                      </Button>
-                    )}
-                  </div>
-                </>
+      <div className="flex-1">
+        <div className="flex items-center justify-center h-full">
+          <div className="w-full max-w-[280px] min-h-0 flex-1">
+            <div className="aspect-[9/16] relative overflow-hidden rounded-lg bg-gray-200 h-full max-h-[70vh]">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="absolute inset-0 min-h-full min-w-full"
+                style={{
+                  transform: 'scaleX(-1)',
+                  objectFit: 'cover',
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+              {countdown !== null && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <span className="text-8xl font-bold text-white">{countdown || "GO!"}</span>
+                </div>
               )}
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center">
+        <div className="w-full max-w-[540px] relative">
+          {!countdown && (
+            <>
+              <div className="absolute right-4 -top-14">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel>Camera</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
+                      {videoDevices.map(device => (
+                        <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                          {device.label}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Microphone</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
+                      {audioDevices.map(device => (
+                        <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
+                          {device.label}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex justify-center gap-4">
+                <Button 
+                  type="button"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  variant={isRecording ? "destructive" : "secondary"}
+                >
+                  {isRecording ? (
+                    <>
+                      <StopCircle className="w-4 h-4 mr-2" />
+                      Stop Recording
+                    </>
+                  ) : (
+                    <>
+                      <Video className="w-4 h-4 mr-2" />
+                      Start Recording
+                    </>
+                  )}
+                </Button>
+                {isRecording && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleStartOver}
+                  >
+                    Start Over
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
