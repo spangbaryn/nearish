@@ -4,14 +4,15 @@ import { NextResponse, NextRequest } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params, query }: { params: { id: string }, query: URLSearchParams }
+  { params, searchParams }: { params: Promise<{ id: string }>; searchParams: URLSearchParams }
 ) {
   try {
+    const { id } = await params;
     const supabase = createRouteHandlerClient({ cookies })
     const { data, error } = await supabase
       .from('team_invites')
       .select('*')
-      .eq('business_id', params.id)
+      .eq('business_id', id)
       .is('accepted_at', null)
       .order('created_at', { ascending: false })
 
@@ -21,7 +22,7 @@ export async function GET(
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch invites:', error)
     return NextResponse.json({ error: 'Failed to fetch invites' }, { status: 500 })
   }
