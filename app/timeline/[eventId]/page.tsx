@@ -26,7 +26,7 @@ export default function TimelinePage({ params, searchParams }: TimelinePageProps
   const resolvedSearchParams = use(searchParams)
   
   const events = JSON.parse(decodeURIComponent(resolvedSearchParams.events))
-  const currentIndex = events.findIndex(e => e.id === resolvedParams.eventId)
+  const currentIndex = events.findIndex((e: { id: string }) => e.id === resolvedParams.eventId)
   const [isVideoEnded, setIsVideoEnded] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
