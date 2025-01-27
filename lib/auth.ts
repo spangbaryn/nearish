@@ -1,6 +1,8 @@
 import { AuthService } from '@/lib/services/auth.service';
 import { AuthError } from '@/lib/errors';
 import type { User } from '@/types/auth';
+import { supabase } from '@/lib/supabase';
+import type { UserRole } from '@/types/auth';
 
 
 export async function signUp(email: string, password: string): Promise<User> {
