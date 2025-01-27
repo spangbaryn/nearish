@@ -1,17 +1,17 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
     const { data, error } = await supabase
       .from('team_invites')
       .select('*')
-      .eq('business_id', params.id)
+      .eq('business_id', context.params.id)
       .is('accepted_at', null)
       .order('created_at', { ascending: false })
 
