@@ -1,5 +1,3 @@
-import { syncPlaceData } from "../../../actions/sync-place"
-
 export type Json =
   | string
   | number
@@ -52,6 +50,7 @@ export type Database = {
           business_id: string | null
           created_at: string | null
           id: string
+          position: string | null
           profile_id: string | null
           role: string
           updated_at: string | null
@@ -60,6 +59,7 @@ export type Database = {
           business_id?: string | null
           created_at?: string | null
           id?: string
+          position?: string | null
           profile_id?: string | null
           role: string
           updated_at?: string | null
@@ -68,6 +68,7 @@ export type Database = {
           business_id?: string | null
           created_at?: string | null
           id?: string
+          position?: string | null
           profile_id?: string | null
           role?: string
           updated_at?: string | null
@@ -127,29 +128,102 @@ export type Database = {
           },
         ]
       }
-      businesses: {
+      business_timeline_events: {
         Row: {
-          id: string
-          created_at: string
-          name: string
-          place_id: string
-          brand_color: string | null
+          business_id: string
+          created_at: string | null
+          created_by: string
+          date: string
           description: string | null
+          id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          video_asset_id: string | null
+          video_duration: number | null
+          video_playback_id: string | null
+          video_status: string | null
         }
         Insert: {
-          id?: string
-          name: string
-          place_id: string
-          brand_color?: string
+          business_id: string
+          created_at?: string | null
+          created_by: string
+          date: string
           description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          video_asset_id?: string | null
+          video_duration?: number | null
+          video_playback_id?: string | null
+          video_status?: string | null
         }
         Update: {
-          name?: string
-          place_id?: string
-          brand_color?: string
+          business_id?: string
+          created_at?: string | null
+          created_by?: string
+          date?: string
           description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          video_asset_id?: string | null
+          video_duration?: number | null
+          video_playback_id?: string | null
+          video_status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "business_timeline_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          brand_color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          place_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          brand_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          place_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          brand_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          place_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_business_place"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["place_id"]
+          },
+        ]
       }
       campaigns: {
         Row: {
@@ -317,6 +391,42 @@ export type Database = {
         }
         Relationships: []
       }
+      places: {
+        Row: {
+          created_at: string
+          formatted_address: string
+          id: string
+          last_synced_at: string | null
+          logo_url: string | null
+          name: string
+          phone_number: string | null
+          place_id: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          formatted_address: string
+          id?: string
+          last_synced_at?: string | null
+          logo_url?: string | null
+          name: string
+          phone_number?: string | null
+          place_id: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          formatted_address?: string
+          id?: string
+          last_synced_at?: string | null
+          logo_url?: string | null
+          name?: string
+          phone_number?: string | null
+          place_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           ai_generated_content: string | null
@@ -465,31 +575,37 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string
+          first_name: string | null
           id: string
+          last_name: string | null
+          onboarded: boolean
           role: string
           updated_at: string | null
           zip_code: string | null
-          onboarded: boolean
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
           email: string
-          id: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          onboarded?: boolean
           role: string
           updated_at?: string | null
           zip_code?: string | null
-          onboarded?: boolean
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
           email?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
+          onboarded?: boolean
           role?: string
           updated_at?: string | null
           zip_code?: string | null
-          onboarded?: boolean
         }
         Relationships: []
       }
@@ -524,6 +640,53 @@ export type Database = {
             columns: ["connection_id"]
             isOneToOne: false
             referencedRelation: "business_social_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_invites: {
+        Row: {
+          accepted_at: string | null
+          business_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          first_name: string
+          id: string
+          last_name: string
+          role: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          business_id?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          first_name: string
+          id?: string
+          last_name: string
+          role: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          business_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          role?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -566,6 +729,44 @@ export type Database = {
           },
         ]
       }
+      timeline_event_videos: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          event_id: string
+          id: string
+          thumbnail_url: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          event_id: string
+          id?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          event_id?: string
+          id?: string
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_event_videos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "business_timeline_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zip_codes: {
         Row: {
           city: string
@@ -596,87 +797,26 @@ export type Database = {
         }
         Relationships: []
       }
-      places: {
-        Row: {
-          id: string
-          place_id: string
-          name: string
-          formatted_address: string
-          phone_number: string | null
-          website: string | null
-          last_synced_at: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          place_id: string
-          name: string
-          formatted_address: string
-          phone_number?: string | null
-          website?: string | null
-          last_synced_at?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          place_id?: string
-          name?: string
-          formatted_address?: string
-          phone_number?: string | null
-          website?: string | null
-          last_synced_at?: string
-          created_at?: string
-        }
-      }
-      business_timeline_events: {
-        Row: {
-          id: string
-          business_id: string
-          title: string
-          description: string | null
-          date: string
-          created_by: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          business_id: string
-          title: string
-          description?: string | null
-          date: string
-          created_by: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          business_id?: string
-          title?: string
-          description?: string | null
-          date?: string
-          created_by?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_timeline_events_business_id_fkey"
-            columns: ["business_id"]
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "business_timeline_events_created_by_fkey"
-            columns: ["created_by"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      accept_team_invite:
+        | {
+            Args: {
+              p_token: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_token: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
       create_profile: {
         Args: {
           user_id: string

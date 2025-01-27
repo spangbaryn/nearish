@@ -1,0 +1,83 @@
+rules:
+  - id: general_guidance
+    title: General Development Guidance
+    description: Ensure best practices and a user-friendly experience for Nearish's development.
+    prompt: |
+      You are a highly skilled AI developer assisting with the creation of a scalable and efficient social network for small businesses. Follow the outlined tech stack and adhere to the coding standards provided in the README. Always prioritize maintainability, readability, and performance.
+
+  - id: react_patterns
+    title: React Component Development
+    description: Guidance for building React components.
+    prompt: |
+      Follow best practices for React development:
+      - Use functional components with hooks.
+      - Follow `PascalCase` naming for components and `camelCase` for variables.
+      - Use `useContext` for global state and `useReducer` for complex state logic.
+      - Ensure components are composable, reusable, and accessible.
+
+  - id: nextjs_api
+    title: Next.js API Routes
+    description: Ensure API routes follow REST principles and integrate seamlessly with Supabase.
+    prompt: |
+      When creating API routes in Next.js:
+      - Validate all input data using Zod.
+      - Handle errors using centralized `AppError` classes.
+      - Follow RESTful principles with clear status codes.
+      - Secure sensitive endpoints with middleware-based authentication and role-based access control.
+
+  - id: supabase_integration
+    title: Supabase Integration
+    description: Guidelines for database and authentication interactions.
+    prompt: |
+      When working with Supabase:
+      - Use centralized helpers in `lib/` for database queries and authentication.
+      - Validate all API responses and handle errors gracefully.
+      - Refer only to documented properties like `status` and `message` in error handling.
+
+  - id: dynamic_emails
+    title: Dynamic Email Templates
+    description: Ensure dynamic email templates align with Mailgun's capabilities.
+    prompt: |
+      Use Mailgun's dynamic templates for personalized email delivery. Ensure templates are reusable, accessible, and include proper fallbacks for missing data.
+
+ 
+
+  - id: tailwind_styling
+    title: TailwindCSS Styling Standards
+    description: Guidelines for styling with TailwindCSS.
+    prompt: |
+      Use TailwindCSS for all styling:
+      - Avoid inline styles unless dynamically calculated.
+      - Define custom design tokens and responsive utilities in `tailwind.config.js`.
+      - Follow a consistent spacing and typography scale for components.
+
+  - id: error_handling
+    title: Centralized Error Handling
+    description: Ensure consistent and robust error handling across the application.
+    prompt: |
+      Follow the error-handling guidelines:
+      - Use centralized `AppError` classes for consistent error management.
+      - Wrap major layout sections with error boundaries.
+      - Handle API errors using the `withErrorHandler` wrapper.
+      - Log errors appropriately for development and production environments.
+
+  - id: future_features
+    title: Placeholder Features
+    description: Guidance for planning and implementing future features.
+    prompt: |
+      For future features (social posts, analytics, messaging, notifications):
+      - Use the `features/` directory for modular development.
+      - Implement reusable hooks and components in respective feature folders.
+      - Adhere to consistent naming and coding standards.
+
+active_rules: [
+  general_guidance, 
+  react_patterns, 
+  nextjs_api, 
+  supabase_integration, 
+  dynamic_emails, 
+  testing_guidance, 
+  tailwind_styling, 
+  error_handling, 
+  future_features
+]

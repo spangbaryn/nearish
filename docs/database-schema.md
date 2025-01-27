@@ -68,6 +68,8 @@ Stores business account information.
 | --- | --- | --- | --- |
 | `id` | UUID | Primary Key | Business unique identifier |
 | `name` | VARCHAR(255) | Not Null | Business name |
+| `place_id` | VARCHAR | Not Null | Associated Google Place ID |
+| `brand_color` | VARCHAR | | Brand color in hex/rgb |
 | `description` | TEXT | | Business description |
 | `created_at` | TIMESTAMPTZ | Default: NOW() | Business creation timestamp |
 | `updated_at` | TIMESTAMPTZ | | Last update timestamp |
@@ -274,3 +276,62 @@ Stores key milestones and events in a business's history.
 - Used to build a visual timeline of business milestones
 - Simple, focused event entries with just title and date
 - Supports the "Our Story" feature on business profiles
+
+### **Places**
+
+Stores Google Places data for businesses.
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key | Place unique identifier |
+| `place_id` | VARCHAR | Not Null | Google Place ID |
+| `name` | VARCHAR | Not Null | Place name |
+| `formatted_address` | VARCHAR | Not Null | Formatted address |
+| `phone_number` | VARCHAR | | Phone number |
+| `website` | VARCHAR | | Website URL |
+| `logo_url` | VARCHAR | | Business logo URL |
+| `last_synced_at` | TIMESTAMPTZ | | Last sync with Google Places |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Creation timestamp |
+
+### **Team Invites**
+
+Stores pending team member invitations.
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key | Invite unique identifier |
+| `business_id` | UUID | References businesses(id) | Associated business |
+| `email` | VARCHAR | Not Null | Invitee email |
+| `first_name` | VARCHAR | Not Null | Invitee first name |
+| `last_name` | VARCHAR | Not Null | Invitee last name |
+| `role` | VARCHAR | Not Null | Invited role |
+| `token` | VARCHAR | Not Null | Unique invite token |
+| `expires_at` | TIMESTAMPTZ | Not Null | Token expiration |
+| `accepted_at` | TIMESTAMPTZ | | When invite was accepted |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Creation timestamp |
+
+### **Timeline Event Videos**
+
+Stores videos associated with timeline events.
+
+| Column | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| `id` | UUID | Primary Key | Video unique identifier |
+| `event_id` | UUID | References business_timeline_events(id) | Associated event |
+| `created_by` | UUID | References profiles(id) | User who added the video |
+| `url` | VARCHAR | Not Null | Video URL |
+| `thumbnail_url` | VARCHAR | | Thumbnail image URL |
+| `created_at` | TIMESTAMPTZ | Default: NOW() | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | | Last update timestamp |
+
+## **Enums**
+
+| Name | Values | Description |
+| --- | --- | --- |
+| `business_role` | `Owner`, `Staff` | Role within a business |
+| `post_source` | `facebook`, `admin`, `platform` | Source of a post |
+| `post_type` | `Promotion`, `Event`, `Update` | Type of post |
+| `prompt_type` | `content`, `type_id` | Type of AI prompt |
+| `social_platform` | `facebook` | Supported social platforms |
+| `template_type` | `transactional`, `campaign` | Email template types |
+| `user_role` | `Admin`, `Business`, `Customer` | System-wide user role |
