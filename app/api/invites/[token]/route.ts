@@ -1,25 +1,27 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { token: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ token: string }> }
 ) {
-  if (!params.token) {
-    return NextResponse.json({ error: 'Token is required' }, { status: 400 })
-  }
-
   try {
+    const { token } = await params;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Token is required' }, { status: 400 })
+    }
+
     const supabase = createRouteHandlerClient({ cookies })
     
     // Log the token we're querying
-    console.log('Verifying token:', params.token)
+    console.log('Verifying token:', token)
 
     const { data, error } = await supabase
       .from('team_invites')
       .select('*, businesses(id, name)')
-      .eq('token', params.token)
+      .eq('token', token)
       .is('accepted_at', null)
       .single()
 
