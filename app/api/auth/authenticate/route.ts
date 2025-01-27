@@ -1,5 +1,6 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -13,15 +14,13 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Create a NextResponse to allow Supabase to set cookies
-  const response = NextResponse.next()
-  // Pass both req and res to createRouteHandlerClient
-  const supabase = createRouteHandlerClient({ req: request, res: response })
+  // Create a Supabase client
+  const supabase = createRouteHandlerClient({ cookies })
 
   try {
     const { data: { session }, error } = await supabase.auth.verifyOtp({
       token_hash,
-      type
+      type: type as 'signup' | 'email' | 'recovery'
     })
 
     if (error) throw error
