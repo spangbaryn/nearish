@@ -37,7 +37,7 @@ Dart
 
 Swift
 
-Kotlin
+Kotlins
 
 Python
 async function signInWithEmail() {
