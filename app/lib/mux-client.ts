@@ -28,7 +28,7 @@ export const muxClient = {
         passthrough: "browser-recording"
       }),
     })
-    const json = await response.json()
+    const json = await response.json() as { data: any };
     return { data: json.data }
   },
   async createSpaceToken(spaceId: string) {
@@ -54,7 +54,7 @@ export const muxClient = {
         normalize_audio: true
       }),
     })
-    const json = await response.json()
+    const json = await response.json() as { data: any };
     return { data: json.data }
   }
 }

@@ -18,18 +18,39 @@ import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { EmptyTimelineCard } from "./empty-timeline-card"
 
-type Profile = Database['public']['Tables']['profiles']['Row'] & {
-  full_name?: string | null
+type Profile = {
+  avatar_url: string | null;
+  created_at: string | null;
+  email: string;
+  first_name: string | null;
+  id: string;
+  last_name: string | null;
+  onboarded: boolean;
+  role: string;
+  updated_at: string | null;
+  zip_code: string | null;
 }
 
-type TimelineEvent = Database['public']['Tables']['business_timeline_events']['Row'] & {
-  created_by: Profile
-  video_asset_id?: string | null
-  video_playback_id?: string | null
-  thumbnail_url?: string | null
-  video_duration?: number | null
-  video_status?: string | null
-  description?: string | null
+type TimelineEvent = {
+  business_id: string;
+  created_at: string | null;
+  created_by: Profile | undefined;
+  date: string;
+  description: string | null;
+  id: string;
+  thumbnail_url: string | null;
+  title: string;
+  updated_at: string | null;
+  video_asset_id: string | null;
+  video_duration: number | null;
+  video_playback_id: string | null;
+  video_status: string | null;
+}
+
+interface BusinessTimelineProps {
+  businessId: string
+  events: TimelineEvent[]
+  color?: string
 }
 
 const hexToRgb = (hex: string) => {
@@ -306,11 +327,11 @@ export function BusinessTimeline({
                             <div className="absolute bottom-2 right-2">
                               <Avatar className="h-6 w-6 ring-2 ring-background">
                                 <AvatarImage 
-                                  src={event.created_by.avatar_url || undefined} 
-                                  alt={event.created_by.full_name || 'User'} 
+                                  src={event.created_by?.avatar_url || undefined} 
+                                  alt={event.created_by?.first_name || 'User'} 
                                 />
                                 <AvatarFallback>
-                                  {event.created_by.full_name?.[0]?.toUpperCase() || 'U'}
+                                  {event.created_by?.first_name?.[0]?.toUpperCase() || 'U'}
                                 </AvatarFallback>
                               </Avatar>
                             </div>

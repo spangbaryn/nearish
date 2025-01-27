@@ -28,9 +28,9 @@ type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
     formatted_address: string
     phone_number: string | null
     website: string | null
-    last_synced_at: string
+    last_synced_at: string | null
     logo_url: string | null
-  }
+  } | null
 }
 
 export default function BusinessProfilePage() {
@@ -138,7 +138,7 @@ export default function BusinessProfilePage() {
     <div>
       <div className="relative mb-24">
         <BusinessCover 
-          color={business?.brand_color} 
+          color={business?.brand_color ?? undefined}
           onColorChange={(color) => colorMutation.mutate(color)}
           className="h-[120px]"
         />
@@ -148,7 +148,7 @@ export default function BusinessProfilePage() {
             <div className="relative -mt-8">
               <div className="relative">
                 <img
-                  src={`${business.logo_url || business.place.logo_url}?t=${Date.now()}`}
+                  src={`${business.logo_url || business.place?.logo_url}?t=${Date.now()}`}
                   alt={business.name}
                   className="w-40 h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
                 />
@@ -170,11 +170,11 @@ export default function BusinessProfilePage() {
                       <MapPin className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
                     </TooltipTrigger>
                     <TooltipContent sideOffset={5}>
-                      <p>{business.place.formatted_address}</p>
+                      <p>{business.place?.formatted_address}</p>
                     </TooltipContent>
                   </Tooltip>
 
-                  {business.place.phone_number && (
+                  {business.place?.phone_number && (
                     <Tooltip>
                       <TooltipTrigger>
                         <Phone className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
@@ -185,7 +185,7 @@ export default function BusinessProfilePage() {
                     </Tooltip>
                   )}
 
-                  {business.place.website && (
+                  {business.place?.website && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a 
@@ -209,7 +209,7 @@ export default function BusinessProfilePage() {
           <BusinessTimeline 
             businessId={businessId}
             events={timelineEvents || []}
-            color={business?.brand_color}
+            color={business?.brand_color ?? undefined}
           />
 
           <div className="mt-8 space-y-4">

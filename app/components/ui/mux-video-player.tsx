@@ -30,9 +30,12 @@ export function MuxVideoPlayer({
             height: "100%",
             width: "100%",
             objectFit: "cover",
-            '--media-object-fit': 'cover',
-            '--controls-backdrop-color': 'rgba(0, 0, 0, 0.4)',
-            '--bottom-controls-margin': '1.5rem',
+          }}
+          onPlay={(event) => {
+            const player = event.target as HTMLElement;
+            player.style.setProperty('--mediaObjectFit', 'cover');
+            player.style.setProperty('--controls-backdrop-color', 'rgba(0, 0, 0, 0.4)');
+            player.style.setProperty('--bottom-controls-margin', '1.5rem');
           }}
           autoPlay={autoPlay}
           onEnded={onEnded}

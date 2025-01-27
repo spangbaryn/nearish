@@ -18,7 +18,7 @@ export async function POST() {
       )
     }
 
-    const { data: token } = await muxClient.createSpaceToken(space.id)
+    const { data: token } = await muxClient.createSpaceToken(space.id) as { data: { token: string } };
     if (!token?.token) {
       return NextResponse.json(
         { error: 'Failed to create token' },

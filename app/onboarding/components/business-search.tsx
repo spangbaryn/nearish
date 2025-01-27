@@ -74,7 +74,7 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
         document.createElement('div')
       );
       
-      const place = await new Promise<google.maps.places.PlaceResult>((resolve, reject) => {
+      const place = await new Promise<any>((resolve, reject) => {
         service.getDetails(
           { 
             placeId, 
@@ -84,7 +84,7 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
             if (status === window.google.maps.places.PlacesServiceStatus.OK && result) {
               // Get the first photo if available
               const logoUrl = result.photos?.[0]?.getUrl({ maxWidth: 500 });
-              resolve({ ...result, logoUrl });
+              resolve({ ...result, logoUrl } as any);
             } else {
               reject(new Error('Failed to fetch place details'));
             }
