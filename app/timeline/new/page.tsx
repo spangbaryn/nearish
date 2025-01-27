@@ -88,11 +88,15 @@ export default function NewTimelineEventPage() {
     assetId: string,
     playbackId: string,
     thumbnailUrl: string,
-    duration: number,
-    status: string
+    duration: number | null,
+    status: string | null
   }) => {
     setIsVideoProcessing(false)
-    form.setValue('video', videoData)
+    form.setValue('video', {
+      ...videoData,
+      duration: videoData.duration || 0,
+      status: videoData.status || 'ready'
+    })
   }
 
   if (!businessId) {
