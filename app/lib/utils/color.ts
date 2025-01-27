@@ -1,5 +1,3 @@
-import ColorThief from 'colorthief';
-
 export async function extractDominantColor(websiteUrl: string): Promise<string> {
   try {
     // Generate a random bright color instead of trying to extract from website
