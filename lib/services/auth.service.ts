@@ -33,11 +33,12 @@ export class AuthService {
 
     if (error) throw new AuthError('Failed to create profile');
     if (!data) throw new AuthError('Profile not found');
+    if (!data.created_at) throw new AuthError('Missing created_at timestamp');
 
     return {
       id: data.id,
       email: data.email,
-      role: data.role,
+      role: data.role as UserRole,
       created_at: data.created_at
     };
   }
