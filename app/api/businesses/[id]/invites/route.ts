@@ -4,7 +4,7 @@ import { NextResponse, NextRequest } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params, searchParams }: { params: { id: string }, searchParams: URLSearchParams }
+  { params, query }: { params: { id: string }, query: URLSearchParams }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
