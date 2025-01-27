@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { MuxVideoPlayer } from "@/components/ui/mux-video-player"
+import { MuxVideoPlayer } from "../../components/ui/mux-video-player"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
