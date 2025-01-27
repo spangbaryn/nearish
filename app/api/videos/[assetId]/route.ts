@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { muxClient } from '../../../lib/mux-client'
 
 export async function GET(
-  request: Request,
-  { params }: { params: { assetId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ assetId: string }> }
 ) {
   try {
-    const { assetId } = params
+    const { assetId } = await params
 
     let attempts = 0
     let asset = null
@@ -43,7 +43,7 @@ export async function GET(
       duration: asset.duration,
       status: asset.status
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Mux asset error:', error)
     return NextResponse.json(
       { error: 'Failed to get asset details' },
