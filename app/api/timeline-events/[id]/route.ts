@@ -1,16 +1,17 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = createRouteHandlerClient({ cookies })
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
-    if (!session) {
+    if (sessionError || !session) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
@@ -23,14 +24,14 @@ export async function PATCH(
         description: body.description,
         date: body.date,
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
     if (error) throw error
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating timeline event:', error)
     return new NextResponse('Internal Server Error', { status: 500 })
   }
