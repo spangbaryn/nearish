@@ -80,8 +80,8 @@ export default {
   				'100%': { width: '500px', height: '500px', opacity: '0' },
   			},
   			pulse: {
-  				'0%, 100%': { opacity: 1 },
-  				'50%': { opacity: .5 }
+  				'0%, 100%': { opacity: '1' },
+  				'50%': { opacity: '0.5' }
   			},
   			shimmer: {
   				'0%': { transform: 'translateX(-100%)' },
