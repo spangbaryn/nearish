@@ -5,7 +5,7 @@ import { getUserBusinesses } from "@/lib/business"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
-import { LayoutDashboard, Settings, Users, FileText, Mail, SendHorizontal, FolderOpen, MapPin, Sparkles, Palette } from "lucide-react"
+import { LayoutDashboard, Settings, Users, FileText, Mail, SendHorizontal, FolderOpen, MapPin, Sparkles, Palette, Store } from "lucide-react"
 import type { BusinessRole } from '@/types/auth'
 import type { LucideIcon } from "lucide-react"
 
@@ -60,6 +60,11 @@ export function MobileNav({ onNavigate }: MobileNavProps) {
           title: "Dashboard", 
           href: `/businesses/${business.id}`, 
           icon: LayoutDashboard 
+        },
+        {
+          title: "Business Page",
+          href: `/businesses/${business.id}/profile`,
+          icon: Store
         },
         { 
           title: "Settings", 

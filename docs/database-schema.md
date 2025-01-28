@@ -82,20 +82,26 @@ Stores business account information.
 
 ### **3. Business Members**
 
-Defines roles for users within businesses, including `Owners` and `Staff Members`.
+Defines roles for users within businesses, and additional details for the "Our People" feature.
 
-| Column | Type | Constraints | Description |
-| --- | --- | --- | --- |
-| `id` | UUID | Primary Key | Membership unique identifier |
-| `profile_id` | UUID | References profiles(id) | Associated user profile |
-| `business_id` | UUID | References businesses(id) | Associated business |
-| `role` | TEXT | Not Null, CHECK | Member role (`owner`, `staff`) |
-| `created_at` | TIMESTAMPTZ | Default: NOW() | Membership creation timestamp |
-| `updated_at` | TIMESTAMPTZ | | Last update timestamp |
+| Column                     | Type        | Constraints                             | Description                                                                 |
+| -------------------------- | ----------- | --------------------------------------- | --------------------------------------------------------------------------- |
+| `id`                       | UUID        | Primary Key                             | Membership unique identifier                                                |
+| `profile_id`               | UUID        | References profiles(id)                   | Associated user profile                                                     |
+| `business_id`              | UUID        | References businesses(id)                 | Associated business                                                       |
+| `role`                     | TEXT        | Not Null, CHECK                         | Member role (`owner`, `staff`)                                            |
+| `position`                 | TEXT        |                                         | Job title or position of the team member (repurposed as "title")          |
+| `description`              | TEXT        |                                         | Short description or bio of the team member                                 |
+| `introduction_video_playback_id` | VARCHAR     |                                         | Mux Video playback ID for the introduction video                             |
+| `order`                    | INTEGER     |                                         | Order in which team members are displayed                                   |
+| `created_at`               | TIMESTAMPTZ | Default: NOW()                          | Membership creation timestamp                                               |
+| `updated_at`               | TIMESTAMPTZ |                                         | Last update timestamp                                                       |
 
 **Context**:
 
 - `Owner` users have full control of the business, while `Staff` users have restricted access.
+- The `position` column is repurposed to store the team member's job title for the "Our People" feature.
+- `description`, `introduction_video_playback_id`, and `order` columns are added to support the "Our People" feature.
 
 ---
 
