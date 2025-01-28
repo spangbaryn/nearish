@@ -33,18 +33,18 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
 
-    // Protected routes (except onboarding and invite)
-    if (!req.nextUrl.pathname.startsWith('/auth') && 
+    // Protected routes (except auth, onboarding, invite, callback, root, business)
+    if (!req.nextUrl.pathname.startsWith('/auth') &&
         !req.nextUrl.pathname.startsWith('/onboarding') &&
         !req.nextUrl.pathname.startsWith('/invite') &&
         !req.nextUrl.pathname.startsWith('/auth/callback') &&
-        req.nextUrl.pathname !== '/' && 
+        req.nextUrl.pathname !== '/' &&
         req.nextUrl.pathname !== '/business') {
       if (!session) {
         return NextResponse.redirect(new URL('/auth/login', req.url))
       }
 
-      // Check if user needs onboarding
+      // Check if user needs onboarding (for other protected routes)
       const { data: profile } = await supabase
         .from('profiles')
         .select('onboarded')
@@ -58,11 +58,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
 
-    // For onboarding route, just check auth
+    // For onboarding route, remove session check in middleware and rely on client-side check
     if (req.nextUrl.pathname.startsWith('/onboarding')) {
-      if (!session) {
-        return NextResponse.redirect(new URL('/auth/login', req.url))
-      }
       const response = NextResponse.next()
       response.headers.set('x-layout', 'auth')  // Set auth layout for onboarding
       return response
@@ -78,5 +75,15 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: '/((?!_next/static|_next/image|favicon.ico).*)',
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - assets (assets folder)
+     * - api (api routes - let them handle their own auth)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|assets|api).*)',
+  ],
 } 
