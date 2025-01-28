@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { BusinessQualification } from "./components/business-qualification";
 import { BusinessSearch } from "./components/business-search";
-import { supabase } from "@/lib/supabase";
+import { supabase as serverSupabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,9 +20,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 const supabase = createClientComponentClient();
 
 type Steps = {
-  1: boolean;
-  2: boolean;
-  3: boolean;
+  [key: number]: boolean;
 };
 
 export default function OnboardingPage() {
