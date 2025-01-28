@@ -15,10 +15,15 @@ import { PersonalInformation } from "./components/personal-information";
 import type { BusinessRole } from '@/types/auth';
 import { BusinessService } from "@/lib/services/business.service";
 import { extractDominantColor } from "../lib/utils/color";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
+const supabase = createClientComponentClient();
 
 type Steps = {
-  [key: number]: boolean;
-}
+  1: boolean;
+  2: boolean;
+  3: boolean;
+};
 
 export default function OnboardingPage() {
   const router = useRouter();
