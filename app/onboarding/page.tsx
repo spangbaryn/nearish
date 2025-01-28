@@ -31,6 +31,18 @@ export default function OnboardingPage() {
   });
   const [businessName, setBusinessName] = useState<string>("");
   const [businessId, setBusinessId] = useState<string>("");
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.replace('/auth/login');
+      return;
+    }
+
+    if (!isLoading) {
+      setPageLoading(false);
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -168,8 +180,8 @@ export default function OnboardingPage() {
     }
   };
 
-  if (!user && !isLoading) return null;
-  if (isLoading) return <LoadingSpinner />;
+  if (pageLoading) return <LoadingSpinner />;
+  if (!user) return null;
 
   return (
     <div className="w-full max-w-[600px] relative">
