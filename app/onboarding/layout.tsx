@@ -13,14 +13,23 @@ export default function OnboardingLayout({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       if (!isLoading) {
         if (!user) {
-          router.replace('/auth/login');
+          setTimeout(() => {
+            if (!user) {
+              router.replace('/auth/login');
+            }
+            setInitialLoading(false);
+            setAuthChecked(true);
+          }, 500);
+        } else {
+          setInitialLoading(false);
+          setAuthChecked(true);
         }
-        setAuthChecked(true);
       }
     };
 
@@ -28,7 +37,7 @@ export default function OnboardingLayout({
     return () => clearTimeout(timeoutId);
   }, [isLoading, user, router]);
 
-  if (!authChecked) {
+  if (initialLoading || !authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
