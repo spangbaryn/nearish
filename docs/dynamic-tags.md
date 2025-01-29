@@ -30,7 +30,7 @@ The following dynamic tags are supported:
    - Each item includes:
      - Bullet point
      - Left padding (24px)
-     - Bottom margin between items (8px)
+     - Bottom margin between items (8px)s
      - Bottom margin for the list (16px)
 
 
@@ -40,7 +40,7 @@ The following dynamic tags are supported:
 - Content is fetched from the Supabase `posts_collections` and `posts` tables
 - Posts must have `final_type` and `final_content` fields populated
 - Processing happens both in the preview component and before sending emails
-
+s
 ## Best Practices
 
 1. **Template Design**
