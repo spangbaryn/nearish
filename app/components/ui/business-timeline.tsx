@@ -6,7 +6,7 @@ import { Database } from "@/types/database.types"
 import { MuxVideoPlayer } from "./mux-video-player"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { EditTimelineEventDialog } from "./edit-timeline-event-dialog"
@@ -82,6 +82,9 @@ export function BusinessTimeline({
   const [canScroll, setCanScroll] = useState(false)
   const [isAtStart, setIsAtStart] = useState(true)
   const [isAtEnd, setIsAtEnd] = useState(false)
+  const searchParams = useSearchParams()
+  const scrollToEventId = searchParams.get('scrollToEvent')
+  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null)
 
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
@@ -135,6 +138,29 @@ export function BusinessTimeline({
       }
     }
   }, [events])
+
+  useEffect(() => {
+    if (scrollToEventId && timelineRef.current) {
+      const eventElement = document.querySelector(`[data-event-id="${scrollToEventId}"]`)
+      if (eventElement) {
+        eventElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center', 
+          inline: 'center' 
+        })
+      }
+    }
+  }, [scrollToEventId, events])
+
+  useEffect(() => {
+    if (scrollToEventId) {
+      setHighlightedEventId(scrollToEventId)
+      const timer = setTimeout(() => {
+        setHighlightedEventId(null)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [scrollToEventId])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true)
@@ -249,7 +275,11 @@ export function BusinessTimeline({
                   onMouseLeave={handleMouseLeave}
                 >
                   {sortedEvents.map((event, index) => (
-                    <div key={event.id} className="relative">
+                    <div 
+                      key={event.id} 
+                      data-event-id={event.id}
+                      className="relative"
+                    >
                       {shouldShowYear(event, index) && (
                         <div className="timeline-year">
                           {new Date(event.date).getFullYear()}
@@ -260,7 +290,10 @@ export function BusinessTimeline({
                         index % 2 === 0 ? "offset-up" : "offset-down"
                       )}>
                         <Card 
-                          className="timeline-card min-w-[200px] cursor-pointer transition-colors relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20"
+                          className={cn(
+                            "timeline-card min-w-[200px] cursor-pointer transition-all duration-300 relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20",
+                            highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
+                          )}
                           onClick={(e) => {
                             if (!(e.target as HTMLElement).closest('.dropdown-trigger')) {
                               handleCardClick(e, event)

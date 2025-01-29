@@ -51,7 +51,7 @@ export default function NewTimelineEventPage() {
       if (!user) throw new Error("Not authenticated")
       if (!businessId) throw new Error("Business ID is required")
 
-      const { error } = await supabase
+      const { data: newEvent, error } = await supabase
         .from('business_timeline_events')
         .insert([{
           business_id: businessId,
@@ -64,12 +64,15 @@ export default function NewTimelineEventPage() {
           video_duration: data.video?.duration ? Math.round(data.video.duration) : null,
           video_status: data.video?.status || 'ready'
         }])
+        .select()
+        .single()
 
       if (error) throw error
+      return newEvent
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Event added successfully")
-      router.back()
+      router.push(`/businesses/${businessId}/profile?scrollToEvent=${data.id}`)
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to add event")
