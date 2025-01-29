@@ -209,20 +209,23 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
   }
 
   const stopRecording = async () => {
-    if (!mediaRecorderRef.current) return
-    setIsRecording(false)
-    onRecordingChange?.(false)
-
     try {
-      mediaRecorderRef.current.stop()
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
       }
+
+      if (streamRef.current) {
+        // Turn off the camera and mic
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+
       if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
-        tracks?.forEach(track => track.stop())
-        videoRef.current.srcObject = null
+        // Stop all tracks for the video element
+        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks();
+        tracks?.forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
 
       const blob = new Blob(chunksRef.current, { type: 'video/webm' })
@@ -294,6 +297,30 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
     onRecordingChange?.(false, true)
     initializeCamera()
   }
+
+  // Stop camera & mic and reset everything
+  function stopAllTracks() {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current = null
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
+      tracks?.forEach(track => track.stop())
+      videoRef.current.srcObject = null
+    }
+  }
+
+  // Automatically release resources when component unmounts
+  useEffect(() => {
+    return () => {
+      stopAllTracks()
+    }
+  }, [])
 
   return (
     <div className="flex flex-col space-y-4">
