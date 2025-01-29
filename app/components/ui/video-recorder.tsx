@@ -147,13 +147,19 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   const initializeCamera = async () => {
     try {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
       const constraints = {
         video: {
           deviceId: selectedVideo ? { exact: selectedVideo } : undefined,
-          width: { ideal: 1080 },
-          height: { ideal: 1920 },
-          aspectRatio: { exact: 0.5625 }, // 9:16
-          facingMode: 'user'
+          ...(isMobile ? {
+            facingMode: 'user',
+            aspectRatio: 0.5625
+          } : {
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+            aspectRatio: { exact: 0.5625 }
+          }),
         },
         audio: selectedAudio ? { deviceId: selectedAudio } : true
       }
