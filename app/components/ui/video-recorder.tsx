@@ -15,6 +15,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSpeechRecognition } from "../../hooks/use-speech-recognition"
+import { muxClient } from "@/lib/mux-client"
+import { useWhisper } from '@/lib/hooks/use-whisper'
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 interface VideoData {
   assetId: string
@@ -22,13 +26,16 @@ interface VideoData {
   thumbnailUrl: string
   duration: number | null
   status: string | null
+  transcription?: string
 }
 
 interface VideoRecorderProps {
   onSuccess: (data: VideoData) => void
-  onRecordingChange?: (isRecording: boolean, fromStartOver?: boolean) => void
+  onRecordingChange?: (recording: boolean) => void
   onCountdownChange?: (countdown: number | null) => void
   onInitialized?: () => void
+  onTranscriptionData?: (data: Record<string, string>) => void
+  hasRecorded?: boolean
 }
 
 interface MediaDevice {
@@ -36,7 +43,14 @@ interface MediaDevice {
   label: string
 }
 
-export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange, onInitialized }: VideoRecorderProps) {
+export function VideoRecorder({ 
+  onSuccess, 
+  onRecordingChange, 
+  onCountdownChange, 
+  onInitialized,
+  onTranscriptionData,
+  hasRecorded,
+}: VideoRecorderProps) {
   const [countdown, setCountdown] = useState<number | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -60,6 +74,39 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
   })
   const [isInitializing, setIsInitializing] = useState(true)
   const initStartTimeRef = useRef<number>(Date.now())
+  const { transcribe, isTranscribing } = useWhisper()
+
+  const { startListening, stopListening, error: speechError } = useSpeechRecognition({
+    onTranscriptChange: (transcript) => {
+      const lines = transcript.toLowerCase().split('.')
+      const extractedData: Record<string, string | undefined> = {}
+      
+      const patterns = {
+        first_name: /(?:my name is|i'm|i am)\s*([a-zA-Z]+)/i,
+        role: /(?:i(?:'m| am)(?: a| the)?|my role is)\s*([a-zA-Z\s]+?)(?:\s+(?:here|at|for)|\s*$)/i,
+        favorite_spot: /(?:favorite (?:spot|place)|like to go to|hang out at) is\s*([^.,]+?)(?:\s*(?:because|and|where|which|.|$))/i
+      }
+
+      Object.entries(patterns).forEach(([key, pattern]) => {
+        const match = transcript.match(pattern)
+        if (match && match[1]) {
+          extractedData[key] = match[1].trim()
+        }
+      })
+
+      const cleanedData = Object.fromEntries(
+        Object.entries(extractedData).filter(([_, v]) => v !== undefined)
+      ) as Record<string, string>;
+
+      onTranscriptionData?.(cleanedData)
+    }
+  })
+
+  useEffect(() => {
+    if (speechError) {
+      toast.error('Speech recognition error: ' + speechError)
+    }
+  }, [speechError])
 
   useEffect(() => {
     const initialize = async () => {
@@ -192,6 +239,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       setCountdown(null)
       
       mediaRecorder.start(1000)
+      startListening()
     } catch (error: any) {
       setIsRecording(false)
       onRecordingChange?.(false)
@@ -206,6 +254,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       setIsRecording(false)
       setIsProcessing(true)
       onRecordingChange?.(false)
+      stopListening()
 
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stop()
@@ -259,7 +308,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       setIsProcessing(false)
       toast.error(error.message || 'Failed to stop recording')
       console.error('Recording error:', error)
-      onRecordingChange?.(false, true)
+      onRecordingChange?.(false)
     }
   }
 
@@ -314,6 +363,12 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                   <span className="text-xl font-bold text-white">Processing video...</span>
                 </div>
               )}
+              {isTranscribing && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <LoadingSpinner />
+                  <span className="ml-2 text-white">Transcribing...</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -321,7 +376,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
       <div className="flex items-center justify-center">
         <div className="w-full max-w-[540px] relative">
-          {!countdown && !isProcessing && (
+          {!countdown && !isProcessing && !isTranscribing && (
             <>
               <div className="absolute right-4 -top-14">
                 <DropdownMenu>
@@ -358,7 +413,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                   type="button"
                   onClick={isRecording ? stopRecording : startRecording}
                   variant={isRecording ? "destructive" : "secondary"}
-                  disabled={isProcessing}
+                  disabled={isProcessing || isTranscribing}
                 >
                   {isRecording ? (
                     <>

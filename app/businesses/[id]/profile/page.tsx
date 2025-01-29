@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { StaffIntroSection } from "../../../components/business/staff-intro-section"
 
 type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
   place: {
@@ -204,6 +205,10 @@ export default function BusinessProfilePage() {
                 </TooltipProvider>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8">
+            <StaffIntroSection businessId={businessId} />
           </div>
 
           <BusinessTimeline 

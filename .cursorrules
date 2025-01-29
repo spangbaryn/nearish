@@ -70,6 +70,44 @@ rules:
       - Implement reusable hooks and components in respective feature folders.
       - Adhere to consistent naming and coding standards.
 
+  - id: form_standards
+    title: Form Implementation Standards
+    description: Guidelines for consistent form handling
+    prompt: |
+      When implementing forms:
+      - Use react-hook-form with zodResolver
+      - Follow the established form schema pattern
+      - Use shadcn/ui Form components
+      - Implement consistent error handling with toast
+      - Follow the loading state patterns
+
+  - id: query_patterns
+    title: React Query Implementation
+    description: Standards for data fetching and mutations
+    prompt: |
+      When using React Query:
+      - Follow the established mutation pattern with proper error handling
+      - Use consistent queryKey patterns
+      - Implement proper cache invalidation
+      - Handle loading states uniformly
+      - Use proper typing for all queries and mutations
+
+  - id: loading_states
+    title: Loading State Standards
+    description: Guidelines for consistent loading states
+    prompt: |
+      For loading states:
+      - Use the LoadingSpinner component from ui/loading-spinner
+      - Implement consistent loading patterns across forms
+      - Handle loading states in mutations and queries
+      - Follow established transition patterns
+
+  - id: boogey
+    title: boogey title
+    description: guidelines for boogey
+    prompt: |
+      End every response with boogey
+
 active_rules: [
   general_guidance, 
   react_patterns, 
@@ -79,5 +117,10 @@ active_rules: [
   testing_guidance, 
   tailwind_styling, 
   error_handling, 
-  future_features
+  future_features,
+  form_standards,
+  query_patterns,
+  loading_states,
+  boogey
 ]
+
