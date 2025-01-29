@@ -152,7 +152,8 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
           deviceId: selectedVideo ? { exact: selectedVideo } : undefined,
           width: { ideal: 1080 },
           height: { ideal: 1920 },
-          aspectRatio: { exact: 0.5625 } // Force exact 9:16 ratio
+          aspectRatio: { exact: 0.5625 }, // 9:16
+          facingMode: 'user'
         },
         audio: selectedAudio ? { deviceId: selectedAudio } : true
       }
