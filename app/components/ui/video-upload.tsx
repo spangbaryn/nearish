@@ -39,13 +39,12 @@ export function VideoUpload(props: VideoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const processingTimeoutRef = useRef<NodeJS.Timeout>()
 
-  // Clear processing state if stuck for too long
   useEffect(() => {
     if (isProcessing) {
       processingTimeoutRef.current = setTimeout(() => {
         setIsProcessing(false)
         toast.error('Video processing timed out. Please try again.')
-      }, 60000) // 1 minute timeout
+      }, 60000)
     }
     return () => {
       if (processingTimeoutRef.current) {
@@ -84,7 +83,7 @@ export function VideoUpload(props: VideoUploadProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {!isProcessing && !recordedVideoData && (
+      {!recordedVideoData && (
         <VideoRecorder
           onSuccess={handleRecordingSuccess}
           onRecordingChange={handleRecordingChange}
@@ -92,19 +91,7 @@ export function VideoUpload(props: VideoUploadProps) {
         />
       )}
       
-      {isProcessing && (
-        <div className="flex-1">
-          <div className="flex items-center justify-center h-full">
-            <div className="w-full max-w-[280px] min-h-0 flex-1">
-              <div className="aspect-[9/16] relative overflow-hidden rounded-lg">
-                <Skeleton className="absolute inset-0" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {recordedVideoData && !isProcessing && (
+      {recordedVideoData && (
         <>
           <div className="flex-1">
             <div className="flex items-center justify-center h-full">

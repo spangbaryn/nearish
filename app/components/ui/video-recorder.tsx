@@ -6,13 +6,6 @@ import { toast } from "sonner"
 import { Video, StopCircle, Settings } from "lucide-react"
 import { MuxVideoPlayer } from "./mux-video-player"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -45,6 +38,7 @@ interface MediaDevice {
 export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange, onInitialized }: VideoRecorderProps) {
   const [countdown, setCountdown] = useState<number | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -57,34 +51,19 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
   useEffect(() => {
     const initialize = async () => {
       try {
-        const devices = await navigator.mediaDevices.enumerateDevices()
-        const videoDevices = devices.filter(device => device.kind === 'videoinput')
-        const audioDevices = devices.filter(device => device.kind === 'audioinput')
-        
-        setVideoDevices(videoDevices)
-        setAudioDevices(audioDevices)
-        
-        if (videoDevices.length > 0) {
-          setSelectedVideo(videoDevices[0].deviceId)
-        }
-        if (audioDevices.length > 0) {
-          setSelectedAudio(audioDevices[0].deviceId)
-        }
-
+        await getMediaDevices()
         await initializeCamera()
         onInitialized?.()
       } catch (error) {
         console.error('Failed to initialize devices:', error)
-        onInitialized?.() // Call even on error to prevent infinite loading
+        onInitialized?.()
       }
     }
 
     initialize()
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-      }
+      stopAllTracks()
     }
   }, [])
 
@@ -94,25 +73,11 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         initializeCamera()
       }
     }
-  }, [selectedVideo, selectedAudio, isRecording])
+  }, [selectedVideo, selectedAudio])
 
   useEffect(() => {
     onCountdownChange?.(countdown)
   }, [countdown, onCountdownChange])
-
-  useEffect(() => {
-    initializeCamera()
-    
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
-      }
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current = null
-      }
-    }
-  }, [])
 
   const getMediaDevices = async () => {
     try {
@@ -135,19 +100,21 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       setVideoDevices(videoInputs)
       setAudioDevices(audioInputs)
       
-      const defaultVideo = videoInputs.find(device => device.deviceId === 'default') || videoInputs[0]
-      const defaultAudio = audioInputs.find(device => device.deviceId === 'default') || audioInputs[0]
-      
-      if (defaultVideo) setSelectedVideo(defaultVideo.deviceId)
-      if (defaultAudio) setSelectedAudio(defaultAudio.deviceId)
+      if (videoInputs.length > 0) {
+        setSelectedVideo(videoInputs[0].deviceId)
+      }
+      if (audioInputs.length > 0) {
+        setSelectedAudio(audioInputs[0].deviceId)
+      }
     } catch (error) {
       console.error('Error getting devices:', error)
+      toast.error('Failed to access media devices')
     }
   }
 
   const initializeCamera = async () => {
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       
       const constraints = {
         video: {
@@ -170,11 +137,9 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
-      onInitialized?.()
     } catch (error: any) {
       toast.error('Failed to access camera')
       console.error('Camera error:', error)
-      onInitialized?.()
     }
   }
 
@@ -216,24 +181,16 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   const stopRecording = async () => {
     try {
-      setIsRecording(false)  // Set this first to hide the buttons
+      setIsRecording(false)
+      setIsProcessing(true)
       onRecordingChange?.(false)
 
       if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
-        mediaRecorderRef.current = null;
+        mediaRecorderRef.current.stop()
+        mediaRecorderRef.current = null
       }
 
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
-
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks();
-        tracks?.forEach((track) => track.stop());
-        videoRef.current.srcObject = null;
-      }
+      stopAllTracks()
 
       const blob = new Blob(chunksRef.current, { type: 'video/webm' })
       const file = new File([blob], 'recording.webm', { type: 'video/webm' })
@@ -259,36 +216,32 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         const assetResponse = await fetch(`/api/videos/${assetId}`)
         if (assetResponse.ok) {
           asset = await assetResponse.json()
-          if (asset.status === 'ready' && asset.playback_id) break
+          if (asset.status === 'ready' && asset.playback_id) {
+            const videoData = {
+              assetId: asset.id,
+              playbackId: asset.playback_id,
+              thumbnailUrl: asset.thumbnail_url,
+              duration: asset.duration || null,
+              status: asset.status || null
+            }
+            setIsProcessing(false)
+            onSuccess(videoData)
+            return
+          }
         }
         await new Promise(resolve => setTimeout(resolve, 2000))
       }
 
-      if (!asset || !asset.playback_id) {
-        throw new Error('Video processing timeout')
-      }
-
-      const videoData = {
-        assetId: asset.id,
-        playbackId: asset.playback_id,
-        thumbnailUrl: asset.thumbnail_url,
-        duration: asset.duration || null,
-        status: asset.status || null
-      }
-
-      onSuccess(videoData)
+      throw new Error('Video processing timeout')
     } catch (error: any) {
+      setIsProcessing(false)
       toast.error(error.message || 'Failed to stop recording')
       console.error('Recording error:', error)
       onRecordingChange?.(false, true)
     }
   }
 
-  const handleStartOver = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current = null
-    }
+  const stopAllTracks = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
       streamRef.current = null
@@ -298,49 +251,6 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       tracks?.forEach(track => track.stop())
       videoRef.current.srcObject = null
     }
-    setIsRecording(false)
-    chunksRef.current = []
-    onRecordingChange?.(false, true)
-    initializeCamera()
-  }
-
-  // Stop camera & mic and reset everything
-  function stopAllTracks() {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current = null
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks()
-      tracks?.forEach(track => track.stop())
-      videoRef.current.srcObject = null
-    }
-  }
-
-  // Automatically release resources when component unmounts
-  useEffect(() => {
-    return () => {
-      stopAllTracks()
-    }
-  }, [])
-
-  function validateOrientation(blob: Blob): Promise<boolean> {
-    return new Promise((resolve) => {
-      const video = document.createElement("video");
-      video.src = URL.createObjectURL(blob);
-      video.onloadedmetadata = () => {
-        const aspectRatio = video.videoWidth / video.videoHeight;
-        const targetRatio = 9/16; // 0.5625
-        const tolerance = 0.01; // Allow 1% deviation
-        
-        const isValidRatio = Math.abs(aspectRatio - targetRatio) < tolerance;
-        resolve(isValidRatio);
-      };
-    });
   }
 
   return (
@@ -367,6 +277,11 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                   <span className="text-8xl font-bold text-white">{countdown || "GO!"}</span>
                 </div>
               )}
+              {isProcessing && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <span className="text-xl font-bold text-white">Processing video...</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -374,7 +289,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
       <div className="flex items-center justify-center">
         <div className="w-full max-w-[540px] relative">
-          {!countdown && (
+          {!countdown && !isProcessing && (
             <>
               <div className="absolute right-4 -top-14">
                 <DropdownMenu>
@@ -411,6 +326,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                   type="button"
                   onClick={isRecording ? stopRecording : startRecording}
                   variant={isRecording ? "destructive" : "secondary"}
+                  disabled={isProcessing}
                 >
                   {isRecording ? (
                     <>
@@ -424,15 +340,6 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                     </>
                   )}
                 </Button>
-                {isRecording && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleStartOver}
-                  >
-                    Start Over
-                  </Button>
-                )}
               </div>
             </>
           )}
