@@ -152,7 +152,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
           deviceId: selectedVideo ? { exact: selectedVideo } : undefined,
           width: { ideal: 1080 },
           height: { ideal: 1920 },
-          aspectRatio: { ideal: 0.5625 } // 9:16 aspect ratio
+          aspectRatio: { exact: 0.5625 } // Force exact 9:16 ratio
         },
         audio: selectedAudio ? { deviceId: selectedAudio } : true
       }
@@ -320,6 +320,21 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       stopAllTracks()
     }
   }, [])
+
+  function validateOrientation(blob: Blob): Promise<boolean> {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      video.src = URL.createObjectURL(blob);
+      video.onloadedmetadata = () => {
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        const targetRatio = 9/16; // 0.5625
+        const tolerance = 0.01; // Allow 1% deviation
+        
+        const isValidRatio = Math.abs(aspectRatio - targetRatio) < tolerance;
+        resolve(isValidRatio);
+      };
+    });
+  }
 
   return (
     <div className="flex flex-col space-y-4">
