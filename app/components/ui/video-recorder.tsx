@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface VideoData {
   assetId: string
@@ -45,8 +46,20 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
   const streamRef = useRef<MediaStream | null>(null)
   const [videoDevices, setVideoDevices] = useState<MediaDevice[]>([])
   const [audioDevices, setAudioDevices] = useState<MediaDevice[]>([])
-  const [selectedVideo, setSelectedVideo] = useState<string>('')
-  const [selectedAudio, setSelectedAudio] = useState<string>('')
+  const [selectedVideo, setSelectedVideo] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastUsedCamera') || ''
+    }
+    return ''
+  })
+  const [selectedAudio, setSelectedAudio] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastUsedMicrophone') || ''
+    }
+    return ''
+  })
+  const [isInitializing, setIsInitializing] = useState(true)
+  const initStartTimeRef = useRef<number>(Date.now())
 
   useEffect(() => {
     const initialize = async () => {
@@ -100,10 +113,19 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       setVideoDevices(videoInputs)
       setAudioDevices(audioInputs)
       
-      if (videoInputs.length > 0) {
+      // Check if stored devices are still available
+      const lastCamera = localStorage.getItem('lastUsedCamera')
+      const lastMic = localStorage.getItem('lastUsedMicrophone')
+      
+      if (lastCamera && videoInputs.some(d => d.deviceId === lastCamera)) {
+        setSelectedVideo(lastCamera)
+      } else if (videoInputs.length > 0) {
         setSelectedVideo(videoInputs[0].deviceId)
       }
-      if (audioInputs.length > 0) {
+      
+      if (lastMic && audioInputs.some(d => d.deviceId === lastMic)) {
+        setSelectedAudio(lastMic)
+      } else if (audioInputs.length > 0) {
         setSelectedAudio(audioInputs[0].deviceId)
       }
     } catch (error) {
@@ -253,6 +275,16 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
     }
   }
 
+  const handleVideoChange = (deviceId: string) => {
+    setSelectedVideo(deviceId)
+    localStorage.setItem('lastUsedCamera', deviceId)
+  }
+
+  const handleAudioChange = (deviceId: string) => {
+    setSelectedAudio(deviceId)
+    localStorage.setItem('lastUsedMicrophone', deviceId)
+  }
+
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex-1">
@@ -301,7 +333,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                   <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Camera</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup value={selectedVideo} onValueChange={setSelectedVideo}>
+                    <DropdownMenuRadioGroup value={selectedVideo} onValueChange={handleVideoChange}>
                       {videoDevices.map(device => (
                         <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
                           {device.label}
@@ -311,7 +343,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Microphone</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup value={selectedAudio} onValueChange={setSelectedAudio}>
+                    <DropdownMenuRadioGroup value={selectedAudio} onValueChange={handleAudioChange}>
                       {audioDevices.map(device => (
                         <DropdownMenuRadioItem key={device.deviceId} value={device.deviceId}>
                           {device.label}
