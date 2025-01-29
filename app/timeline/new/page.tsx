@@ -81,6 +81,7 @@ export default function NewTimelineEventPage() {
     if (!recording) {
       setIsVideoProcessing(true)
       setHasRecorded(true)
+      setShowFields(true)
     }
   }
 
@@ -123,16 +124,14 @@ export default function NewTimelineEventPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-8">
               <VideoUpload 
-                onSuccess={(data) => {
-                  handleVideoUpload(data)
-                  setShowFields(true)
-                }}
+                onSuccess={handleVideoUpload}
                 onRecordingChange={(recording, fromStartOver) => {
                   handleRecordingChange(recording)
                   if (fromStartOver) {
                     setShowFields(false)
                   }
                 }}
+                onProcessingStart={() => setShowFields(true)}
               />
               
               {showFields && (

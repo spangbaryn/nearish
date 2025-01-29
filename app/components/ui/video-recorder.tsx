@@ -21,7 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { VideoProcessingSkeleton } from "./video-processing-skeleton"
 
 interface VideoData {
   assetId: string
@@ -210,19 +209,20 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
 
   const stopRecording = async () => {
     try {
+      setIsRecording(false)  // Set this first to hide the buttons
+      onRecordingChange?.(false)
+
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.stop();
         mediaRecorderRef.current = null;
       }
 
       if (streamRef.current) {
-        // Turn off the camera and mic
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
       }
 
       if (videoRef.current?.srcObject) {
-        // Stop all tracks for the video element
         const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks();
         tracks?.forEach((track) => track.stop());
         videoRef.current.srcObject = null;
@@ -236,8 +236,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
       })
       
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to get upload URL')
+        throw new Error('Failed to get upload URL')
       }
       
       const { uploadUrl, assetId } = await response.json()
@@ -258,7 +257,7 @@ export function VideoRecorder({ onSuccess, onRecordingChange, onCountdownChange,
         await new Promise(resolve => setTimeout(resolve, 2000))
       }
 
-      if (!asset || asset.status !== 'ready') {
+      if (!asset || !asset.playback_id) {
         throw new Error('Video processing timeout')
       }
 
