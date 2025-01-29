@@ -12,6 +12,11 @@ export async function middleware(req: NextRequest) {
     
     if (error) throw new AuthError(error.message)
 
+    // If the user is logged in and tries to access the public homepage, redirect to /home
+    if (req.nextUrl.pathname === '/' && session) {
+      return NextResponse.redirect(new URL('/home', req.url))
+    }
+
     // Handle auth pages layout and redirects
     if (req.nextUrl.pathname.startsWith('/auth')) {
       if (session) {
