@@ -27,27 +27,6 @@ const nextConfig = {
         stream: false,
         os: false
       }
-
-      // Add externals for native modules
-      config.externals = {
-        ...config.externals,
-        'sharp': 'sharp',
-        'onnxruntime-node': 'onnxruntime-node',
-        '@xenova/transformers': '@xenova/transformers'
-      }
-    }
-
-    // Add specific loader for .node files
-    config.module = {
-      ...config.module,
-      rules: [
-        ...config.module.rules,
-        {
-          test: /\.node$/,
-          use: 'node-loader',
-          exclude: /node_modules/,
-        }
-      ]
     }
 
     return config
