@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path')
+
 const nextConfig = {
   images: {
     domains: [
@@ -6,6 +8,12 @@ const nextConfig = {
     ]
   },
   webpack: (config, { isServer }) => {
+    // Add path aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, './')
+    }
+
     // Exclude native node modules from client-side bundles
     if (!isServer) {
       config.resolve.fallback = {
@@ -18,7 +26,7 @@ const nextConfig = {
       }
     }
     return config
-  },
+  }
 }
 
 module.exports = nextConfig 
