@@ -18,7 +18,14 @@ export class MuxService {
 
   static setPlayerStyles(player: HTMLElement) {
     player.style.setProperty('--mediaObjectFit', 'cover')
-    player.style.setProperty('--controls-backdrop-color', 'rgba(0, 0, 0, 0.4)')
+    player.style.setProperty('--controls-backdrop-color', 'transparent')
     player.style.setProperty('--bottom-controls-margin', '1.5rem')
+    player.style.setProperty('--play-button', 'none')
+    player.style.setProperty('--media-play-button-display', 'none')
+    player.style.setProperty('--media-background', 'transparent')
+    player.style.setProperty('--media-background-color', 'transparent')
+    player.style.setProperty('--controls-backdrop-color', 'transparent')
+    player.style.setProperty('--poster-background', 'transparent')
+    player.style.setProperty('--media-poster-display', 'none')
   }
 } 

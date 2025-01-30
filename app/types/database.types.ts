@@ -1,7 +1,7 @@
 interface Database {
   public: {
     Tables: {
-      businesses_staff_intros: {
+      business_staff_intros: {
         Row: {
           id: string
           business_id: string
