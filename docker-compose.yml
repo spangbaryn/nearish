@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_TRANSCRIPTION_URL=http://transcription:3001
+    depends_on:
+      - transcription
+
+  transcription:
+    build: 
+      context: ./services/transcription
+    ports:
+      - "3001:3001" 

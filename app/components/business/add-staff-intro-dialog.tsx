@@ -12,6 +12,7 @@ import { StaffIntroForm } from './staff-intro-form'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AppError } from '@/lib/errors'
 
 const staffIntroSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -76,15 +77,26 @@ export function AddStaffIntroDialog({ businessId, onSuccess }: AddStaffIntroDial
   })
 
   const extractInfoFromTranscription = async (transcription: string) => {
-    const response = await fetch('/api/analyze-intro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcription })
-    });
-    
-    if (!response.ok) throw new Error('Failed to analyze transcription');
-    const data = await response.json();
-    return data;
+    try {
+      const response = await fetch('/api/analyze-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcription })
+      });
+      
+      if (!response.ok) {
+        throw new AppError('TranscriptionError', 'Failed to analyze transcription');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      handleError(error);
+      return {
+        first_name: '',
+        role: '',
+        favorite_spot: ''
+      };
+    }
   };
 
   const handleVideoSuccess = async (data: any) => {

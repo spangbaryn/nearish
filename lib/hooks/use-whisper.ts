@@ -1,4 +1,8 @@
 import { useState, useCallback } from 'react';
+import { AppError } from '@/lib/errors';
+import { toast } from '@/components/ui/use-toast';
+
+const TRANSCRIPTION_SERVICE = process.env.NEXT_PUBLIC_TRANSCRIPTION_URL || 'http://localhost:3001';
 
 export function useWhisper() {
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -12,19 +16,25 @@ export function useWhisper() {
       const formData = new FormData();
       formData.append('audio', audioBlob);
 
-      const response = await fetch('/api/transcribe', {
+      const response = await fetch(`${TRANSCRIPTION_SERVICE}/transcribe`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Transcription failed');
+        throw new AppError('TranscriptionError', 'Failed to transcribe audio');
       }
 
       const { text } = await response.json();
       return text;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to transcribe audio');
+      const message = err instanceof AppError ? err.message : 'Failed to transcribe audio';
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Transcription Error",
+        description: message
+      });
       throw err;
     } finally {
       setIsTranscribing(false);
