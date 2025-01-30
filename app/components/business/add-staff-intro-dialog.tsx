@@ -147,6 +147,11 @@ export function AddStaffIntroDialog({ businessId, onSuccess }: AddStaffIntroDial
     favorite_spot: /(?:favorite (?:local|spot|place)|like to go to|hang out at) is\s*([^.,]+?)(?:\s*(?:because|and|where|which|.|$))/i
   }
 
+  const handleError = (error: any) => {
+    console.error('Error analyzing intro:', error);
+    toast.error("Failed to analyze introduction video");
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
