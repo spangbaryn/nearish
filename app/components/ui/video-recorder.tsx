@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSpeechRecognition } from "../../hooks/use-speech-recognition"
-import { muxClient } from "@/lib/mux-client"
+import { muxClient } from "../../lib/mux-client"  
 import { useWhisper } from '@/lib/hooks/use-whisper'
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
