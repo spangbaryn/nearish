@@ -47,7 +47,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
     },
     onSuccess: () => {
       toast.success('Team member removed')
-      queryClient.invalidateQueries(['business-staff', businessId])
+      queryClient.invalidateQueries({ queryKey: ['business-staff', businessId] })
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to remove team member')

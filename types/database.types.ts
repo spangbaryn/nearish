@@ -45,51 +45,6 @@ export type Database = {
         }
         Relationships: []
       }
-
-      businesses_staff_intros: {
-        Row: {
-          id: string
-          business_id: string
-          first_name: string
-          role: string
-          favorite_spot: string | null
-          fun_fact: string | null
-          thumbnail_url: string
-          video_asset_id: string
-          video_playback_id: string
-          created_at: string
-          updated_at: string | null
-        }
-        Insert: {
-          business_id: string
-          first_name: string
-          role: string
-          favorite_spot?: string | null
-          fun_fact?: string | null
-          thumbnail_url: string
-          video_asset_id: string
-          video_playback_id: string
-          created_at?: string
-          updated_at?: string | null
-        }
-        Update: {
-          first_name?: string
-          role?: string
-          favorite_spot?: string | null
-          fun_fact?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_staff_intros_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-
       business_members: {
         Row: {
           business_id: string | null
@@ -166,6 +121,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "business_social_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_staff_intros: {
+        Row: {
+          business_id: string | null
+          created_at: string | null
+          favorite_spot: string | null
+          first_name: string
+          id: string
+          role: string
+          thumbnail_url: string
+          video_asset_id: string
+          video_playback_id: string
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string | null
+          favorite_spot?: string | null
+          first_name: string
+          id?: string
+          role: string
+          thumbnail_url: string
+          video_asset_id: string
+          video_playback_id: string
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string | null
+          favorite_spot?: string | null
+          first_name?: string
+          id?: string
+          role?: string
+          thumbnail_url?: string
+          video_asset_id?: string
+          video_playback_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_staff_intros_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
@@ -987,5 +986,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-    
