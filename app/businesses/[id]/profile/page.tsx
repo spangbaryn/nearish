@@ -62,20 +62,6 @@ export default function BusinessProfilePage() {
     }
   })
 
-  const { data: posts } = useQuery({
-    queryKey: ['business-posts', businessId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('business_id', businessId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data
-    }
-  })
-
   const { data: timelineEvents } = useQuery({
     queryKey: ['business-timeline', businessId],
     queryFn: async () => {
@@ -208,7 +194,10 @@ export default function BusinessProfilePage() {
           </div>
 
           <div className="mt-8">
-            <StaffIntroSection businessId={businessId} />
+            <StaffIntroSection 
+              businessId={businessId} 
+              color={business?.brand_color ?? "#000000"}
+            />
           </div>
 
           <BusinessTimeline 
@@ -216,37 +205,6 @@ export default function BusinessProfilePage() {
             events={timelineEvents || []}
             color={business?.brand_color ?? undefined}
           />
-
-          <div className="mt-8 space-y-4">
-            <h2 className="text-xl font-semibold">Recent Posts</h2>
-            {posts?.map((post) => (
-              <Card key={post.id}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <p className="whitespace-pre-wrap">{post.content}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Posted {new Date(post.created_at).toLocaleDateString()}
-                        {post.source === 'facebook' && (
-                          <span className="ml-2 inline-flex items-center">
-                            <Facebook className="h-3 w-3 mr-1 text-[#1877F2]" />
-                            Posted to Facebook
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {posts?.length === 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground text-center">No posts yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </div>
       </div>
     </div>

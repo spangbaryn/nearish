@@ -74,7 +74,15 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Team Members</h2>
+        <div className="flex items-center gap-3">
+          <div 
+            className="h-8 w-1 rounded-full"
+            style={{ backgroundColor: color || "#000000" }}
+          />
+          <h2 className="text-2xl font-bold text-black">
+            Team Members
+          </h2>
+        </div>
         <AddStaffIntroDialog businessId={businessId} />
       </div>
 

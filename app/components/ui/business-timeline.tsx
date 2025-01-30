@@ -238,20 +238,28 @@ export function BusinessTimeline({
   return (
     <div className="timeline-section mt-16">
       <div className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-foreground">Our Story</h2>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div 
+              className="h-8 w-1 rounded-full"
+              style={{ background: color }}
+            />
+            <h2 className="text-2xl font-bold text-black">
+              Our Story
+            </h2>
+          </div>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => router.push(`/timeline/new?businessId=${businessId}`)}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Event
           </Button>
         </div>
 
         <div 
-          className="storybook-timeline" 
+          className="storybook-timeline"
           style={{ 
             color: color,
             '--timeline-color-rgb': `${hexToRgb(color)}`,
