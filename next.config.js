@@ -11,7 +11,10 @@ const nextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         sharp: false,
-        'onnxruntime-node': false
+        'onnxruntime-node': false,
+        '@xenova/transformers': false,
+        fs: false,
+        path: false
       }
     }
     return config

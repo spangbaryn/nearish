@@ -9,27 +9,20 @@ export function useWhisper() {
       setIsTranscribing(true);
       setError(null);
 
-      // Dynamically import transformers
-      const { pipeline, env } = await import('@xenova/transformers');
-      
-      // Configure WASM
-      env.backends.onnx.wasm.numThreads = 1;
+      const formData = new FormData();
+      formData.append('audio', audioBlob);
 
-      // Convert blob to array buffer
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const audioData = new Float32Array(arrayBuffer);
-
-      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-small', {
-        quantized: true,
-        progress_callback: undefined
+      const response = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
       });
 
-      const result = await transcriber(audioData, {
-        chunk_length_s: 30,
-        stride_length_s: 5
-      });
+      if (!response.ok) {
+        throw new Error('Transcription failed');
+      }
 
-      return typeof result === 'string' ? result : result.text || '';
+      const { text } = await response.json();
+      return text;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to transcribe audio');
       throw err;
