@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { pipeline, env } from '@xenova/transformers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +9,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
 
+    // Dynamically import transformers only on server-side
+    const { pipeline, env } = await import('@xenova/transformers')
+    
     const arrayBuffer = await audioFile.arrayBuffer()
     const audioData = new Float32Array(arrayBuffer)
 
@@ -24,9 +26,13 @@ export async function POST(request: NextRequest) {
       stride_length_s: 5
     })
 
-    const text = typeof result === 'string' ? result : result.text || ''
+    const text = Array.isArray(result) 
+      ? result[0]?.text || '' 
+      : 'text' in result ? result.text : ''
+      
     return NextResponse.json({ text })
   } catch (error: any) {
+    console.error('Transcription error:', error)
     return NextResponse.json(
       { error: error.message || 'Transcription failed' },
       { status: 500 }
