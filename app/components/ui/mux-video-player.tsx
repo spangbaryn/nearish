@@ -83,21 +83,24 @@ export function MuxVideoPlayer({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          '--play-button': 'none',
-          '--media-play-button-display': 'none',
-          '--controls': 'none',
-          '--media-controls-display': 'none',
-          '--media-background': 'transparent',
-          '--media-background-color': 'transparent',
-          '--controls-backdrop-color': 'transparent',
-          '--poster-background': 'transparent',
-          '--media-poster-display': 'none'
+          ...{
+            '--play-button': 'none',
+            '--media-play-button-display': 'none',
+            '--controls': 'none',
+            '--media-controls-display': 'none',
+            '--media-background': 'transparent',
+            '--media-background-color': 'transparent',
+            '--controls-backdrop-color': 'transparent',
+            '--poster-background': 'transparent',
+            '--media-poster-display': 'none'
+          } as React.CSSProperties
         }}
         autoPlay={autoPlay}
         muted={muted}
         onEnded={onEnded}
         thumbnailTime={0}
-        controls={controls}
+        defaultHiddenCaptions
+        nohotkeys={!controls}
         loop={loop}
         preload={preload}
       />
