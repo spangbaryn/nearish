@@ -1,15 +1,11 @@
-import { OpenAI } from 'openai'
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database.types'
+import { openai } from '@/app/lib/services/openai.service'
 
 export async function POST(request: Request) {
   try {
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
-
     const supabase = createRouteHandlerClient<Database>({ cookies })
     const { data: { session } } = await supabase.auth.getSession()
 
