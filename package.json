@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack\" \"cd services/transcription && npm run dev\"",
-    "build": "next build && cd services/transcription && npm run build",
+    "dev": "concurrently \"next dev --turbopack\" \"cd services/transcription-api && npm run dev\"",
+    "build": "next build && cd services/transcription-api && npm run build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest --detectOpenHandles --setupFiles dotenv/config",

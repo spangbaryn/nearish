@@ -5,11 +5,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_TRANSCRIPTION_URL=https://transcription-api-production.up.railway.app
+      - NEXT_PUBLIC_TRANSCRIPTION_URL=https://railway.com/project/98030408-897e-4998-9567-c9b4e7edcddb
     depends_on:
-      - transcription
+      - transcription-api
 
-  transcription:
+  transcription-api:
     build: 
       context: ./services/transcription
     ports:

@@ -1,13 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { pipeline, env } from '@xenova/transformers';
+import { pipeline } from '@xenova/transformers';
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Add more detailed logging
+console.log('Starting transcription service...');
+console.log('Node environment:', process.env.NODE_ENV);
+
 app.use(cors());
 app.use(express.json());
+
+// Add a root route for debugging
+app.get('/', (_, res) => {
+  res.json({ message: 'Transcription service is running' });
+});
 
 app.post('/transcribe', upload.single('audio'), async (req, res): Promise<void> => {
   try {
@@ -43,4 +52,10 @@ app.get('/health', (_, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Transcription service running on port ${PORT}`)); 
+app.listen(PORT, () => {
+  console.log(`Transcription service running on port ${PORT}`);
+  console.log('Available routes:');
+  console.log('- GET /');
+  console.log('- GET /health');
+  console.log('- POST /transcribe');
+}); 

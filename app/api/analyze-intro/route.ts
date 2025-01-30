@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { AppError } from '@/lib/errors';
-import { openai } from '@/app/lib/services/openai.service';
+import { openai } from '@/lib/services/openai.service';
 
 export async function POST(request: Request) {
   try {
