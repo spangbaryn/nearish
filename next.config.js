@@ -46,9 +46,8 @@ const nextConfig = {
   },
   // Explicitly mark which packages are server-only
   experimental: {
-    serverComponentsExternalPackages: ['sharp', 'onnxruntime-node', '@xenova/transformers']
+    serverExternalPackages: ['sharp', 'onnxruntime-node', '@xenova/transformers']
   }
 }
 
-module.exports = nextConfig 
 module.exports = nextConfig 

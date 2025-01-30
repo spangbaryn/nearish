@@ -67,7 +67,9 @@ export function TeamMembersList({ businessId }: { businessId: string }) {
       return updateBusinessMemberRole(businessId, profileId, role)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business-members', businessId] })
+      queryClient.invalidateQueries({
+        queryKey: ['business-staff', businessId]
+      })
       toast.success('Role updated')
     },
     onError: (error: any) => {
@@ -84,7 +86,9 @@ export function TeamMembersList({ businessId }: { businessId: string }) {
       return removeBusinessMember(businessId, profileId)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business-members', businessId] })
+      queryClient.invalidateQueries({
+        queryKey: ['business-staff', businessId]
+      })
       toast.success('Team member removed')
     },
     onError: (error: any) => {
