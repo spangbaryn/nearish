@@ -9,16 +9,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
 
-    // Dynamically import transformers only on server-side
+    // Force WASM backend
     const { pipeline, env } = await import('@xenova/transformers')
+    env.backends.onnx.wasm.numThreads = 1
+    env.useBrowserCache = false
+    env.backends.onnx.useNodePolyfills = false
     
     const arrayBuffer = await audioFile.arrayBuffer()
     const audioData = new Float32Array(arrayBuffer)
-
-    env.backends.onnx.wasm.numThreads = 1
     
     const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-small', {
       quantized: true,
+      revision: 'main',
+      wasmSettings: {
+        numThreads: 1,
+        proxy: false
+      }
     })
 
     const result = await transcriber(audioData, {
