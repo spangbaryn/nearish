@@ -42,7 +42,9 @@ export function EditStaffIntroDialog({ businessId, intro, open, onOpenChange }: 
     onSuccess: () => {
       toast.success('Team member updated successfully')
       onOpenChange(false)
-      queryClient.invalidateQueries(['business-staff', businessId])
+      queryClient.invalidateQueries({ 
+        queryKey: ['business-staff', businessId] 
+      })
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to update team member')
@@ -64,7 +66,9 @@ export function EditStaffIntroDialog({ businessId, intro, open, onOpenChange }: 
           }}
           thumbnailUrl={intro.thumbnail_url}
           videoData={{
-            playbackId: intro.video_playback_id
+            assetId: '',
+            playbackId: intro.video_playback_id,
+            thumbnailUrl: intro.thumbnail_url
           }}
           onSubmit={updateStaffIntroMutation.mutate}
           mode="edit"
