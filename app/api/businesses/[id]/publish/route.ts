@@ -7,7 +7,7 @@ type Params = { id: string }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: { id: string } }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
