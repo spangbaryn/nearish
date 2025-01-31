@@ -7,6 +7,7 @@ export async function POST(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
+  const { id } = context.params
   try {
     const supabase = createRouteHandlerClient({ cookies })
     const { data: { session } } = await supabase.auth.getSession()
@@ -21,14 +22,14 @@ export async function POST(
     const { data: business } = await supabase
       .from('businesses')
       .select('name')
-      .eq('id', context.params.id)
+      .eq('id', id)
       .single()
 
     if (!business) {
       return new NextResponse('Business not found', { status: 404 })
     }
 
-    const slug = publish ? await generateBusinessSlug(business.name, context.params.id) : null
+    const slug = publish ? await generateBusinessSlug(business.name, id) : null
 
     const { error } = await supabase
       .from('businesses')
@@ -37,7 +38,7 @@ export async function POST(
         published_at: publish ? new Date().toISOString() : null,
         public_url_slug: slug
       })
-      .eq('id', context.params.id)
+      .eq('id', id)
 
     if (error) throw error
 
