@@ -1,11 +1,11 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { generateBusinessSlug } from '@/lib/utils/slugs'
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
@@ -21,14 +21,14 @@ export async function POST(
     const { data: business } = await supabase
       .from('businesses')
       .select('name')
-      .eq('id', params.id)
+      .eq('id', context.params.id)
       .single()
 
     if (!business) {
       return new NextResponse('Business not found', { status: 404 })
     }
 
-    const slug = publish ? await generateBusinessSlug(business.name, params.id) : null
+    const slug = publish ? await generateBusinessSlug(business.name, context.params.id) : null
 
     const { error } = await supabase
       .from('businesses')
@@ -37,7 +37,7 @@ export async function POST(
         published_at: publish ? new Date().toISOString() : null,
         public_url_slug: slug
       })
-      .eq('id', params.id)
+      .eq('id', context.params.id)
 
     if (error) throw error
 
