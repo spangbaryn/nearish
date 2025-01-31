@@ -90,6 +90,28 @@ export interface Database {
           }
         ]
       }
+      campaigns: {
+        Row: {
+          id: string
+          collection_id: string
+          template_id: string
+          sent_at: string | null
+          created_at: string
+          list_id?: string
+        }
+        Insert: {
+          collection_id: string
+          template_id: string
+          list_id?: string
+          sent_at?: string | null
+        }
+        Update: {
+          collection_id?: string
+          template_id?: string
+          list_id?: string
+          sent_at?: string | null
+        }
+      }
       // ... other tables
     }
   }
