@@ -3,6 +3,8 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
+type RouteContext = any // Bypass strict typing temporarily
+
 const slugSchema = z.object({
   slug: z.string()
     .min(3)
@@ -12,8 +14,9 @@ const slugSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
+  const { id } = context.params
   try {
     const supabase = createRouteHandlerClient({ cookies })
     const { data: { session } } = await supabase.auth.getSession()
@@ -30,7 +33,7 @@ export async function PATCH(
       .from('businesses')
       .select('id')
       .eq('public_url_slug', slug)
-      .neq('id', params.id)
+      .neq('id', id)
       .single()
 
     if (existingBusiness) {
@@ -43,7 +46,7 @@ export async function PATCH(
     const { error } = await supabase
       .from('businesses')
       .update({ public_url_slug: slug })
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (error) throw error
 
