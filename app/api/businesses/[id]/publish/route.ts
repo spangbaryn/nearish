@@ -1,11 +1,17 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { NextResponse, NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { generateBusinessSlug } from '@/lib/utils/slugs'
 
+type RouteParams = {
+  params: {
+    id: string
+  }
+}
+
 export async function POST(
-  request: NextRequest,
-  context: { params: { id: string } }
+  req: NextRequest,
+  { params }: RouteParams
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
@@ -15,20 +21,20 @@ export async function POST(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { publish } = await request.json()
+    const { publish } = await req.json()
     
     // Get business name for slug generation
     const { data: business } = await supabase
       .from('businesses')
       .select('name')
-      .eq('id', context.params.id)
+      .eq('id', params.id)
       .single()
 
     if (!business) {
       return new NextResponse('Business not found', { status: 404 })
     }
 
-    const slug = publish ? await generateBusinessSlug(business.name, context.params.id) : null
+    const slug = publish ? await generateBusinessSlug(business.name, params.id) : null
 
     const { error } = await supabase
       .from('businesses')
@@ -37,7 +43,7 @@ export async function POST(
         published_at: publish ? new Date().toISOString() : null,
         public_url_slug: slug
       })
-      .eq('id', context.params.id)
+      .eq('id', params.id)
 
     if (error) throw error
 
