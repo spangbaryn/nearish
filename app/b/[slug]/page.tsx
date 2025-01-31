@@ -5,7 +5,7 @@ import { PublicBusinessProfile } from '@/components/business/public-profile'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-type PageProps = any // Bypass strict typing temporarily
+type PageContext = any // Bypass strict typing temporarily
 
 // Create anonymous client
 const supabase = createClient(
@@ -38,8 +38,9 @@ const rateLimit = async (ip: string) => {
 export const dynamic = 'force-dynamic'
 
 // Add headers configuration
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const headersList = headers()
+export async function generateMetadata(context: PageContext) {
+  const { params } = context
+  const headersList = await headers()
   
   return {
     robots: 'noindex, nofollow',
@@ -67,9 +68,8 @@ async function trackPageView(businessId: string, req: Request, params: { slug: s
   })
 }
 
-export default async function PublicBusinessPage({ 
-  params 
-}: PageProps) {
+export default async function PublicBusinessPage(context: PageContext) {
+  const { params } = context
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') || 'unknown'
   
