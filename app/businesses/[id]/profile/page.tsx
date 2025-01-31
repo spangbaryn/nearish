@@ -32,6 +32,7 @@ type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
     last_synced_at: string | null
     logo_url: string | null
   } | null
+  business_timeline_events: Database['public']['Tables']['business_timeline_events']['Row'][]
 }
 
 export default function BusinessProfilePage() {
@@ -53,7 +54,8 @@ export default function BusinessProfilePage() {
             website,
             last_synced_at,
             logo_url
-          )
+          ),
+          business_timeline_events(*)
         `)
         .eq('id', businessId)
         .single()
@@ -123,21 +125,21 @@ export default function BusinessProfilePage() {
 
   return (
     <div>
-      <div className="relative mb-24">
+      <div className="relative mb-12 sm:mb-24">
         <BusinessCover 
           color={business?.brand_color ?? undefined}
           onColorChange={(color) => colorMutation.mutate(color)}
-          className="h-[120px]"
+          className="h-[100px] sm:h-[120px]"
         />
         
-        <div className="max-w-4xl mx-auto px-8">
-          <div className="flex items-start gap-8">
-            <div className="relative -mt-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8">
+            <div className="relative -mt-12 mx-auto sm:mx-0 sm:-mt-8">
               <div className="relative">
                 <img
                   src={`${business.logo_url || business.place?.logo_url}?t=${Date.now()}`}
                   alt={business.name}
-                  className="w-40 h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
+                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
                 />
                 <LogoUpload 
                   businessId={businessId}
@@ -147,16 +149,16 @@ export default function BusinessProfilePage() {
                 />
               </div>
             </div>
-            
-            <div className="pt-8 space-y-2">
-              <h1 className="text-4xl font-bold">{business.name}</h1>
-              <div className="flex gap-4">
+
+            <div className="text-center sm:text-left pt-4 sm:pt-8 space-y-3 sm:space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold">{business.name}</h1>
+              <div className="flex justify-center sm:justify-start gap-6 sm:gap-4">
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger>
-                      <MapPin className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                      <MapPin className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
                     </TooltipTrigger>
-                    <TooltipContent sideOffset={5}>
+                    <TooltipContent sideOffset={5} className="max-w-[200px] sm:max-w-none text-center sm:text-left">
                       <p>{business.place?.formatted_address}</p>
                     </TooltipContent>
                   </Tooltip>
@@ -164,7 +166,7 @@ export default function BusinessProfilePage() {
                   {business.place?.phone_number && (
                     <Tooltip>
                       <TooltipTrigger>
-                        <Phone className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                        <Phone className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
                       </TooltipTrigger>
                       <TooltipContent sideOffset={5}>
                         <p>{business.place.phone_number}</p>
@@ -179,8 +181,9 @@ export default function BusinessProfilePage() {
                           href={business.place.website}
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="block"
                         >
-                          <Globe className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                          <Globe className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent sideOffset={5}>
@@ -200,11 +203,18 @@ export default function BusinessProfilePage() {
             />
           </div>
 
-          <BusinessTimeline 
-            businessId={businessId}
-            events={timelineEvents || []}
-            color={business?.brand_color ?? undefined}
-          />
+          <div className="space-y-12">
+            {/* Story Section */}
+            <div className="-mx-4 sm:mx-0">
+              <div className="bg-muted/50 rounded-none sm:rounded-xl sm:border border-border overflow-hidden">
+                <BusinessTimeline 
+                  businessId={businessId} 
+                  events={timelineEvents || []}
+                  color={business?.brand_color}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

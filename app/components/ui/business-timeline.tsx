@@ -276,7 +276,7 @@ export function BusinessTimeline({
                 <div className="timeline-connector" />
                 <div 
                   ref={timelineRef}
-                  className="flex gap-4 overflow-x-auto overflow-y-hidden py-16 px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
+                  className="flex gap-4 overflow-x-auto overflow-y-visible py-16 px-4 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -309,8 +309,8 @@ export function BusinessTimeline({
                           }}
                         >
                           <CardContent className="p-4 pb-10 relative">
-                            {/* Add a subtle gradient overlay at the top */}
-                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-t-lg" />
+                            {/* Simple separator line instead of gradient */}
+                            <div className="absolute inset-x-0 top-0 h-px bg-border" />
                             
                             {/* Add dropdown menu button */}
                             <div className="absolute top-2 right-2">
