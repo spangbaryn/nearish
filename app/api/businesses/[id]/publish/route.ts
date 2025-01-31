@@ -3,15 +3,11 @@ import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateBusinessSlug } from '@/lib/utils/slugs'
 
-type RouteParams = {
-  params: {
-    id: string
-  }
-}
+type Params = { id: string }
 
 export async function POST(
-  req: NextRequest,
-  { params }: RouteParams
+  request: NextRequest,
+  { params }: { params: Params }
 ) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
@@ -21,7 +17,7 @@ export async function POST(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { publish } = await req.json()
+    const { publish } = await request.json()
     
     // Get business name for slug generation
     const { data: business } = await supabase
