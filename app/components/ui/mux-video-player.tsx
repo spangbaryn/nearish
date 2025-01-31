@@ -43,7 +43,6 @@ export function MuxVideoPlayer({
   useEffect(() => {
     if (playerRef.current) {
       MuxService.setPlayerStyles(playerRef.current);
-      // Force the media element to cover
       const mediaEl = playerRef.current.querySelector('mux-video');
       if (mediaEl) {
         (mediaEl as HTMLElement).style.objectFit = 'cover';
@@ -62,7 +61,13 @@ export function MuxVideoPlayer({
   
   useEffect(() => {
     return () => {
-      if (playerRef.current) {
+      if (playerRef.current && !document.body.contains(playerRef.current)) {
+        const mediaEl = playerRef.current.querySelector('mux-video');
+        if (mediaEl) {
+          (mediaEl as HTMLVideoElement).pause();
+          (mediaEl as HTMLVideoElement).src = '';
+          (mediaEl as HTMLVideoElement).load();
+        }
         playerRef.current.remove();
       }
     };
