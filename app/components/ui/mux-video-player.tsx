@@ -60,6 +60,14 @@ export function MuxVideoPlayer({
     }
   }, [hidePlayButton]);
   
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.remove();
+      }
+    };
+  }, []);
+  
   return (
     <div className="aspect-[9/16] relative overflow-hidden rounded-lg bg-gray-200 h-full max-h-[70vh]">
       <div 
