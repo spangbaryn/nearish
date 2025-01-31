@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /b/
+
+# Allow specific directories
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /business 

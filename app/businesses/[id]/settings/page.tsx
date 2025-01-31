@@ -22,8 +22,14 @@ import { DisconnectAlert } from "./components/disconnect-alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Database } from "@/types/database.types"
+import { Database } from "@/app/types/database.types"
 import { FacebookPageSelector } from "./components/facebook-page-selector"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Copy } from "lucide-react"
+import { generateSlug } from "@/lib/utils"
+import { SlugEditor } from "./components/slug-editor"
 
 type Business = Database['public']['Tables']['businesses']['Row']
 
@@ -148,6 +154,51 @@ export default function BusinessSettingsPage() {
     enabled: showPageSelector
   })
 
+  const [isPublishing, setIsPublishing] = useState(business?.is_published ?? false)
+
+  const publishMutation = useMutation({
+    mutationFn: async (publish: boolean) => {
+      if (!business) throw new Error('Business not found')
+      const slug = publish ? generateSlug(business.name) : null
+      
+      const { error } = await supabase
+        .from('businesses')
+        .update({ 
+          is_published: publish,
+          published_at: publish ? new Date().toISOString() : null,
+          public_url_slug: slug
+        })
+        .eq('id', businessId)
+      
+      if (error) throw error
+    },
+    onSuccess: (_, publish) => {
+      queryClient.invalidateQueries({ queryKey: ['business', businessId] })
+      toast.success(
+        publish ? 'Business profile published' : 'Business profile unpublished'
+      )
+    }
+  })
+
+  const handlePublishToggle = (publish: boolean) => {
+    publishMutation.mutate(publish)
+  }
+
+  const slugMutation = useMutation({
+    mutationFn: async (newSlug: string) => {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ public_url_slug: newSlug })
+        .eq('id', businessId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['business', businessId] })
+      toast.success('URL updated successfully')
+    }
+  })
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -196,6 +247,65 @@ export default function BusinessSettingsPage() {
                 </CardContent>
               </Card>
               
+              <Card>
+                <CardHeader>
+                  <CardTitle>Public Profile</CardTitle>
+                  <CardDescription>
+                    Control how your business appears to the public
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Public Profile</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Make your business discoverable on the internet
+                        </p>
+                      </div>
+                      <Switch
+                        checked={business?.is_published}
+                        onCheckedChange={handlePublishToggle}
+                        disabled={publishMutation.isPending}
+                      />
+                    </div>
+
+                    {business?.is_published && (
+                      <>
+                        <div className="space-y-2">
+                          <Label>Custom URL</Label>
+                          <SlugEditor 
+                            businessId={businessId} 
+                            currentSlug={business.public_url_slug} 
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Your public profile will be available at: {process.env.NEXT_PUBLIC_APP_URL}/b/{business.public_url_slug}
+                          </p>
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          asChild
+                        >
+                          <Link href={`/b/${business.public_url_slug}`} target="_blank">
+                            Preview Public Profile
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* SEO Warning */}
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your public profile is currently not indexed by search engines. This helps maintain privacy while we develop the feature.
+                </AlertDescription>
+              </Alert>
+
               {/* New Facebook integration card */}
               <Card>
                 <CardHeader>

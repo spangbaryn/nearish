@@ -105,7 +105,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
             style={{ backgroundColor: color || "#000000" }}
           />
           <h2 className="text-2xl font-bold text-black">
-            Team Members
+            Team Intros
           </h2>
         </div>
         <AddStaffIntroDialog businessId={businessId} />

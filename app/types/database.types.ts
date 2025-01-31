@@ -1,6 +1,33 @@
-interface Database {
+export interface Database {
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          id: string
+          name: string
+          brand_color: string
+          logo_url: string | null
+          is_published: boolean
+          public_url_slug: string | null
+          published_at: string | null
+          created_at: string
+        }
+        Insert: {
+          name: string
+          brand_color?: string
+          logo_url?: string | null
+          is_published?: boolean
+          public_url_slug?: string | null
+        }
+        Update: {
+          name?: string
+          brand_color?: string
+          logo_url?: string | null
+          is_published?: boolean
+          public_url_slug?: string | null
+          published_at?: string | null
+        }
+      }
       business_staff_intros: {
         Row: {
           id: string

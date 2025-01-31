@@ -72,7 +72,7 @@ export function LogoUpload({ businessId, currentLogo, onSuccess, className }: Lo
       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
         <div className="text-white flex items-center gap-2">
           <Upload className="h-4 w-4" />
-          <span>{isUploading ? "Uploading..." : "Replace Logo"}</span>
+          <span>{isUploading ? "Uploading..." : "Replace with different happy photo 😁"}</span>
         </div>
       </div>
     </div>
