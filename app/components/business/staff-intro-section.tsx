@@ -90,6 +90,12 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
     setSelectedIntro(intro)
   }
 
+  useEffect(() => {
+    if (staffIntros && staffIntros.length > 0 && !selectedMobileIntro) {
+      setSelectedMobileIntro(staffIntros[0])
+    }
+  }, [staffIntros])
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

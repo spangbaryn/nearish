@@ -258,156 +258,153 @@ export function BusinessTimeline({
           </Button>
         </div>
 
-        <div 
-          className="storybook-timeline bg-muted/50 rounded-none sm:rounded-xl sm:border border-border -mx-4 sm:mx-0"
-          style={{ 
-            color: color,
-            '--timeline-color-rgb': `${hexToRgb(color)}`,
-            '--timeline-color': color
-          } as React.CSSProperties}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          {events.length === 0 ? (
-            <EmptyTimelineCard businessId={businessId} />
-          ) : (
-            <div className="w-full">
-              <div className="relative">
-                <div className="timeline-connector" />
-                <div 
-                  ref={timelineRef}
-                  className="flex gap-4 overflow-x-auto overflow-y-visible py-16 px-4 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  {sortedEvents.map((event, index) => (
-                    <div 
-                      key={event.id} 
-                      data-event-id={event.id}
-                      className="relative"
-                    >
-                      {shouldShowYear(event, index) && (
-                        <div className="timeline-year">
-                          {new Date(event.date).getFullYear()}
-                        </div>
-                      )}
-                      <div className={cn(
-                        "timeline-card-container",
-                        index % 2 === 0 ? "offset-up" : "offset-down"
-                      )}>
-                        <Card 
-                          className={cn(
-                            "timeline-card min-w-[200px] cursor-pointer transition-all duration-300 relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20",
-                            highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
-                          )}
-                          onClick={(e) => {
-                            if (!(e.target as HTMLElement).closest('.dropdown-trigger')) {
-                              handleCardClick(e, event)
-                            }
-                          }}
-                        >
-                          <CardContent className="p-4 pb-10 relative">
-                            {/* Simple separator line instead of gradient */}
-                            <div className="absolute inset-x-0 top-0 h-px bg-border" />
-                            
-                            {/* Add dropdown menu button */}
-                            <div className="absolute top-2 right-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                  <DropdownMenuItem onClick={(e) => {
-                                    e.stopPropagation()
-                                    router.push(`/timeline/${event.id}/edit`)
-                                  }}>
-                                    <Pencil className="h-4 w-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    className="text-destructive" 
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      if (confirm("Are you sure you want to delete this event?")) {
-                                        deleteEventMutation.mutate(event.id)
-                                      }
-                                    }}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-
-                            <h3 className="font-semibold text-card-foreground">{event.title}</h3>
-                            <time className="text-xs text-muted-foreground/60 block mt-1">
-                              {new Date(event.date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </time>
-                            {event.thumbnail_url && (
-                              <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-md ring-1 ring-black/5">
-                                <Image
-                                  src={event.thumbnail_url}
-                                  alt={`Thumbnail for ${event.title}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
+        <div className="timeline-wrapper">
+          <div className="storybook-timeline bg-muted/50 rounded-none sm:rounded-xl sm:border border-border -mx-4 sm:mx-0 overflow-hidden"
+            style={{ 
+              color: color,
+              '--timeline-color-rgb': `${hexToRgb(color)}`,
+              '--timeline-color': color
+            } as React.CSSProperties}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+          >
+            {events.length === 0 ? (
+              <EmptyTimelineCard businessId={businessId} />
+            ) : (
+              <div className="w-full">
+                <div className="relative">
+                  <div className="timeline-connector" />
+                  <div 
+                    ref={timelineRef}
+                    className="flex gap-3 overflow-x-auto overflow-y-visible py-16 px-2 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    {sortedEvents.map((event, index) => (
+                      <div 
+                        key={event.id} 
+                        data-event-id={event.id}
+                        className="relative"
+                      >
+                        {shouldShowYear(event, index) && (
+                          <div className="timeline-year">
+                            {new Date(event.date).getFullYear()}
+                          </div>
+                        )}
+                        <div className={cn(
+                          "timeline-card-container",
+                          index % 2 === 0 ? "offset-up" : "offset-down"
+                        )}>
+                          <Card 
+                            className={cn(
+                              "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20",
+                              highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                             )}
-                            <div className="absolute bottom-2 right-2">
-                              <Avatar className="h-6 w-6 ring-2 ring-background">
-                                <AvatarImage 
-                                  src={event.created_by?.avatar_url || undefined} 
-                                  alt={event.created_by?.first_name || 'User'} 
-                                />
-                                <AvatarFallback>
-                                  {event.created_by?.first_name?.[0]?.toUpperCase() || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                          </CardContent>
-                        </Card>
+                            onClick={(e) => handleCardClick(e, event)}
+                          >
+                            <CardContent className="p-4 pb-10 relative">
+                              {/* Simple separator line instead of gradient */}
+                              <div className="absolute inset-x-0 top-0 h-px bg-border" />
+                              
+                              {/* Add dropdown menu button */}
+                              <div className="absolute top-2 right-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
+                                    >
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation()
+                                      router.push(`/timeline/${event.id}/edit`)
+                                    }}>
+                                      <Pencil className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      className="text-destructive" 
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (confirm("Are you sure you want to delete this event?")) {
+                                          deleteEventMutation.mutate(event.id)
+                                        }
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+
+                              <h3 className="font-semibold text-card-foreground">{event.title}</h3>
+                              <time className="text-xs text-muted-foreground/60 block mt-1">
+                                {new Date(event.date).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </time>
+                              {event.thumbnail_url && (
+                                <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-md ring-1 ring-black/5">
+                                  <Image
+                                    src={event.thumbnail_url}
+                                    alt={`Thumbnail for ${event.title}`}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="absolute bottom-2 right-2">
+                                <Avatar className="h-6 w-6 ring-2 ring-background">
+                                  <AvatarImage 
+                                    src={event.created_by?.avatar_url || undefined} 
+                                    alt={event.created_by?.first_name || 'User'} 
+                                  />
+                                  <AvatarFallback>
+                                    {event.created_by?.first_name?.[0]?.toUpperCase() || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  
+                  {/* Navigation Arrows */}
+                  {canScroll && isHovering && !isAtStart && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
+                      onClick={() => scrollTimeline('left')}
+                    >
+                      <ChevronLeft className="h-4 w-4" style={{ color: color }} />
+                    </Button>
+                  )}
+                  
+                  {canScroll && isHovering && !isAtEnd && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
+                      onClick={() => scrollTimeline('right')}
+                    >
+                      <ChevronRight className="h-4 w-4" style={{ color: color }} />
+                    </Button>
+                  )}
                 </div>
-                
-                {/* Navigation Arrows */}
-                {canScroll && isHovering && !isAtStart && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
-                    onClick={() => scrollTimeline('left')}
-                  >
-                    <ChevronLeft className="h-4 w-4" style={{ color: color }} />
-                  </Button>
-                )}
-                
-                {canScroll && isHovering && !isAtEnd && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
-                    onClick={() => scrollTimeline('right')}
-                  >
-                    <ChevronRight className="h-4 w-4" style={{ color: color }} />
-                  </Button>
-                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {selectedEvent && (

@@ -104,9 +104,9 @@ export function MobileNav({ onNavigate }: MobileNavProps) {
   ]
 
   return (
-    <div className="flex h-full flex-col">
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-3">
+    <div className="flex h-full flex-col overflow-x-hidden">
+      <ScrollArea className="flex-1 w-full">
+        <div className="p-2 space-y-3 max-w-full">
           {routes.map((section) => (
             <div key={section.title ?? section.id} className="space-y-1">
               <h4 className="font-medium text-sm text-muted-foreground px-2">
