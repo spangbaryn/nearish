@@ -173,15 +173,15 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                         </div>
 
                         {/* Favorite spot section - Remains at bottom */}
-                        <div className="absolute inset-x-0 bottom-0 p-6">
+                        <div className="absolute inset-x-0 bottom-0 p-2">
                           {intro.favorite_spot && (
-                            <div className="flex flex-col text-sm bg-black/20 backdrop-blur-sm rounded-md py-2 px-3">
-                              <span className="text-white/70 text-xs uppercase tracking-wider font-medium flex items-center gap-1.5">
-                                Local Spot I <Heart className="h-3 w-3 fill-current" />
+                            <div className="flex flex-col text-sm bg-black/20 backdrop-blur-sm rounded-md py-1.5 px-2">
+                              <span className="text-white/70 text-xs uppercase tracking-wider font-medium flex items-center gap-1">
+                                Local Spot I <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
                               </span>
-                              <div className="flex items-center mt-0.5">
-                                <MapPin className="h-4 w-4 mr-1.5 text-white/90" />
-                                <span className="text-white font-medium">{intro.favorite_spot}</span>
+                              <div className="flex items-center">
+                                <MapPin className="h-3.5 w-3.5 mr-1 text-white/90" />
+                                <span className="text-white font-medium text-sm">{intro.favorite_spot}</span>
                               </div>
                             </div>
                           )}
