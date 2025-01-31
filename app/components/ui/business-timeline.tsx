@@ -236,9 +236,9 @@ export function BusinessTimeline({
   )
 
   return (
-    <div className="timeline-section mt-16">
+    <div>
       <div className="w-full">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 px-4">
           <div className="flex items-center gap-3">
             <div 
               className="h-8 w-1 rounded-full"
@@ -259,7 +259,7 @@ export function BusinessTimeline({
         </div>
 
         <div 
-          className="storybook-timeline"
+          className="storybook-timeline bg-muted/50 rounded-none sm:rounded-xl sm:border border-border -mx-4 sm:mx-0"
           style={{ 
             color: color,
             '--timeline-color-rgb': `${hexToRgb(color)}`,

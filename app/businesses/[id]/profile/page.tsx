@@ -127,7 +127,7 @@ export default function BusinessProfilePage() {
     <div>
       <div className="relative mb-12 sm:mb-24">
         <BusinessCover 
-          color={business?.brand_color ?? undefined}
+          color={business?.brand_color ?? "#000000"}
           onColorChange={(color) => colorMutation.mutate(color)}
           className="h-[100px] sm:h-[120px]"
         />
@@ -203,17 +203,13 @@ export default function BusinessProfilePage() {
             />
           </div>
 
-          <div className="space-y-12">
-            {/* Story Section */}
-            <div className="-mx-4 sm:mx-0">
-              <div className="bg-muted/50 rounded-none sm:rounded-xl sm:border border-border overflow-hidden">
-                <BusinessTimeline 
-                  businessId={businessId} 
-                  events={timelineEvents || []}
-                  color={business?.brand_color}
-                />
-              </div>
-            </div>
+          {/* Story Section */}
+          <div className="mt-12 -mx-4">
+            <BusinessTimeline 
+              businessId={businessId} 
+              events={timelineEvents || []}
+              color={business?.brand_color}
+            />
           </div>
         </div>
       </div>
