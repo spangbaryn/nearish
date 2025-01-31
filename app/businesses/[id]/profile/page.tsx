@@ -155,21 +155,37 @@ export default function BusinessProfilePage() {
               <div className="flex justify-center sm:justify-start gap-6 sm:gap-4">
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
-                    <TooltipTrigger>
-                      <MapPin className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(business.place?.formatted_address || '')
+                          toast.success('Address copied to clipboard')
+                        }}
+                        className="hover:opacity-80 transition-opacity"
+                      >
+                        <MapPin className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent sideOffset={5} className="max-w-[200px] sm:max-w-none text-center sm:text-left">
-                      <p>{business.place?.formatted_address}</p>
+                      <p>Click to copy address</p>
                     </TooltipContent>
                   </Tooltip>
 
                   {business.place?.phone_number && (
                     <Tooltip>
-                      <TooltipTrigger>
-                        <Phone className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(business.place?.phone_number || '')
+                            toast.success('Phone number copied to clipboard')
+                          }}
+                          className="hover:opacity-80 transition-opacity"
+                        >
+                          <Phone className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent sideOffset={5}>
-                        <p>{business.place.phone_number}</p>
+                        <p>Click to copy phone number</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -177,17 +193,18 @@ export default function BusinessProfilePage() {
                   {business.place?.website && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <a 
-                          href={business.place.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block"
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(business.place?.website || '')
+                            toast.success('Website URL copied to clipboard')
+                          }}
+                          className="hover:opacity-80 transition-opacity"
                         >
                           <Globe className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
-                        </a>
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent sideOffset={5}>
-                        <p>{business.place.website}</p>
+                        <p>Click to copy website URL</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
