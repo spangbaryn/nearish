@@ -208,7 +208,7 @@ export default function BusinessProfilePage() {
             <BusinessTimeline 
               businessId={businessId} 
               events={timelineEvents || []}
-              color={business?.brand_color}
+            color={business?.brand_color ?? "#000000"}
             />
           </div>
         </div>
