@@ -18,6 +18,10 @@ interface MuxVideoPlayerProps {
   muted?: boolean
   preload?: 'auto' | 'metadata' | 'none'
   color?: string
+  playsInline?: boolean
+  startTime?: number
+  streamType?: 'on-demand' | 'live'
+  preferPlayback?: string
 }
 
 export function MuxVideoPlayer({ 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { MoreVertical, Pencil, Trash2, MapPin, ChevronLeft, ChevronRight, Heart } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { EditStaffIntroDialog } from "./edit-staff-intro-dialog"
 import { cn } from "@/lib/utils"
 import { StaffIntroOverlay } from "./staff-intro-overlay"
@@ -54,7 +54,24 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
     }
   })
 
-  const cardsPerPage = 4
+  const getCardsPerPage = () => {
+    if (typeof window === 'undefined') return 4
+    if (window.innerWidth < 640) return 1  // mobile
+    if (window.innerWidth < 1024) return 2 // tablet
+    return 4 // desktop
+  }
+
+  const [cardsPerPage, setCardsPerPage] = useState(getCardsPerPage())
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerPage(getCardsPerPage())
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const totalPages = Math.ceil((staffIntros?.length || 0) / cardsPerPage)
   const isFirstPage = currentIndex === 0
   const isLastPage = currentIndex === totalPages - 1
@@ -93,7 +110,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
           No team members added yet
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative px-4 sm:px-0">
           <div className="overflow-hidden">
             <div 
               className="flex transition-transform duration-300 ease-in-out"
@@ -102,14 +119,14 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
               {Array.from({ length: totalPages }).map((_, pageIndex) => (
                 <div 
                   key={pageIndex}
-                  className="w-full flex-shrink-0 grid grid-cols-4 gap-4 px-4"
+                  className="w-full flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                 >
                   {staffIntros
                     ?.slice(pageIndex * cardsPerPage, (pageIndex + 1) * cardsPerPage)
                     .map((intro) => (
                       <div 
                         key={intro.id} 
-                        className="relative bg-card rounded-xl overflow-hidden border shadow-lg hover:shadow-xl transition-all aspect-[3/4] group cursor-pointer"
+                        className="relative bg-card rounded-xl overflow-hidden border shadow-lg hover:shadow-xl transition-all aspect-[4/5] sm:aspect-[3/4] group cursor-pointer"
                         onClick={() => handleIntroClick(intro)}
                       >
                         <img
@@ -128,8 +145,11 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                                 loop={true}
                                 controls={false}
                                 hidePlayButton={true}
-                                preload="auto"
-                                color={color}
+                                preload="metadata"
+                                playsInline={true}
+                                startTime={0}
+                                streamType="on-demand"
+                                preferPlayback="mse"
                               />
                             </div>
                           </div>
@@ -173,7 +193,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                         </div>
 
                         {/* Favorite spot section - Remains at bottom */}
-                        <div className="absolute inset-x-0 bottom-0 p-2">
+                        <div className="absolute inset-x-0 bottom-0 p-2 group-hover:hidden">
                           {intro.favorite_spot && (
                             <div className="flex flex-col text-sm bg-black/20 backdrop-blur-sm rounded-md py-1.5 px-2">
                               <span className="text-white/70 text-xs uppercase tracking-wider font-medium flex items-center gap-1">
@@ -199,7 +219,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute -left-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
+                  className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
                   onClick={handlePrevious}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -209,7 +229,7 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute -right-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
+                  className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
                   onClick={handleNext}
                 >
                   <ChevronRight className="h-4 w-4" />
