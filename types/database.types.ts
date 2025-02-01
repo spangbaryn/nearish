@@ -238,6 +238,54 @@ export interface Database {
           }
         ]
       }
+      email_lists: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          name: string
+          description?: string | null
+        }
+        Update: {
+          name?: string
+          description?: string | null
+          updated_at?: string | null
+        }
+      }
+      profile_list_subscriptions: {
+        Row: {
+          profile_id: string
+          list_id: string
+          unsubscribed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          profile_id: string
+          list_id: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_list_subscriptions_list_id_fkey"
+            columns: ["list_id"]
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_list_subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       // ... other tables
     }
   }
