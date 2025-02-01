@@ -28,6 +28,46 @@ export interface Database {
           published_at?: string | null
         }
       }
+      campaigns: {
+        Row: {
+          id: string
+          collection_id: string
+          template_id: string
+          sent_at: string | null
+          created_at: string
+          list_id?: string
+        }
+        Insert: {
+          collection_id: string
+          template_id: string
+          list_id?: string
+          sent_at?: string | null
+        }
+        Update: {
+          collection_id?: string
+          template_id?: string
+          list_id?: string
+          sent_at?: string | null
+        }
+      }
+      collections: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          name: string
+          description?: string | null
+        }
+        Update: {
+          name?: string
+          description?: string | null
+          updated_at?: string | null
+        }
+      }
       business_staff_intros: {
         Row: {
           id: string
@@ -89,28 +129,6 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
-      }
-      campaigns: {
-        Row: {
-          id: string
-          collection_id: string
-          template_id: string
-          sent_at: string | null
-          created_at: string
-          list_id?: string
-        }
-        Insert: {
-          collection_id: string
-          template_id: string
-          list_id?: string
-          sent_at?: string | null
-        }
-        Update: {
-          collection_id?: string
-          template_id?: string
-          list_id?: string
-          sent_at?: string | null
-        }
       }
       // ... other tables
     }
