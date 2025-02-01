@@ -1,3 +1,5 @@
+"use client"
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { AddStaffIntroDialog } from "../business/add-staff-intro-dialog"
@@ -14,9 +16,10 @@ import { StaffIntroOverlay } from "./staff-intro-overlay"
 interface StaffIntroSectionProps {
   businessId: string
   color?: string
+  readOnly?: boolean
 }
 
-export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroSectionProps) {
+export function StaffIntroSection({ businessId, color = "#000000", readOnly = false }: StaffIntroSectionProps) {
   const queryClient = useQueryClient()
   const [editingIntro, setEditingIntro] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -221,30 +224,32 @@ export function StaffIntroSection({ businessId, color = "#000000" }: StaffIntroS
                             <div className="relative z-10 space-y-0.5">
                               <div className="flex items-center justify-between">
                                 <h3 className="text-2xl font-bold">{intro.first_name}</h3>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onSelect={() => setEditingIntro(intro.id)}>
-                                      <Pencil className="h-4 w-4 mr-2" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="text-destructive"
-                                      onClick={() => {
-                                        if (confirm('Are you sure you want to remove this team member?')) {
-                                          deleteStaffIntroMutation.mutate(intro.id)
-                                        }
-                                      }}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                {!readOnly && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onSelect={() => setEditingIntro(intro.id)}>
+                                        <Pencil className="h-4 w-4 mr-2" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="text-destructive"
+                                        onSelect={() => {
+                                          if (confirm('Are you sure you want to remove this team member?')) {
+                                            deleteStaffIntroMutation.mutate(intro.id)
+                                          }
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
                               <p className="text-lg text-white/80">{intro.role}</p>
                             </div>

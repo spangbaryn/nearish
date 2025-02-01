@@ -51,6 +51,7 @@ interface BusinessTimelineProps {
   businessId: string
   events: TimelineEvent[]
   color?: string
+  readOnly?: boolean
 }
 
 const hexToRgb = (hex: string) => {
@@ -63,11 +64,13 @@ const hexToRgb = (hex: string) => {
 export function BusinessTimeline({ 
   businessId, 
   events,
-  color = "#000000"
+  color = "#000000",
+  readOnly = false,
 }: { 
   businessId: string, 
-  events: TimelineEvent[]
-  color?: string 
+  events: TimelineEvent[],
+  color?: string,
+  readOnly?: boolean
 }) {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -248,14 +251,16 @@ export function BusinessTimeline({
               Our Story
             </h2>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => router.push(`/timeline/new?businessId=${businessId}`)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Event
-          </Button>
+          {!readOnly && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push(`/timeline/new?businessId=${businessId}`)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Event
+            </Button>
+          )}
         </div>
 
         <div className="timeline-wrapper">
@@ -309,40 +314,42 @@ export function BusinessTimeline({
                               <div className="absolute inset-x-0 top-0 h-px bg-border" />
                               
                               {/* Add dropdown menu button */}
-                              <div className="absolute top-2 right-2">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={(e) => {
-                                      e.stopPropagation()
-                                      router.push(`/timeline/${event.id}/edit`)
-                                    }}>
-                                      <Pencil className="h-4 w-4 mr-2" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      className="text-destructive" 
-                                      onClick={(e) => {
+                              {!readOnly && (
+                                <div className="absolute top-2 right-2">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
+                                      >
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem onClick={(e) => {
                                         e.stopPropagation()
-                                        if (confirm("Are you sure you want to delete this event?")) {
-                                          deleteEventMutation.mutate(event.id)
-                                        }
-                                      }}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
+                                        router.push(`/timeline/${event.id}/edit`)
+                                      }}>
+                                        <Pencil className="h-4 w-4 mr-2" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-destructive" 
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          if (confirm("Are you sure you want to delete this event?")) {
+                                            deleteEventMutation.mutate(event.id)
+                                          }
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              )}
 
                               <h3 className="font-semibold text-card-foreground">{event.title}</h3>
                               <time className="text-xs text-muted-foreground/60 block mt-1">
