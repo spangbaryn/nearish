@@ -60,7 +60,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
         className="h-[120px] sm:h-[160px]"
       />
       <div className="max-w-4xl mx-auto px-4 sm:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8 mb-12">
           <div className="relative -mt-12 mx-auto sm:mx-0 sm:-mt-8">
             {business.logo_url || (business.place && business.place.logo_url) ? (
               <img
@@ -100,17 +100,19 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
             </div>
           </div>
         </div>
-        <StaffIntroSection 
-          businessId={business.id} 
-          color={business.brand_color} 
-          readOnly={true} 
-        />
-        <BusinessTimeline 
-          businessId={business.id} 
-          events={timelineEventsData || []} 
-          color={business.brand_color} 
-          readOnly={true} 
-        />
+        <div className="space-y-12">
+          <StaffIntroSection 
+            businessId={business.id} 
+            color={business.brand_color} 
+            readOnly={true} 
+          />
+          <BusinessTimeline 
+            businessId={business.id} 
+            events={timelineEventsData || []} 
+            color={business.brand_color} 
+            readOnly={true} 
+          />
+        </div>
       </div>
     </div>
   )
