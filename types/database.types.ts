@@ -130,6 +130,52 @@ export interface Database {
           }
         ]
       }
+      posts: {
+        Row: {
+          id: string
+          business_id: string
+          content: string
+          final_content: string | null
+          final_type: 'Promotion' | 'Event' | 'Update' | null
+          included: boolean | null
+          source: 'facebook' | 'admin' | 'platform'
+          created_at: string
+          businesses?: {
+            id: string
+            name: string
+          }
+        }
+        Insert: {
+          business_id: string
+          content: string
+          final_content?: string | null
+          final_type?: 'Promotion' | 'Event' | 'Update' | null
+          included?: boolean
+          source: 'facebook' | 'admin' | 'platform'
+        }
+        Update: {
+          business_id?: string
+          content?: string
+          final_content?: string | null
+          final_type?: 'Promotion' | 'Event' | 'Update' | null
+          included?: boolean
+          source?: 'facebook' | 'admin' | 'platform'
+        }
+      }
+      posts_collections: {
+        Row: {
+          post_id: string
+          collection_id: string
+        }
+        Insert: {
+          post_id: string
+          collection_id: string
+        }
+        Update: {
+          post_id?: string
+          collection_id?: string
+        }
+      }
       // ... other tables
     }
   }
