@@ -140,6 +140,9 @@ export interface Database {
           included: boolean | null
           source: 'facebook' | 'admin' | 'platform'
           created_at: string
+          ai_generated_content: string | null
+          ai_generated_type: string | null
+          updated_at: string | null
           businesses?: {
             id: string
             name: string
@@ -152,6 +155,9 @@ export interface Database {
           final_type?: 'Promotion' | 'Event' | 'Update' | null
           included?: boolean
           source: 'facebook' | 'admin' | 'platform'
+          ai_generated_content?: string | null
+          ai_generated_type?: string | null
+          updated_at?: string | null
         }
         Update: {
           business_id?: string
@@ -160,6 +166,9 @@ export interface Database {
           final_type?: 'Promotion' | 'Event' | 'Update' | null
           included?: boolean
           source?: 'facebook' | 'admin' | 'platform'
+          ai_generated_content?: string | null
+          ai_generated_type?: string | null
+          updated_at?: string | null
         }
       }
       posts_collections: {
