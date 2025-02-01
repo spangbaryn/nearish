@@ -286,6 +286,104 @@ export interface Database {
           }
         ]
       }
+      zip_codes: {
+        Row: {
+          id: string
+          code: string
+          city: string
+          state: string
+          is_active: boolean
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          city: string
+          state: string
+          is_active?: boolean
+        }
+        Update: {
+          code?: string
+          city?: string
+          state?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+      }
+      zip_code_status: {
+        Row: {
+          id: string
+          zip_code_id: string
+          is_active: boolean
+          start_date: string
+          end_date: string | null
+          campaign_id: string | null
+          reason: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          zip_code_id: string
+          is_active: boolean
+          start_date: string
+          end_date?: string | null
+          campaign_id?: string | null
+          reason?: string | null
+          created_by: string
+        }
+        Update: {
+          is_active?: boolean
+          end_date?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zip_code_status_zip_code_id_fkey"
+            columns: ["zip_code_id"]
+            referencedRelation: "zip_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zip_code_status_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          first_name: string | null
+          last_name: string | null
+          avatar_url: string | null
+          role: 'admin' | 'business' | 'customer'
+          zip_code: string | null
+          onboarded: boolean
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          email: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
+          role?: 'admin' | 'business' | 'customer'
+          zip_code?: string | null
+          onboarded?: boolean
+        }
+        Update: {
+          email?: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
+          role?: 'admin' | 'business' | 'customer'
+          zip_code?: string | null
+          onboarded?: boolean
+          updated_at?: string
+        }
+      }
       // ... other tables
     }
   }
