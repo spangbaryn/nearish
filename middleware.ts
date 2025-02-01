@@ -4,78 +4,98 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  // Log the request path so you can trace which routes are processed
+  console.debug("Middleware - request path:", req.nextUrl.pathname);
+  
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req, res });
 
   try {
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { session }, error } = await supabase.auth.getSession();
     
-    if (error) throw new AuthError(error.message)
+    if (error) throw new AuthError(error.message);
 
-    // If the user is logged in and tries to access the public homepage, redirect to /home
+    // If the user is logged in and accesses the public homepage, redirect to /home
     if (req.nextUrl.pathname === '/' && session) {
-      return NextResponse.redirect(new URL('/home', req.url))
+      console.debug("Logged in user on homepage; redirecting to /home");
+      return NextResponse.redirect(new URL('/home', req.url));
     }
 
-    // Handle auth pages layout and redirects
+    // Handle routes starting with /auth
     if (req.nextUrl.pathname.startsWith('/auth')) {
+      console.debug("Accessing /auth route:", req.nextUrl.pathname);
       if (session) {
-        // Check if user needs onboarding
+        // Check if the user needs onboarding
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarded')
           .eq('id', session.user.id)
-          .single()
+          .single();
 
-        // If profile exists but not onboarded, redirect to onboarding
         if (!profile?.onboarded) {
-          return NextResponse.redirect(new URL('/onboarding', req.url))
+          console.debug("User not onboarded; redirecting to /onboarding");
+          return NextResponse.redirect(new URL('/onboarding', req.url));
         }
 
-        // Otherwise redirect to home
-        return NextResponse.redirect(new URL('/home', req.url))
+        console.debug("User onboarded; redirecting to /home");
+        return NextResponse.redirect(new URL('/home', req.url));
       }
-      return NextResponse.next()
+      return NextResponse.next();
     }
 
-    // Protected routes (except auth, onboarding, invite, callback, root, business)
-    if (!req.nextUrl.pathname.startsWith('/auth') &&
-        !req.nextUrl.pathname.startsWith('/onboarding') &&
-        !req.nextUrl.pathname.startsWith('/invite') &&
-        !req.nextUrl.pathname.startsWith('/auth/callback') &&
-        req.nextUrl.pathname !== '/' &&
-        req.nextUrl.pathname !== '/business') {
+    // Exclude public business pages: any path starting with /b
+    if (req.nextUrl.pathname.startsWith('/b')) {
+      console.debug("Public business page accessed; skipping auth checks:", req.nextUrl.pathname);
+      return NextResponse.next();
+    }
+
+    // Protected routes (excluding auth, onboarding, invite, auth/callback, root, business)
+    if (
+      !req.nextUrl.pathname.startsWith('/auth') &&
+      !req.nextUrl.pathname.startsWith('/onboarding') &&
+      !req.nextUrl.pathname.startsWith('/invite') &&
+      !req.nextUrl.pathname.startsWith('/auth/callback') &&
+      req.nextUrl.pathname !== '/' &&
+      req.nextUrl.pathname !== '/business'
+    ) {
+      console.debug("Protected route accessed:", req.nextUrl.pathname);
       if (!session) {
-        return NextResponse.redirect(new URL('/auth/login', req.url))
+        console.debug("No session; redirecting to /auth/login");
+        return NextResponse.redirect(new URL('/auth/login', req.url));
       }
 
-      // Check if user needs onboarding (for other protected routes)
+      // Check if user needs onboarding on protected routes
       const { data: profile } = await supabase
         .from('profiles')
         .select('onboarded')
         .eq('id', session.user.id)
-        .single()
+        .single();
 
       if (!profile?.onboarded) {
-        return NextResponse.redirect(new URL('/onboarding', req.url))
+        console.debug("User not onboarded on protected route; redirecting to /onboarding");
+        return NextResponse.redirect(new URL('/onboarding', req.url));
       }
 
-      return NextResponse.next()
+      console.debug("User authenticated and onboarded; allowing access");
+      return NextResponse.next();
     }
 
-    // For onboarding route, remove session check in middleware and rely on client-side check
+    // Optional: additional handling for /onboarding routes if needed
     if (req.nextUrl.pathname.startsWith('/onboarding')) {
-      const response = NextResponse.next()
-      response.headers.set('x-layout', 'auth')  // Set auth layout for onboarding
-      return response
+      console.debug("Onboarding route accessed:", req.nextUrl.pathname);
+      const response = NextResponse.next();
+      response.headers.set('x-layout', 'auth');
+      return response;
     }
 
-    return res
+    console.debug("Returning final response for:", req.nextUrl.pathname);
+    return res;
   } catch (error) {
+    console.error("Middleware error:", error);
     if (error instanceof AuthError) {
-      return NextResponse.redirect(new URL('/auth/login', req.url))
+      return NextResponse.redirect(new URL('/auth/login', req.url));
     }
-    throw error
+    throw error;
   }
 }
 
