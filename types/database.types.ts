@@ -207,6 +207,37 @@ export interface Database {
           content?: string
         }
       }
+      business_members: {
+        Row: {
+          id: string
+          business_id: string
+          profile_id: string
+          role: 'owner' | 'admin' | 'staff'
+          created_at: string
+        }
+        Insert: {
+          business_id: string
+          profile_id: string
+          role: 'owner' | 'admin' | 'staff'
+        }
+        Update: {
+          role?: 'owner' | 'admin' | 'staff'
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_id_fkey"
+            columns: ["business_id"]
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_members_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       // ... other tables
     }
   }
