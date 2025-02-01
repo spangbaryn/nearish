@@ -185,6 +185,28 @@ export interface Database {
           collection_id?: string
         }
       }
+      email_templates: {
+        Row: {
+          id: string
+          name: string
+          subject: string
+          type: 'transactional' | 'campaign'
+          content: string
+          created_at: string
+        }
+        Insert: {
+          name: string
+          subject: string
+          type: 'transactional' | 'campaign'
+          content: string
+        }
+        Update: {
+          name?: string
+          subject?: string
+          type?: 'transactional' | 'campaign'
+          content?: string
+        }
+      }
       // ... other tables
     }
   }
