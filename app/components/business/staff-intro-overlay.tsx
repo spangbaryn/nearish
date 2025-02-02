@@ -17,16 +17,9 @@ interface StaffIntroOverlayProps {
 
 export function StaffIntroOverlay({ intro, onClose, color = "#000000" }: StaffIntroOverlayProps) {
   useEffect(() => {
-    // Save the original margin
-    const originalMargin = document.body.style.margin
-    
-    // Remove margin and prevent scroll
     document.body.style.margin = '0'
     document.body.style.overflow = 'hidden'
-    
     return () => {
-      // Restore original styles
-      document.body.style.margin = originalMargin
       document.body.style.overflow = 'unset'
     }
   }, [])
@@ -75,38 +68,31 @@ export function StaffIntroOverlay({ intro, onClose, color = "#000000" }: StaffIn
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-        {/* Video Player */}
-        <div
-          id="fullscreenVideoContainer"
-          className="w-full max-w-3xl mx-auto aspect-[9/16] relative"
-          onClick={onOpenFullscreen}
-        >
-          <div className="absolute inset-0">
+        <div className="w-full h-full flex flex-col justify-center px-4 py-8">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <MuxVideoPlayer 
               playbackId={intro.video_playback_id}
               autoPlay={true}
               color={color}
               disableToggle
-              className="w-full h-full"
+              className="w-full h-full max-w-2xl"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Info Card - Matching Timeline Event Style */}
-      <div className="max-w-2xl mx-auto w-full mt-8 px-4">
-        <div className="bg-background/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-          <div className="flex items-baseline justify-between">
-            <h3 className="text-2xl font-semibold">{intro.first_name}</h3>
-            <span className="text-sm text-muted-foreground/80">
-              {intro.role}
-            </span>
+          
+          {/* Info Card */}
+          <div className="max-w-2xl mx-auto w-full mt-8 px-4">
+            <div className="bg-background/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-2xl font-semibold">{intro.first_name}</h3>
+                <span className="text-sm text-muted-foreground/80">{intro.role}</span>
+              </div>
+              {intro.favorite_spot && (
+                <p className="mt-3 text-muted-foreground/90 leading-relaxed">
+                  Favorite Local Spot: {intro.favorite_spot}
+                </p>
+              )}
+            </div>
           </div>
-          {intro.favorite_spot && (
-            <p className="mt-3 text-muted-foreground/90 leading-relaxed">
-              Favorite Local Spot: {intro.favorite_spot}
-            </p>
-          )}
         </div>
       </div>
     </div>
