@@ -190,14 +190,18 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                         <div 
                           key={intro.id} 
                           className="relative bg-card rounded-xl overflow-hidden border shadow-lg hover:shadow-xl transition-all aspect-[4/5] sm:aspect-[3/4] group cursor-pointer"
-                          onClick={() => handleIntroClick(intro)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleIntroClick(intro);
+                          }}
                         >
                           <img
                             src={intro.thumbnail_url}
                             alt={intro.first_name}
                             className="w-full h-full object-cover transition-opacity group-hover:opacity-0"
                           />
-                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             <div className="relative w-full h-full flex items-center justify-center">
                               <div className="w-[105%] aspect-[9/16]">
                                 <MuxVideoPlayer
@@ -213,6 +217,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                                   startTime={0}
                                   streamType="on-demand"
                                   preferPlayback="mse"
+                                  disableToggle
                                 />
                               </div>
                             </div>

@@ -257,13 +257,19 @@ export function VideoRecorder({
       stopListening()
 
       if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop()
+        mediaRecorderRef.current.requestData()
+
+        await new Promise((resolve) => {
+          mediaRecorderRef.current!.addEventListener("stop", resolve, { once: true })
+          mediaRecorderRef.current!.stop()
+        })
+
         mediaRecorderRef.current = null
       }
-
+      
       stopAllTracks()
 
-      const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+      const blob = new Blob(chunksRef.current, { type: "video/webm" })
       const file = new File([blob], 'recording.webm', { type: 'video/webm' })
 
       const response = await fetch('/api/videos/upload', {
