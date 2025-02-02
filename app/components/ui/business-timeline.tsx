@@ -359,7 +359,7 @@ export function BusinessTimeline({
                                 })}
                               </time>
                               {event.thumbnail_url && (
-                                <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-md ring-1 ring-black/5">
+                                <div className="mt-2 relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-md ring-1 ring-black/5">
                                   <Image
                                     src={event.thumbnail_url}
                                     alt={`Thumbnail for ${event.title}`}

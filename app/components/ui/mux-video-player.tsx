@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { useVideoState } from "@/lib/hooks/use-video-state"
 import { MuxService } from "@/lib/services/mux.service"
 import { useRef, useEffect } from "react"
+import Hls from "hls.js"
+import { toast } from "sonner"
 
 interface MuxVideoPlayerProps {
   playbackId: string
@@ -22,6 +24,7 @@ interface MuxVideoPlayerProps {
   startTime?: number
   streamType?: 'on-demand' | 'live'
   preferPlayback?: string
+  onError?: (error: any) => void
 }
 
 export function MuxVideoPlayer({ 
@@ -34,11 +37,14 @@ export function MuxVideoPlayer({
   loop = false,
   muted = false,
   preload = 'metadata',
-  color = "#000000"
+  color = "#000000",
+  onError
 }: MuxVideoPlayerProps) {
   if (!playbackId) return null;
   
   const playerRef = useRef<MuxPlayerRefAttributes>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const sourceUrl = `https://stream.mux.com/${playbackId}.m3u8`;
 
   useEffect(() => {
     if (playerRef.current) {
@@ -72,6 +78,41 @@ export function MuxVideoPlayer({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (videoRef.current && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(sourceUrl);
+      hls.attachMedia(videoRef.current);
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS error:", data);
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              toast.error("A network error occurred during video playback. Retrying...");
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              toast.error("A media error occurred during video playback. Attempting recovery...");
+              hls.recoverMediaError();
+              break;
+            default:
+              toast.error("A fatal error occurred during video playback. Please refresh the page.");
+              hls.destroy();
+              break;
+          }
+        }
+        if (onError) {
+          onError(data);
+        }
+      });
+
+      return () => {
+        hls.destroy();
+      };
+    }
+  }, [sourceUrl, onError]);
   
   return (
     <div className="aspect-[9/16] relative overflow-hidden rounded-lg bg-gray-200 h-full max-h-[70vh]">
