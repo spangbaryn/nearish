@@ -28,6 +28,7 @@ type InviteFormValues = z.infer<typeof inviteFormSchema>
 export function InviteMemberDialog({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
+  if (!user || !user.id) return null;
   
   const { data: currentMember } = useQuery({
     queryKey: ['business-member', businessId, user?.id],

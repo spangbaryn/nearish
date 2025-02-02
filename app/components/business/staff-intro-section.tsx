@@ -111,7 +111,9 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
             Team Intros
           </h2>
         </div>
-        <AddStaffIntroDialog businessId={businessId} />
+        {!readOnly && (
+          <AddStaffIntroDialog businessId={businessId} />
+        )}
       </div>
 
       {isLoading ? (
