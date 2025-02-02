@@ -281,7 +281,7 @@ export function BusinessTimeline({
                   <div className="timeline-connector" />
                   <div 
                     ref={timelineRef}
-                    className="flex gap-3 overflow-x-auto overflow-y-visible py-16 px-2 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
+                    className="flex gap-3 overflow-x-auto overflow-y-visible py-24 px-2 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
