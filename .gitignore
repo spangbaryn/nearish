@@ -3,3 +3,11 @@ node_modules
 .env.local
 .vercel
 .env.local
+
+# Environment files
+.env
+.env.local
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
