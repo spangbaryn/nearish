@@ -11,7 +11,8 @@ import { toast } from "sonner"
 import { useState, useEffect, useRef } from "react"
 import { EditStaffIntroDialog } from "./edit-staff-intro-dialog"
 import { cn } from "@/lib/utils"
-import { StaffIntroOverlay } from "./staff-intro-overlay"
+import { VideoViewingOverlay } from "@/app/components/ui/video-viewing-overlay"
+import type { VideoItem } from "@/app/components/ui/video-viewing-overlay"
 
 interface StaffIntroSectionProps {
   businessId: string
@@ -26,6 +27,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const [selectedIntro, setSelectedIntro] = useState<any>(null)
   const [selectedMobileIntro, setSelectedMobileIntro] = useState<any>(null)
   const avatarScrollRef = useRef<HTMLDivElement>(null)
+  const [selectedVideo, setSelectedVideo] = useState<any>(null)
 
   const { data: staffIntros, isLoading } = useQuery({
     queryKey: ['business-staff', businessId],
@@ -89,8 +91,23 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
     setCurrentIndex((prev) => (prev === totalPages - 1 ? 0 : prev + 1))
   }
 
-  const handleIntroClick = (intro: any) => {
-    setSelectedIntro(intro)
+  const handleIntroClick = (intro: StaffIntro) => {
+    const videoItem = {
+      id: intro.id,
+      title: intro.first_name,
+      subtitle: intro.role,
+      description: intro.favorite_spot || undefined,
+      video_playback_id: intro.video_playback_id,
+      video_asset_id: intro.video_asset_id,
+      thumbnail_url: intro.thumbnail_url
+    }
+    
+    setSelectedVideo({
+      items: [videoItem],
+      currentId: videoItem.id,
+      onClose: () => setSelectedVideo(null),
+      color: color
+    })
   }
 
   useEffect(() => {
@@ -320,12 +337,8 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
         />
       )}
 
-      {selectedIntro && (
-        <StaffIntroOverlay
-          intro={selectedIntro}
-          onClose={() => setSelectedIntro(null)}
-          color={color}
-        />
+      {selectedVideo && (
+        <VideoViewingOverlay {...selectedVideo} />
       )}
     </div>
   )

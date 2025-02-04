@@ -17,6 +17,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { EmptyTimelineCard } from "./empty-timeline-card"
+import { VideoViewingOverlay } from "./video-viewing-overlay"
 
 type Profile = {
   avatar_url: string | null;
@@ -415,22 +416,19 @@ export function BusinessTimeline({
         </div>
 
         {selectedEvent && (
-          <TimelineEventOverlay 
-            events={sortedEvents
-              .filter(e => e.video_playback_id)
-              .map(e => ({
-                id: e.id,
-                title: e.title,
-                date: e.date,
-                video_playback_id: e.video_playback_id || undefined,
-                description: e.description || undefined
-              }))}
-            currentEventId={selectedEvent.id}
+          <VideoViewingOverlay 
+            items={[{
+              id: selectedEvent.id,
+              title: selectedEvent.title,
+              description: selectedEvent.description || undefined,
+              date: selectedEvent.date,
+              video_playback_id: selectedEvent.video_playback_id || '',
+              video_asset_id: selectedEvent.video_asset_id || undefined,
+              thumbnail_url: selectedEvent.thumbnail_url || undefined
+            }]}
+            currentId={selectedEvent.id}
             onClose={() => setSelectedEvent(null)}
-            onEventChange={(eventId) => {
-              const newEvent = events.find(e => e.id === eventId)
-              if (newEvent) setSelectedEvent(newEvent)
-            }}
+            color={color}
           />
         )}
       </div>
