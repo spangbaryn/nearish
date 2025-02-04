@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { TimelineEventOverlay } from "./timeline-event-overlay"
 import { Database } from "@/types/database.types"
 import { MuxVideoPlayer } from "./mux-video-player"
 import { useState, useRef, useEffect } from "react"
@@ -417,15 +416,15 @@ export function BusinessTimeline({
 
         {selectedEvent && (
           <VideoViewingOverlay 
-            items={[{
-              id: selectedEvent.id,
-              title: selectedEvent.title,
-              description: selectedEvent.description || undefined,
-              date: selectedEvent.date,
-              video_playback_id: selectedEvent.video_playback_id || '',
-              video_asset_id: selectedEvent.video_asset_id || undefined,
-              thumbnail_url: selectedEvent.thumbnail_url || undefined
-            }]}
+            items={events.map(event => ({
+              id: event.id,
+              title: event.title,
+              description: event.description || undefined,
+              date: event.date,
+              video_playback_id: event.video_playback_id || '',
+              video_asset_id: event.video_asset_id || undefined,
+              thumbnail_url: event.thumbnail_url || undefined
+            }))}
             currentId={selectedEvent.id}
             onClose={() => setSelectedEvent(null)}
             color={color}

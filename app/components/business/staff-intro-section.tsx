@@ -92,7 +92,8 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   }
 
   const handleIntroClick = (intro: StaffIntro) => {
-    const videoItem = {
+    // Transform all staff intros into video items
+    const videoItems = staffIntros.map(intro => ({
       id: intro.id,
       title: intro.first_name,
       subtitle: intro.role,
@@ -100,11 +101,11 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
       video_playback_id: intro.video_playback_id,
       video_asset_id: intro.video_asset_id,
       thumbnail_url: intro.thumbnail_url
-    }
+    }))
     
     setSelectedVideo({
-      items: [videoItem],
-      currentId: videoItem.id,
+      items: videoItems,
+      currentId: intro.id,
       onClose: () => setSelectedVideo(null),
       color: color
     })

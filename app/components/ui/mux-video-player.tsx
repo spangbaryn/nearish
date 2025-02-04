@@ -113,6 +113,14 @@ export const MuxVideoPlayer = forwardRef(
 
     useEffect(() => {
       const videoEl = playerRef.current?.querySelector("mux-video") as HTMLVideoElement | null
+      if (videoEl && playbackId) {
+        videoEl.src = sourceUrl
+        videoEl.load()
+      }
+    }, [playbackId, sourceUrl])
+
+    useEffect(() => {
+      const videoEl = playerRef.current?.querySelector("mux-video") as HTMLVideoElement | null
       if (videoEl && Hls.isSupported()) {
         const hls = new Hls()
         hls.loadSource(sourceUrl)
@@ -207,22 +215,6 @@ export const MuxVideoPlayer = forwardRef(
 
     return (
       <div className="relative w-full h-full overflow-hidden">
-        <div
-          className="absolute inset-0 blur-3xl opacity-40 z-0"
-          style={{
-            backgroundColor: color,
-            backgroundImage: `
-              linear-gradient(45deg, ${color} 25%, transparent 25%),
-              linear-gradient(-45deg, ${color} 25%, transparent 25%),
-              linear-gradient(45deg, transparent 75%, ${color} 75%),
-              linear-gradient(-45deg, transparent 75%, ${color} 75%),
-              radial-gradient(circle at 50% 50%, ${color}, transparent 70%)
-            `,
-            backgroundSize: "100px 100px, 100px 100px, 100px 100px, 100px 100px, cover",
-            backgroundPosition: "0 0, 0 50px, 50px -50px, -50px 0px, center center",
-            animation: "gradient-shift 8s linear infinite"
-          }}
-        />
         <MuxPlayer
           ref={(el) => {
             playerRef.current = el

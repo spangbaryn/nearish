@@ -77,6 +77,16 @@ export function VideoInteractiveOverlay({
     }
   }, [currentTime, duration, isPaused]);
 
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onPrev?.()
+  }
+
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onNext?.()
+  }
+
   return (
     <>
     <style>{progressKeyframes}</style>
@@ -121,15 +131,25 @@ export function VideoInteractiveOverlay({
         )}
       </div>
 
-      {/* Navigation Arrows */}
-      <div className="absolute inset-y-0 left-0 flex items-center pointer-events-auto">
-        <Button variant="ghost" size="icon" onClick={onPrev}>
-          <ChevronLeft className="w-8 h-8 text-white" />
+      {/* Navigation Buttons */}
+      <div className="absolute inset-y-0 left-0 flex items-center pointer-events-auto z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 opacity-50 hover:opacity-100 transition-opacity pointer-events-auto"
+          onClick={handlePrevClick}
+        >
+          <ChevronLeft className="h-8 w-8 text-white" />
         </Button>
       </div>
-      <div className="absolute inset-y-0 right-0 flex items-center pointer-events-auto">
-        <Button variant="ghost" size="icon" onClick={onNext}>
-          <ChevronRight className="w-8 h-8 text-white" />
+      <div className="absolute inset-y-0 right-0 flex items-center pointer-events-auto z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 opacity-50 hover:opacity-100 transition-opacity pointer-events-auto"
+          onClick={handleNextClick}
+        >
+          <ChevronRight className="h-8 w-8 text-white" />
         </Button>
       </div>
 

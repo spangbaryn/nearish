@@ -24,12 +24,11 @@ const VideoItemSchema = z.object({
 
 export type VideoItem = z.infer<typeof VideoItemSchema>
 
-// Helper function to transform data
 const transformToVideoItem = (
-  input: Database['public']['Tables']['business_staff_intros']['Row'] | 
-         Database['public']['Tables']['business_timeline_events']['Row']
+  input: Database["public"]["Tables"]["business_staff_intros"]["Row"] |
+         Database["public"]["Tables"]["business_timeline_events"]["Row"]
 ): VideoItem => {
-  if ('first_name' in input) {
+  if ("first_name" in input) {
     return {
       id: input.id,
       title: input.first_name,
@@ -41,20 +40,15 @@ const transformToVideoItem = (
     }
   } else {
     const formatDate = (dateStr?: string): string | undefined => {
-      if (!dateStr) return undefined;
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    };
-
-    const event = input as Database['public']['Tables']['business_timeline_events']['Row'];
-    console.log("Timeline Event:", event);
-    const formattedDate = formatDate(event.date);
-    console.log("Formatted Date:", formattedDate);
-
+      if (!dateStr) return undefined
+      const date = new Date(dateStr)
+      return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    }
+    const event = input as Database["public"]["Tables"]["business_timeline_events"]["Row"]
     return {
       id: event.id,
       title: event.title,
-      subtitle: formattedDate,
+      subtitle: formatDate(event.date),
       description: event.description,
       video_playback_id: event.media_url || "",
       media_url: event.media_url || undefined
@@ -71,14 +65,7 @@ interface VideoViewingOverlayProps {
   color?: string
 }
 
-export function VideoViewingOverlay({ 
-  items, 
-  currentId, 
-  onClose, 
-  onItemChange,
-  showHeader = true,
-  color = "#000000" 
-}: VideoViewingOverlayProps) {
+export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, showHeader = true, color = "#000000" }: VideoViewingOverlayProps) {
   const playerRef = useRef<any>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -201,16 +188,12 @@ export function VideoViewingOverlay({
           </Button>
         </div>
       )}
-
       <div className="flex-1 flex items-center justify-center">
-        <div 
-          id="fullscreenVideoContainer" 
-          className="relative w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10"
-        >
-          <MuxVideoPlayer 
+        <div id="fullscreenVideoContainer" className="relative w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
+          <MuxVideoPlayer
             ref={playerRef}
             playbackId={currentItem.video_playback_id}
-            autoPlay={true}
+            autoPlay
             color={color}
             className="w-full h-full"
             onEnded={handleVideoEnded}
@@ -226,9 +209,8 @@ export function VideoViewingOverlay({
             muted={isMuted}
             controls={false}
             onPausedChange={setIsPaused}
-            disableToggle={true}
+            disableToggle
           />
-          
           <VideoInteractiveOverlay
             className="absolute inset-0 w-full h-full"
             isMuted={isMuted}
@@ -247,4 +229,4 @@ export function VideoViewingOverlay({
       </div>
     </div>
   )
-} 
+}
