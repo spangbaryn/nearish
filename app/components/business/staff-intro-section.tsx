@@ -35,6 +35,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const [mobileVideoTime, setMobileVideoTime] = useState(0)
   const [mobileVideoDuration, setMobileVideoDuration] = useState(0)
   const avatarScrollRef = useRef<HTMLDivElement>(null)
+  const mobileVideoRef = useRef<any>(null)
   const [selectedVideo, setSelectedVideo] = useState<any>(null)
 
   const { data: staffIntros, isLoading } = useQuery({
@@ -183,7 +184,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                   onClick={() => setSelectedMobileIntro(intro)}
                   className={cn(
                     "flex-shrink-0 relative w-20 h-20 rounded-full overflow-hidden border-2",
-                    selectedMobileIntro?.id === intro.id ? "border-primary" : "border-transparent"
+                    selectedMobileIntro?.id === intro.id ? "border-primary ring-2 ring-primary ring-offset-2" : "border-transparent"
                   )}
                 >
                   <img
@@ -205,11 +206,11 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
               <div className="mt-4 px-4">
                 <div className="max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
                   <MuxVideoPlayer
+                    ref={mobileVideoRef}
                     playbackId={selectedMobileIntro.video_playback_id}
                     className="w-full h-full"
                     autoPlay={true}
                     muted={isMobileVideoMuted}
-                    loop={true}
                     controls={false}
                     hidePlayButton={true}
                     onTimeUpdate={(e) => {
@@ -221,6 +222,11 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                       setMobileVideoDuration(video.duration || 0);
                     }}
                     onPausedChange={setIsMobileVideoPaused}
+                    onEnded={() => {
+                      if (staffIntros && staffIntros.length > 1) {
+                        handleNext();
+                      }
+                    }}
                   />
                   <VideoInteractiveOverlay
                     className="absolute inset-0"
@@ -232,7 +238,15 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                     subheader={selectedMobileIntro.role}
                     posterInfo={selectedMobileIntro.favorite_spot}
                     onToggleMute={() => setIsMobileVideoMuted(!isMobileVideoMuted)}
-                    onTogglePlay={() => setIsMobileVideoPaused(!isMobileVideoPaused)}
+                    onTogglePlay={() => {
+                      if (mobileVideoRef.current) {
+                        if (isMobileVideoPaused) {
+                          mobileVideoRef.current.play();
+                        } else {
+                          mobileVideoRef.current.pause();
+                        }
+                      }
+                    }}
                     onPrev={() => staffIntros && staffIntros.length > 1 && handlePrevious()}
                     onNext={() => staffIntros && staffIntros.length > 1 && handleNext()}
                     onShare={handleShare}

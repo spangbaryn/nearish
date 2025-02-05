@@ -156,7 +156,7 @@ export function VideoInteractiveOverlay({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="absolute inset-y-0 left-0 flex items-center pointer-events-auto z-50">
+      <div className="absolute inset-y-0 left-0 hidden sm:flex items-center pointer-events-auto z-50">
         <Button
           variant="ghost"
           size="icon"
@@ -166,7 +166,7 @@ export function VideoInteractiveOverlay({
           <ChevronLeft className="h-8 w-8 text-white" />
         </Button>
       </div>
-      <div className="absolute inset-y-0 right-0 flex items-center pointer-events-auto z-50">
+      <div className="absolute inset-y-0 right-0 hidden sm:flex items-center pointer-events-auto z-50">
         <Button
           variant="ghost"
           size="icon"
