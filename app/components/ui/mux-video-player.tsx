@@ -101,11 +101,11 @@ export const MuxVideoPlayer = forwardRef(
     useEffect(() => {
       return () => {
         if (playerRef.current && !document.body.contains(playerRef.current)) {
-          const mediaEl = playerRef.current.querySelector("mux-video")
-          if (mediaEl) {
-            (mediaEl as HTMLVideoElement).pause()
-            (mediaEl as HTMLVideoElement).src = ""
-            (mediaEl as HTMLVideoElement).load()
+          const mediaEl = playerRef.current.querySelector("mux-video") as HTMLVideoElement
+          if (mediaEl && typeof mediaEl.pause === 'function') {
+            mediaEl.pause()
+            mediaEl.src = ""
+            mediaEl.load()
           }
           playerRef.current.remove()
         }
