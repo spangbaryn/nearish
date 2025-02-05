@@ -13,6 +13,15 @@ import { supabase } from "@/lib/supabase"
 import { VideoUpload } from "../../components/ui/video-upload"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
+import { MuxVideoPlayer } from "@/app/components/ui/mux-video-player"
+
+interface VideoData {
+  assetId: string
+  playbackId: string
+  thumbnailUrl: string
+  duration: number | null
+  status: string | null
+}
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -36,6 +45,7 @@ export default function NewTimelineEventPage() {
   const [hasRecorded, setHasRecorded] = useState(false)
   const [isVideoProcessing, setIsVideoProcessing] = useState(false)
   const [showFields, setShowFields] = useState(false)
+  const [videoData, setVideoData] = useState<VideoData | null>(null)
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -96,6 +106,7 @@ export default function NewTimelineEventPage() {
     status: string | null
   }) => {
     setIsVideoProcessing(false)
+    setVideoData(videoData)
     form.setValue('video', {
       ...videoData,
       duration: videoData.duration || 0,
@@ -128,17 +139,25 @@ export default function NewTimelineEventPage() {
             <form onSubmit={form.handleSubmit((data) => createEventMutation.mutate(data))} className="space-y-8">
               <VideoUpload 
                 onSuccess={handleVideoUpload}
-                onRecordingChange={(recording, fromStartOver) => {
-                  handleRecordingChange(recording)
-                  if (fromStartOver) {
-                    setShowFields(false)
-                  }
-                }}
+                onRecordingChange={handleRecordingChange}
                 onProcessingStart={() => setShowFields(true)}
               />
               
               {showFields && (
                 <div className="space-y-4 mt-4">
+                  {videoData && (
+                    <div className="w-full max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
+                      <MuxVideoPlayer 
+                        playbackId={videoData.playbackId}
+                        className="absolute inset-0 w-full h-full"
+                        autoPlay={true}
+                        muted={true}
+                        loop={true}
+                        controls={true}
+                      />
+                    </div>
+                  )}
+                  
                   <FormField
                     control={form.control}
                     name="title"
