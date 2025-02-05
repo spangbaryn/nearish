@@ -24,12 +24,10 @@ interface PublicBusinessProfileProps {
       logo_url?: string | null
     } | null
   }
-  timelineEvents?: any[]  // adjust type as needed
+  timelineEvents?: any[]
 }
 
 export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicBusinessProfileProps) {
-  useZoomReset()
-
   const { data: timelineEventsData } = useQuery({
     queryKey: ['business-timeline', business.id],
     queryFn: async () => {
@@ -102,7 +100,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
             </div>
           </div>
         </div>
-        <div className="space-y-12">
+        <div>
           <StaffIntroSection 
             businessId={business.id} 
             color={business.brand_color} 
