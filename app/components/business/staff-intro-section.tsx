@@ -108,6 +108,14 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
     }
   }
 
+  const handleCarouselPrevious = () => {
+    setCurrentIndex(prev => Math.max(0, prev - 1))
+  }
+
+  const handleCarouselNext = () => {
+    setCurrentIndex(prev => Math.min(totalPages - 1, prev + 1))
+  }
+
   const handleIntroClick = (intro: StaffIntro) => {
     if (!staffIntros) return;
     
@@ -374,7 +382,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                     variant="ghost"
                     size="icon"
                     className="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
-                    onClick={handlePrevious}
+                    onClick={handleCarouselPrevious}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -384,7 +392,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                     variant="ghost"
                     size="icon"
                     className="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm"
-                    onClick={handleNext}
+                    onClick={handleCarouselNext}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
