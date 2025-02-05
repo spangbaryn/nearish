@@ -154,10 +154,14 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
             <form onSubmit={form.handleSubmit((data) => {
               createEventMutation.mutate(data)
             })} className="space-y-4">
-              <div className="w-full max-w-[280px] mx-auto">
+              <div className="w-full max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
                 <MuxVideoPlayer 
                   playbackId={videoData.playbackId}
-                  className="rounded-lg"
+                  className="absolute inset-0 w-full h-full"
+                  autoPlay={true}
+                  muted={true}
+                  loop={true}
+                  controls={true}
                 />
               </div>
 

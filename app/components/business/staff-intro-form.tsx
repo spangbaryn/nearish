@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { MuxVideoPlayer } from "../../components/ui/mux-video-player"
+import { MuxVideoPlayer } from "@/app/components/ui/mux-video-player"
 
 const staffIntroSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -78,10 +78,15 @@ export function StaffIntroForm({ initialData, videoData, thumbnailUrl, onSubmit 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="w-full max-w-[280px] mx-auto">
+        {/* Video Preview */}
+        <div className="w-full max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
           <MuxVideoPlayer 
             playbackId={videoData.playbackId}
-            className="rounded-lg"
+            className="absolute inset-0 w-full h-full"
+            autoPlay={true}
+            muted={true}
+            loop={true}
+            controls={true}
           />
         </div>
 
@@ -127,7 +132,7 @@ export function StaffIntroForm({ initialData, videoData, thumbnailUrl, onSubmit 
           )}
         />
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? "Saving..." : "Save"}
         </Button>
       </form>
