@@ -12,6 +12,7 @@ import { useState, useEffect, useRef } from "react"
 import { EditStaffIntroDialog } from "./edit-staff-intro-dialog"
 import { cn } from "@/lib/utils"
 import { VideoViewingOverlay } from "@/app/components/ui/video-viewing-overlay"
+import { VideoInteractiveOverlay } from "@/app/components/ui/VideoInteractiveOverlay"
 import type { VideoItem } from "@/app/components/ui/video-viewing-overlay"
 import { Database } from "@/types/database.types"
 
@@ -29,6 +30,10 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIntro, setSelectedIntro] = useState<any>(null)
   const [selectedMobileIntro, setSelectedMobileIntro] = useState<any>(null)
+  const [isMobileVideoMuted, setIsMobileVideoMuted] = useState(true)
+  const [isMobileVideoPaused, setIsMobileVideoPaused] = useState(false)
+  const [mobileVideoTime, setMobileVideoTime] = useState(0)
+  const [mobileVideoDuration, setMobileVideoDuration] = useState(0)
   const avatarScrollRef = useRef<HTMLDivElement>(null)
   const [selectedVideo, setSelectedVideo] = useState<any>(null)
 
@@ -87,11 +92,19 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const isLastPage = currentIndex === totalPages - 1
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? totalPages - 1 : prev - 1))
+    if (staffIntros) {
+      const currentIdx = staffIntros.findIndex(intro => intro.id === selectedMobileIntro?.id)
+      const prevIdx = currentIdx === 0 ? staffIntros.length - 1 : currentIdx - 1
+      setSelectedMobileIntro(staffIntros[prevIdx])
+    }
   }
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev === totalPages - 1 ? 0 : prev + 1))
+    if (staffIntros) {
+      const currentIdx = staffIntros.findIndex(intro => intro.id === selectedMobileIntro?.id)
+      const nextIdx = currentIdx === staffIntros.length - 1 ? 0 : currentIdx + 1
+      setSelectedMobileIntro(staffIntros[nextIdx])
+    }
   }
 
   const handleIntroClick = (intro: StaffIntro) => {
@@ -119,6 +132,18 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
       setSelectedMobileIntro(staffIntros[0])
     }
   }, [staffIntros])
+
+  const handleShare = () => {
+    if (selectedMobileIntro) {
+      if (navigator.share) {
+        navigator.share({
+          title: selectedMobileIntro.first_name,
+          text: selectedMobileIntro.role,
+          url: window.location.href
+        }).catch(console.error)
+      }
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -183,17 +208,41 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                     playbackId={selectedMobileIntro.video_playback_id}
                     className="w-full h-full"
                     autoPlay={true}
-                    muted={true}
+                    muted={isMobileVideoMuted}
                     loop={true}
-                    controls={true}
-                    hidePlayButton={false}
+                    controls={false}
+                    hidePlayButton={true}
+                    onTimeUpdate={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      setMobileVideoTime(video.currentTime || 0);
+                    }}
+                    onLoadedMetadata={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      setMobileVideoDuration(video.duration || 0);
+                    }}
+                    onPausedChange={setIsMobileVideoPaused}
+                  />
+                  <VideoInteractiveOverlay
+                    className="absolute inset-0"
+                    isMuted={isMobileVideoMuted}
+                    isPaused={isMobileVideoPaused}
+                    currentTime={mobileVideoTime}
+                    duration={mobileVideoDuration}
+                    header={selectedMobileIntro.first_name}
+                    subheader={selectedMobileIntro.role}
+                    posterInfo={selectedMobileIntro.favorite_spot}
+                    onToggleMute={() => setIsMobileVideoMuted(!isMobileVideoMuted)}
+                    onTogglePlay={() => setIsMobileVideoPaused(!isMobileVideoPaused)}
+                    onPrev={() => staffIntros && staffIntros.length > 1 && handlePrevious()}
+                    onNext={() => staffIntros && staffIntros.length > 1 && handleNext()}
+                    onShare={handleShare}
                   />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Desktop View - Your existing carousel code */}
+          {/* Desktop View */}
           <div className="hidden sm:block relative px-4 sm:px-0">
             <div className="overflow-hidden">
               <div 
@@ -283,7 +332,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                             </div>
                           </div>
 
-                          {/* Favorite spot section - Remains at bottom */}
+                          {/* Favorite spot section */}
                           <div className="absolute inset-x-0 bottom-0 p-2 group-hover:hidden">
                             {intro.favorite_spot && (
                               <div className="flex flex-col text-sm bg-black/20 backdrop-blur-sm rounded-md py-1.5 px-2">
