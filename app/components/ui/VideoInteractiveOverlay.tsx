@@ -58,6 +58,8 @@ export function VideoInteractiveOverlay({
   isHorizontal = false
 }: VideoInteractiveOverlayProps) {
   const progressRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   useEffect(() => {
     const progressBar = progressRef.current;
@@ -87,10 +89,32 @@ export function VideoInteractiveOverlay({
     onNext?.()
   }
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    const swipeDistance = touchEndX.current - touchStartX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        onPrev();
+      } else {
+        onNext();
+      }
+    }
+  };
+
   return (
     <>
     <style>{progressKeyframes}</style>
-    <div className={cn("absolute inset-0 w-full h-full pointer-events-none z-30", className)}>
+    <div 
+      className={cn("z-30 overflow-hidden touch-pan-y", className)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Duration Bar */}
       <div className="absolute top-0 left-0 right-0 z-50">
         <div className="relative w-full h-1 mt-2 px-4">
