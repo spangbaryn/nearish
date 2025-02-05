@@ -13,6 +13,9 @@ import { EditStaffIntroDialog } from "./edit-staff-intro-dialog"
 import { cn } from "@/lib/utils"
 import { VideoViewingOverlay } from "@/app/components/ui/video-viewing-overlay"
 import type { VideoItem } from "@/app/components/ui/video-viewing-overlay"
+import { Database } from "@/types/database.types"
+
+type StaffIntro = Database["public"]["Tables"]["business_staff_intros"]["Row"]
 
 interface StaffIntroSectionProps {
   businessId: string
