@@ -1,8 +1,6 @@
 node_modules
 .next
-.env.local
 .vercel
-.env.local
 
 # Environment files
 .env

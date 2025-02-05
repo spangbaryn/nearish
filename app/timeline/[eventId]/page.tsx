@@ -1,15 +1,8 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { MuxVideoPlayer } from "../../components/ui/mux-video-player"
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { use } from "react"
+import { VideoViewingOverlay, type VideoItem } from "@/app/components/ui/video-viewing-overlay"
 
 interface TimelinePageProps {
   params: Promise<{
@@ -26,37 +19,23 @@ export default function TimelinePage({ params, searchParams }: TimelinePageProps
   const resolvedSearchParams = use(searchParams)
   
   const events = JSON.parse(decodeURIComponent(resolvedSearchParams.events))
-  const currentIndex = events.findIndex((e: { id: string }) => e.id === resolvedParams.eventId)
-  const [isVideoEnded, setIsVideoEnded] = useState(false)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-
-  const handleVideoEnded = () => {
-    setIsVideoEnded(true)
-    setIsTransitioning(true)
-    const nextIndex = (currentIndex + 1) % events.length
-    navigateToEvent(events[nextIndex].id)
-  }
-
-  const handleBackgroundClick = () => {
-    router.back()
-  }
-
-  const navigateToEvent = (eventId: string) => {
-    router.push(`/timeline/${eventId}?events=${resolvedSearchParams.events}`)
-  }
-
-  useEffect(() => {
-    setIsVideoEnded(false)
-    const timer = setTimeout(() => {
-      setIsTransitioning(false)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [resolvedParams.eventId])
+  const items: VideoItem[] = events.map((event: any) => ({
+    id: event.id,
+    title: event.title,
+    subtitle: event.date ? new Date(event.date).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : undefined,
+    description: event.description,
+    video_playback_id: event.media_url || "",
+    media_url: event.media_url
+  }))
 
   return (
-    <div className="fixed inset-0 bg-background/95 z-50" onClick={handleBackgroundClick}>
-      {/* Rest of the UI remains the same as TimelineEventOverlay */}
-    </div>
+    <VideoViewingOverlay
+      items={items}
+      currentId={resolvedParams.eventId}
+      onClose={() => router.back()}
+      onItemChange={(id) => {
+        router.push(`/timeline/${id}?events=${resolvedSearchParams.events}`)
+      }}
+    />
   )
 } 

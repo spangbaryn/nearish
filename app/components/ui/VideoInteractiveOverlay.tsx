@@ -108,18 +108,18 @@ export function VideoInteractiveOverlay({
       </div>
 
       {/* Top Section: Audio Button */}
-      <div className="absolute top-4 left-0 right-0 flex items-start p-4 z-50">
+      <div className="absolute top-4 left-0 right-0 flex items-start p-4 z-[60] pointer-events-auto">
         <div className="flex-1" />
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={onToggleMute} 
-          className="pointer-events-auto relative z-50"
+          className="h-12 w-12 opacity-50 hover:opacity-100 transition-opacity pointer-events-auto"
         >
           {isMuted ? (
-            <VolumeX className="w-6 h-6 text-white" />
+            <VolumeX className="h-8 w-8 text-white" />
           ) : (
-            <Volume className="w-6 h-6 text-white" />
+            <Volume className="h-8 w-8 text-white" />
           )}
         </Button>
       </div>

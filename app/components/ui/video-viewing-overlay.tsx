@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { z } from "zod"
 import { VideoInteractiveOverlay } from "./VideoInteractiveOverlay"
 import { Database } from "@/types/database.types"
+import { createPortal } from 'react-dom'
 
 const VideoItemSchema = z.object({
   id: z.string(),
@@ -72,6 +73,7 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
   const [isMuted, setIsMuted] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   // Initialize currentIndex based on currentId. If not found, default to 0.
   const [currentIndex, setCurrentIndex] = useState(() => {
@@ -171,10 +173,29 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
     toast.error("Failed to load video. Please try again.")
   }
 
-  return (
-    <div className="fixed inset-0 bg-background z-[9999] flex flex-col m-0" aria-modal="true" role="dialog">
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  const overlay = (
+    <div 
+      className="fixed inset-0 bg-background flex flex-col" 
+      style={{ 
+        zIndex: 99999,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        margin: 0,
+        padding: 0
+      }} 
+      aria-modal="true" 
+      role="dialog"
+    >
       {showHeader && (
-        <div className="flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm">
+        <div className="sticky top-0 flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm">
           <Image
             src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
             alt="Nearish Logo"
@@ -189,7 +210,10 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
         </div>
       )}
       <div className="flex-1 flex items-center justify-center">
-        <div id="fullscreenVideoContainer" className="relative w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
+        <div 
+          id="fullscreenVideoContainer" 
+          className="relative w-[95%] md:w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 -mt-6 md:mt-0"
+        >
           <MuxVideoPlayer
             ref={playerRef}
             playbackId={currentItem.video_playback_id}
@@ -229,4 +253,6 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
       </div>
     </div>
   )
+
+  return mounted ? createPortal(overlay, document.body) : null
 }
