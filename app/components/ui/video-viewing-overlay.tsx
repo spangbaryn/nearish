@@ -195,7 +195,7 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
       role="dialog"
     >
       {showHeader && (
-        <div className="sticky top-0 flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm">
+        <div className="sticky top-0 flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm z-50">
           <Image
             src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
             alt="Nearish Logo"
@@ -204,7 +204,16 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
             className="h-20 w-auto"
             priority
           />
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onClose()
+            }}
+            className="z-50"
+          >
             <X className="h-6 w-6" />
           </Button>
         </div>

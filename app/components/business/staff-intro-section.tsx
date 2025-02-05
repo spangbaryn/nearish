@@ -97,7 +97,6 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const handleIntroClick = (intro: StaffIntro) => {
     if (!staffIntros) return;
     
-    // Transform all staff intros into video items
     const videoItems = staffIntros.map(intro => ({
       id: intro.id,
       title: intro.first_name,
@@ -111,6 +110,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
     setSelectedVideo({
       items: videoItems,
       currentId: intro.id,
+      onClose: () => setSelectedVideo(null)
     })
   }
 
@@ -342,7 +342,11 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
       )}
 
       {selectedVideo && (
-        <VideoViewingOverlay {...selectedVideo} />
+        <VideoViewingOverlay 
+          {...selectedVideo} 
+          onClose={() => setSelectedVideo(null)}
+          color={color}
+        />
       )}
     </div>
   )
