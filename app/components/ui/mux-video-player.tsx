@@ -64,9 +64,10 @@ export const MuxVideoPlayer = forwardRef(
         MuxService.setPlayerStyles(playerRef.current)
         const mediaEl = playerRef.current.querySelector("mux-video")
         if (mediaEl) {
-          (mediaEl as HTMLElement).style.objectFit = "cover"
-          (mediaEl as HTMLElement).style.width = "100%"
-          (mediaEl as HTMLElement).style.height = "100%"
+          const mediaStyle = (mediaEl as HTMLElement).style as CSSStyleDeclaration
+          mediaStyle.objectFit = "cover"
+          mediaStyle.width = "100%"
+          mediaStyle.height = "100%"
 
           const videoEl = mediaEl as HTMLVideoElement
           let animationFrameId: number
