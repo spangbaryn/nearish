@@ -17,6 +17,7 @@ export function RootLayoutClient({
   const pathname = usePathname()
   const isAuthRoute = pathname?.startsWith('/auth')
   const isOnboardingRoute = pathname?.startsWith('/onboarding')
+  const isPublicBusinessRoute = pathname?.startsWith('/b/')
 
   if (isLoading && !user) {
     return (
@@ -30,11 +31,11 @@ export function RootLayoutClient({
     return children
   }
 
-  if (!user) {
+  if (!user || isPublicBusinessRoute) {
     return (
       <div className="min-h-screen">
         <PublicHeader />
-        <main className="pt-16">
+        <main className={!isPublicBusinessRoute ? "pt-16" : ""}>
           {children}
         </main>
       </div>

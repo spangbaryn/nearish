@@ -100,17 +100,18 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
             </div>
           </div>
         </div>
-        <div>
+        <div className="mt-8 mb-24">
           <StaffIntroSection 
             businessId={business.id} 
-            color={business.brand_color} 
-            readOnly={true} 
+            color={business.brand_color ?? "#000000"}
+            readOnly
           />
+        </div>
+        <div className="mb-24">
           <BusinessTimeline 
             businessId={business.id} 
-            events={timelineEventsData || []} 
-            color={business.brand_color} 
-            readOnly={true} 
+            events={timelineEventsData || timelineEvents}
+            color={business.brand_color ?? "#000000"}
           />
         </div>
       </div>
