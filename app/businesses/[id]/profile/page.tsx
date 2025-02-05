@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { StaffIntroSection } from "../../../components/business/staff-intro-section"
+import { useZoomReset } from '@/app/hooks/useZoomReset'
 
 type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
   place: {
@@ -119,6 +120,8 @@ export default function BusinessProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['business-profile', businessId] })
     }
   })
+
+  useZoomReset()
 
   if (isLoading) return <LoadingSpinner />
   if (!business) return null
