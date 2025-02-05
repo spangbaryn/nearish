@@ -10,7 +10,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 import { BusinessCover } from "../../../components/ui/business-cover"
 import { ColorPicker } from "../../../components/ui/color-picker"
 import { Database } from "@/types/database.types"
@@ -23,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { StaffIntroSection } from "../../../components/business/staff-intro-section"
-import { useZoomReset } from '@/app/hooks/useZoomReset'
+
 
 type BusinessProfile = Database['public']['Tables']['businesses']['Row'] & {
   place: {
@@ -121,7 +120,6 @@ export default function BusinessProfilePage() {
     }
   })
 
-  useZoomReset()
 
   if (isLoading) return <LoadingSpinner />
   if (!business) return null

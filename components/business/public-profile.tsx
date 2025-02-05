@@ -10,7 +10,6 @@ import { StaffIntroSection } from "app/components/business/staff-intro-section"
 import { BusinessTimeline } from "app/components/ui/business-timeline"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
-import { useZoomReset } from '@/app/hooks/useZoomReset'
 
 interface PublicBusinessProfileProps {
   business: {

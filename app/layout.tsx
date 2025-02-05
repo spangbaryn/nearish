@@ -4,6 +4,7 @@ import "./styles/globals.css"
 import { RootLayoutClient } from "@/components/root-layout-client"
 import { Toaster } from 'sonner'
 import { Inter } from 'next/font/google'
+import { ZoomResetProvider } from '@/app/components/zoom-reset-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,12 +27,14 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} min-h-screen bg-background`}>
-        <Providers>
-          <RootLayoutClient>
-            {children}
-          </RootLayoutClient>
-          <Toaster />
-        </Providers>
+        <ZoomResetProvider>
+          <Providers>
+            <RootLayoutClient>
+              {children}
+            </RootLayoutClient>
+            <Toaster />
+          </Providers>
+        </ZoomResetProvider>
       </body>
     </html>
   )
