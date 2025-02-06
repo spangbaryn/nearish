@@ -142,6 +142,20 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
     }
   }, [staffIntros])
 
+  // Add effect to scroll avatar into view when video changes
+  useEffect(() => {
+    if (selectedMobileIntro && avatarScrollRef.current) {
+      const avatarElement = avatarScrollRef.current.querySelector(`[data-intro-id="${selectedMobileIntro.id}"]`)
+      if (avatarElement) {
+        avatarElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        })
+      }
+    }
+  }, [selectedMobileIntro?.id])
+
   const handleShare = () => {
     if (selectedMobileIntro) {
       if (navigator.share) {
@@ -184,14 +198,15 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
             {/* Avatar Carousel */}
             <div 
               ref={avatarScrollRef}
-              className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 scrollbar-hide"
+              className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 scrollbar-hide snap-x snap-mandatory"
             >
               {staffIntros?.map((intro) => (
                 <button
                   key={intro.id}
+                  data-intro-id={intro.id}
                   onClick={() => setSelectedMobileIntro(intro)}
                   className={cn(
-                    "flex-shrink-0 relative w-20 h-20 rounded-full overflow-hidden border-2",
+                    "flex-shrink-0 relative w-20 h-20 rounded-full overflow-hidden border-2 snap-center",
                     selectedMobileIntro?.id === intro.id ? "border-primary ring-2 ring-primary ring-offset-2" : "border-transparent"
                   )}
                 >
