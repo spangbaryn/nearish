@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from 'react'
-import { refreshSession, clearAuthCookies } from '@/app/lib/auth-helpers'
+import { refreshSession } from '@/app/lib/auth-helpers'
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -10,11 +10,13 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
       const storedVersion = localStorage.getItem('app-version')
       
       if (currentVersion !== storedVersion) {
-        const sessionRefreshed = await refreshSession()
-        if (!sessionRefreshed) {
-          clearAuthCookies()
+        try {
+          await refreshSession()
+        } catch (error) {
+          console.error('Session refresh error:', error)
+        } finally {
+          localStorage.setItem('app-version', currentVersion || '')
         }
-        localStorage.setItem('app-version', currentVersion || '')
       }
     }
 

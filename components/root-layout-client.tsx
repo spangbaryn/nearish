@@ -35,7 +35,7 @@ export function RootLayoutClient({
     return (
       <div className="min-h-screen">
         <PublicHeader />
-        <main className={!isPublicBusinessRoute ? "pt-16" : ""}>
+        <main className="pt-16">
           {children}
         </main>
       </div>

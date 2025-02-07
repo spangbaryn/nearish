@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, Phone, Globe } from "lucide-react"
+import { MapPin, Phone, Globe, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
@@ -54,7 +54,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
   })
 
   return (
-    <div>
+    <div className="pt-16">
       <BusinessCover
         color={business.brand_color || '#000000'}
         className="h-[120px] sm:h-[160px]"
@@ -72,30 +72,47 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
           </div>
           <div className="text-center sm:text-left pt-4 sm:pt-8 space-y-3 sm:space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold">{business.name}</h1>
-            <div className="flex justify-center sm:justify-start gap-6 sm:gap-4">
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-4">
               {business.place?.formatted_address && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(business.place?.formatted_address || '')
+                    toast.success('Address copied to clipboard')
+                  }}
+                  className="flex items-center gap-2 justify-center sm:justify-start group"
+                >
+                  <MapPin className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
                     {business.place.formatted_address}
                   </span>
-                </div>
+                </button>
               )}
               {business.place?.phone_number && (
-                <div className="flex items-center gap-1">
-                  <Phone className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(business.place?.phone_number || '')
+                    toast.success('Phone number copied to clipboard')
+                  }}
+                  className="flex items-center gap-2 justify-center sm:justify-start group"
+                >
+                  <Phone className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
                     {business.place.phone_number}
                   </span>
-                </div>
+                </button>
               )}
               {business.place?.website && (
-                <div className="flex items-center gap-1">
-                  <Globe className="w-6 h-6 sm:w-5 sm:h-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {business.place.website}
+                <a
+                  href={business.place.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 justify-center sm:justify-start group"
+                >
+                  <Globe className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                    {new URL(business.place.website).hostname}
                   </span>
-                </div>
+                </a>
               )}
             </div>
           </div>
@@ -118,4 +135,4 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
       </div>
     </div>
   )
-} 
+}

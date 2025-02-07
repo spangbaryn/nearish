@@ -5,7 +5,9 @@ import { PublicBusinessProfile } from '@/components/business/public-profile'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-type PageContext = any // Bypass strict typing temporarily
+type PageContext = {
+  params: Promise<{ slug: string }>
+}
 
 // Create anonymous client
 const supabase = createClient(
@@ -40,7 +42,7 @@ export const dynamic = 'force-dynamic'
 // Add headers configuration
 export async function generateMetadata(context: PageContext) {
   const { params } = context
-  const headersList = await headers()
+  const resolvedParams = await params
   
   return {
     robots: 'noindex, nofollow',
@@ -53,7 +55,7 @@ export async function generateMetadata(context: PageContext) {
   }
 }
 
-async function trackPageView(businessId: string, req: Request, params: { slug: string }) {
+async function trackPageView(businessId: string, req: Request, slug: string) {
   const headers = new Headers(req.headers)
   const userAgent = headers.get('user-agent') || 'unknown'
   const referrer = headers.get('referer') || null
@@ -61,7 +63,7 @@ async function trackPageView(businessId: string, req: Request, params: { slug: s
 
   await supabase.from('page_views').insert({
     business_id: businessId,
-    path: `/b/${params.slug}`,
+    path: `/b/${slug}`,
     ip,
     user_agent: userAgent,
     referrer
@@ -69,7 +71,7 @@ async function trackPageView(businessId: string, req: Request, params: { slug: s
 }
 
 export default async function PublicBusinessPage(context: PageContext) {
-  const { params } = context
+  const resolvedParams = await context.params
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') || 'unknown'
   
@@ -89,11 +91,11 @@ export default async function PublicBusinessPage(context: PageContext) {
         logo_url
       )
     `)
-    .eq('public_url_slug', params.slug)
+    .eq('public_url_slug', resolvedParams.slug)
     .eq('is_published', true)
     .single()
 
-  console.log('Fetching business:', { slug: params.slug, error, business })
+  console.log('Debug - Raw business data:', business)
 
   if (!business || !business.id) {
     console.log('Business not found')
@@ -105,12 +107,14 @@ export default async function PublicBusinessPage(context: PageContext) {
     place: business.place?.[0] || null
   }
 
+  console.log('Debug - Processed business data:', businessData)
+
   const host = headersList.get('host') || 'localhost:3000'
-  const pathname = headersList.get('pathname') || `/b/${params.slug}`
+  const pathname = headersList.get('pathname') || `/b/${resolvedParams.slug}`
   const req = new Request(`http://${host}${pathname}`, {
     headers: headersList
   })
-  await trackPageView(business.id, req, params)
+  await trackPageView(business.id, req, resolvedParams.slug)
 
   return <PublicBusinessProfile business={businessData} />
 }
