@@ -112,6 +112,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
             businessId={business.id} 
             events={timelineEventsData || timelineEvents}
             color={business.brand_color ?? "#000000"}
+            readOnly={true}
           />
         </div>
       </div>

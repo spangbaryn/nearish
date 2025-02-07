@@ -241,7 +241,7 @@ export function BusinessTimeline({
   return (
     <div>
       <div className="w-full">
-        <div className="flex items-center justify-between mb-8 px-4">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div 
               className="h-8 w-1 rounded-full"
