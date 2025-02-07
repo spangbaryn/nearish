@@ -304,7 +304,8 @@ export function BusinessTimeline({
                         )}>
                           <Card 
                             className={cn(
-                              "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group hover:shadow-lg bg-white z-10 border-2 hover:border-primary/20",
+                              "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
+                              "@media (hover: hover) { &:hover { shadow-lg border-primary/20 } }",
                               highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                             )}
                             onClick={(e) => handleCardClick(e, event)}

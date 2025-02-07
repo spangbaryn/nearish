@@ -391,3 +391,50 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+@media (hover: hover) {
+  .timeline-card:hover {
+    @apply shadow-lg border-primary/20;
+  }
+  
+  .edit-button {
+    opacity: 0;
+  }
+  
+  .group:hover .edit-button {
+    opacity: 100;
+  }
+}
+
+/* For touch devices */
+@media (hover: none) {
+  .edit-button {
+    opacity: 100;
+  }
+  
+  /* Disable all button hover/active states on touch devices */
+  button, 
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button[class*="hover"],
+  a[class*="hover"],
+  .button-no-hover {
+    @apply hover:bg-transparent 
+           hover:text-foreground 
+           active:bg-transparent 
+           active:text-foreground
+           hover:border-border
+           active:border-border
+           hover:opacity-100
+           active:opacity-100
+           transition-none;
+  }
+  
+  /* Prevent any color transitions */
+  button, 
+  a {
+    transition-property: none !important;
+  }
+}
