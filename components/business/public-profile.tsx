@@ -54,7 +54,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
   })
 
   return (
-    <div className="pt-16">
+    <div>
       <BusinessCover
         color={business.brand_color || '#000000'}
         className="h-[120px] sm:h-[160px]"

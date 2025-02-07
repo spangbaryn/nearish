@@ -31,11 +31,22 @@ export function RootLayoutClient({
     return children
   }
 
-  if (!user || isPublicBusinessRoute) {
+  if (isPublicBusinessRoute) {
     return (
       <div className="min-h-screen">
         <PublicHeader />
-        <main className="pt-16">
+        <main>
+          {children}
+        </main>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen">
+        <PublicHeader />
+        <main>
           {children}
         </main>
       </div>
