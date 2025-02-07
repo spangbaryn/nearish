@@ -394,7 +394,8 @@
 
 @media (hover: hover) {
   .timeline-card:hover {
-    @apply shadow-lg border-primary/20;
+    box-shadow: var(--tw-shadow-lg);
+    border-color: hsl(var(--primary) / 0.2);
   }
   
   .edit-button {
@@ -421,15 +422,11 @@
   button[class*="hover"],
   a[class*="hover"],
   .button-no-hover {
-    @apply hover:bg-transparent 
-           hover:text-foreground 
-           active:bg-transparent 
-           active:text-foreground
-           hover:border-border
-           active:border-border
-           hover:opacity-100
-           active:opacity-100
-           transition-none;
+    background-color: transparent !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+    opacity: 1 !important;
+    transition: none !important;
   }
   
   /* Prevent any color transitions */
