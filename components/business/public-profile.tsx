@@ -10,6 +10,12 @@ import { StaffIntroSection } from "app/components/business/staff-intro-section"
 import { BusinessTimeline } from "app/components/ui/business-timeline"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface PublicBusinessProfileProps {
   business: {
@@ -21,7 +27,7 @@ interface PublicBusinessProfileProps {
       formatted_address: string
       phone_number: string | null
       website: string | null
-      logo_url?: string | null
+      place_logo_url?: string | null
     } | null
   }
   timelineEvents?: any[]
@@ -62,57 +68,79 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
       <div className="max-w-4xl mx-auto px-4 sm:px-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8 mb-12">
           <div className="relative -mt-12 mx-auto sm:mx-0 sm:-mt-8">
-            {business.logo_url || (business.place && business.place.logo_url) ? (
-              <img
-                src={business.logo_url || business.place?.logo_url || undefined}
-                alt={business.name}
-                className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
-              />
-            ) : null}
+            <img
+              src={`${business.logo_url || business.place?.place_logo_url}?t=${Date.now()}`}
+              alt={business.name}
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
+            />
           </div>
           <div className="text-center sm:text-left pt-4 sm:pt-8 space-y-3 sm:space-y-2">
             <h1 className="text-3xl sm:text-4xl font-bold">{business.name}</h1>
-            <div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-4">
+            <div className="flex gap-4 mt-4">
               {business.place?.formatted_address && (
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(business.place?.formatted_address || '')
-                    toast.success('Address copied to clipboard')
-                  }}
-                  className="flex items-center gap-2 justify-center sm:justify-start group"
-                >
-                  <MapPin className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                    {business.place.formatted_address}
-                  </span>
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (business.place?.formatted_address) {
+                            navigator.clipboard.writeText(business.place.formatted_address)
+                            toast.success('Address copied to clipboard')
+                          }
+                        }}
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy address</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
+
               {business.place?.phone_number && (
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(business.place?.phone_number || '')
-                    toast.success('Phone number copied to clipboard')
-                  }}
-                  className="flex items-center gap-2 justify-center sm:justify-start group"
-                >
-                  <Phone className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                    {business.place.phone_number}
-                  </span>
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (business.place?.phone_number) {
+                            navigator.clipboard.writeText(business.place.phone_number)
+                            toast.success('Phone number copied to clipboard')
+                          }
+                        }}
+                      >
+                        <Phone className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy phone number</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
+
               {business.place?.website && (
-                <a
-                  href={business.place.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 justify-center sm:justify-start group"
-                >
-                  <Globe className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                    {new URL(business.place.website).hostname}
-                  </span>
-                </a>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (business.place?.website) {
+                            navigator.clipboard.writeText(business.place.website)
+                            toast.success('Website copied to clipboard')
+                          }
+                        }}
+                      >
+                        <Globe className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy website</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           </div>

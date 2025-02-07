@@ -11,6 +11,7 @@ export interface Database {
           public_url_slug: string | null
           published_at: string | null
           created_at: string
+          place_id: string | null
         }
         Insert: {
           name: string
@@ -382,6 +383,34 @@ export interface Database {
           zip_code?: string | null
           onboarded?: boolean
           updated_at?: string
+        }
+      }
+      places: {
+        Row: {
+          place_id: string
+          name: string
+          formatted_address: string
+          phone_number: string | null
+          website: string | null
+          logo_url: string | null
+          last_synced_at: string
+        }
+        Insert: {
+          place_id: string
+          name: string
+          formatted_address: string
+          phone_number?: string | null
+          website?: string | null
+          logo_url?: string | null
+          last_synced_at: string
+        }
+        Update: {
+          name?: string
+          formatted_address?: string
+          phone_number?: string | null
+          website?: string | null
+          logo_url?: string | null
+          last_synced_at?: string
         }
       }
       // ... other tables

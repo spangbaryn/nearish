@@ -70,6 +70,19 @@ async function trackPageView(businessId: string, req: Request, slug: string) {
   })
 }
 
+type BusinessWithPlace = {
+  id: string
+  name: string
+  brand_color: string
+  logo_url: string | null
+  place: {
+    formatted_address: string
+    phone_number: string | null
+    website: string | null
+    place_logo_url: string | null
+  } | null
+}
+
 export default async function PublicBusinessPage(context: PageContext) {
   const resolvedParams = await context.params
   const headersList = await headers()
@@ -95,19 +108,22 @@ export default async function PublicBusinessPage(context: PageContext) {
     .eq('is_published', true)
     .single()
 
-  console.log('Debug - Raw business data:', business)
-
   if (!business || !business.id) {
-    console.log('Business not found')
     notFound()
   }
 
   const businessData = {
-    ...business,
-    place: business.place?.[0] || null
+    id: business.id,
+    name: business.name,
+    brand_color: business.brand_color,
+    logo_url: business.logo_url,
+    place: business.place ? {
+      formatted_address: business.place.formatted_address,
+      phone_number: business.place.phone_number,
+      website: business.place.website,
+      place_logo_url: business.place.logo_url
+    } : null
   }
-
-  console.log('Debug - Processed business data:', businessData)
 
   const host = headersList.get('host') || 'localhost:3000'
   const pathname = headersList.get('pathname') || `/b/${resolvedParams.slug}`
