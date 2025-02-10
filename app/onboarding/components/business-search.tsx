@@ -13,6 +13,39 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
+async function downloadAndUploadPhoto(url: string, businessName: string): Promise<string | undefined> {
+  try {
+    // Download the image
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to download image');
+    const blob = await response.blob();
+
+    // Generate a unique filename
+    const fileExt = blob.type.split('/')[1];
+    const fileName = `${businessName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.${fileExt}`;
+
+    // Upload to Supabase storage
+    const { data, error } = await supabase.storage
+      .from('business-logos')
+      .upload(fileName, blob, {
+        contentType: blob.type,
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('business-logos')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    return undefined;
+  }
+}
+
 interface BusinessDetails {
   place_id: string;
   name: string;
@@ -21,6 +54,8 @@ interface BusinessDetails {
   website?: string;
   id?: string;
   logo_url?: string;
+  photo?: any; // Google Maps types are incomplete
+  tempLogoUrl?: string;
 }
 
 interface BusinessSearchProps {
@@ -80,11 +115,17 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
             placeId, 
             fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'photos'] 
           },
-          (result, status) => {
+          async (result, status) => {
             if (status === window.google.maps.places.PlacesServiceStatus.OK && result) {
-              // Get the first photo if available
-              const logoUrl = result.photos?.[0]?.getUrl({ maxWidth: 500 });
-              resolve({ ...result, logoUrl } as any);
+              let logoUrl = null;
+              
+              if (result.photos?.[0]) {
+                const photo = result.photos[0];
+                // Store temporary URL only for display purposes
+                logoUrl = photo.getUrl({ maxWidth: 500 });
+              }
+              
+              resolve({ ...result, tempLogoUrl: logoUrl, photo: result.photos?.[0] } as any);
             } else {
               reject(new Error('Failed to fetch place details'));
             }
@@ -98,7 +139,9 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
         formatted_address: place.formatted_address!,
         phone_number: place.formatted_phone_number,
         website: place.website,
-        logo_url: place.logoUrl
+        logo_url: undefined, // Don't store Google URL in database
+        photo: place.photo,
+        tempLogoUrl: place.tempLogoUrl // For display during onboarding
       };
 
       setSelectedBusiness(businessDetails);
@@ -117,7 +160,7 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
     
     setIsSubmitting(true);
     try {
-      // First, create/update the place record
+      // Create/update the place record
       const { data: placeRecord, error: placeError } = await supabase
         .from('places')
         .upsert({
@@ -126,7 +169,7 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
           formatted_address: selectedBusiness.formatted_address,
           phone_number: selectedBusiness.phone_number || null,
           website: selectedBusiness.website || null,
-          logo_url: selectedBusiness.logo_url || null,
+          logo_url: selectedBusiness.tempLogoUrl || null,
           last_synced_at: new Date().toISOString()
         }, {
           onConflict: 'place_id'
@@ -136,12 +179,13 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
 
       if (placeError) throw placeError;
 
-      // Then, create the business record with just the name and place_id
+      // Create the business record
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
           name: selectedBusiness.name,
-          place_id: selectedBusiness.place_id
+          place_id: selectedBusiness.place_id,
+          logo_url: selectedBusiness.tempLogoUrl || null
         })
         .select()
         .single();
@@ -211,10 +255,10 @@ export function BusinessSearch({ onComplete }: BusinessSearchProps) {
         <Card className="mt-4">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start gap-4">
-              {selectedBusiness.logo_url && (
+              {selectedBusiness.tempLogoUrl && (
                 <div className="flex-shrink-0">
                   <img 
-                    src={selectedBusiness.logo_url} 
+                    src={selectedBusiness.tempLogoUrl} 
                     alt={selectedBusiness.name}
                     className="w-16 h-16 rounded-lg object-cover"
                   />

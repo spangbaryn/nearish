@@ -70,17 +70,17 @@ async function trackPageView(businessId: string, req: Request, slug: string) {
   })
 }
 
-type BusinessWithPlace = {
+type BusinessResponse = {
   id: string
   name: string
   brand_color: string
   logo_url: string | null
-  place: {
+  places: {
     formatted_address: string
     phone_number: string | null
     website: string | null
-    place_logo_url: string | null
-  } | null
+    logo_url: string | null
+  }[] | null
 }
 
 export default async function PublicBusinessPage(context: PageContext) {
@@ -97,7 +97,7 @@ export default async function PublicBusinessPage(context: PageContext) {
       name,
       brand_color,
       logo_url,
-      place:places(
+      places (
         formatted_address,
         phone_number,
         website,
@@ -108,20 +108,31 @@ export default async function PublicBusinessPage(context: PageContext) {
     .eq('is_published', true)
     .single()
 
+  if (error) {
+    console.error('Supabase error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    })
+    throw error
+  }
+
   if (!business || !business.id) {
     notFound()
   }
+
+  const place = business.places?.[0]
 
   const businessData = {
     id: business.id,
     name: business.name,
     brand_color: business.brand_color,
     logo_url: business.logo_url,
-    place: business.place ? {
-      formatted_address: business.place.formatted_address,
-      phone_number: business.place.phone_number,
-      website: business.place.website,
-      place_logo_url: business.place.logo_url
+    place: place ? {
+      formatted_address: place.formatted_address,
+      phone_number: place.phone_number,
+      website: place.website,
+      place_logo_url: place.logo_url
     } : null
   }
 

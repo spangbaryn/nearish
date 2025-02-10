@@ -18,33 +18,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { EmptyTimelineCard } from "./empty-timeline-card"
 import { VideoViewingOverlay } from "./video-viewing-overlay"
 
-type Profile = {
-  avatar_url: string | null;
-  created_at: string | null;
-  email: string;
-  first_name: string | null;
-  id: string;
-  last_name: string | null;
-  onboarded: boolean;
-  role: string;
-  updated_at: string | null;
-  zip_code: string | null;
-}
-
 type TimelineEvent = {
-  business_id: string;
-  created_at: string | null;
-  created_by: Profile | undefined;
-  date: string;
-  description: string | null;
-  id: string;
-  thumbnail_url: string | null;
-  title: string;
-  updated_at: string | null;
-  video_asset_id: string | null;
-  video_duration: number | null;
-  video_playback_id: string | null;
-  video_status: string | null;
+  business_id: string
+  created_at: string | null
+  created_by: {
+    avatar_url: string | null
+    first_name: string | null
+    id: string
+  } | undefined
+  date: string
+  description: string | null
+  id: string
+  thumbnail_url: string | null
+  title: string
+  video_asset_id: string | null
+  video_playback_id: string | null
 }
 
 interface BusinessTimelineProps {
@@ -55,10 +43,10 @@ interface BusinessTimelineProps {
 }
 
 const hexToRgb = (hex: string) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result ? 
     `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
-    '0, 0, 0';
+    '0, 0, 0'
 }
 
 export function BusinessTimeline({ 
@@ -66,18 +54,13 @@ export function BusinessTimeline({
   events,
   color = "#000000",
   readOnly = false,
-}: { 
-  businessId: string, 
-  events: TimelineEvent[],
-  color?: string,
-  readOnly?: boolean
-}) {
+}: BusinessTimelineProps) {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
   const timelineRef = useRef<HTMLDivElement>(null)
-  const dragThreshold = 5 // pixels to move before considering it a drag
+  const dragThreshold = 5
   const [dragDistance, setDragDistance] = useState(0)
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -111,11 +94,7 @@ export function BusinessTimeline({
   const checkScrollPosition = () => {
     if (!timelineRef.current) return
     const container = timelineRef.current
-    
-    // Check if we're at the start
     setIsAtStart(container.scrollLeft <= 0)
-    
-    // Check if we're at the end
     const isEnd = Math.abs(
       container.scrollWidth - container.clientWidth - container.scrollLeft
     ) < 1
@@ -193,7 +172,6 @@ export function BusinessTimeline({
 
   const handleCardClick = (e: React.MouseEvent, event: TimelineEvent) => {
     if (dragDistance > dragThreshold) {
-      // If we've dragged more than the threshold, prevent the click
       e.preventDefault()
       e.stopPropagation()
       return
@@ -204,17 +182,15 @@ export function BusinessTimeline({
   const shouldShowYear = (event: TimelineEvent, index: number) => {
     const currentYear = new Date(event.date).getFullYear()
     if (index === 0) return true
-    
     const prevYear = new Date(events[index - 1].date).getFullYear()
     return currentYear !== prevYear
   }
 
   const scrollTimeline = (direction: 'left' | 'right') => {
     if (!timelineRef.current) return
-    
     const container = timelineRef.current
-    const cardWidth = 200 // min-w-[200px] from card class
-    const gap = 16 // gap-4 = 1rem = 16px
+    const cardWidth = 200
+    const gap = 16
     const visibleWidth = container.clientWidth
     const scrollAmount = Math.floor(visibleWidth / (cardWidth + gap)) * (cardWidth + gap)
     
@@ -228,18 +204,12 @@ export function BusinessTimeline({
     })
   }
 
-  const handleDelete = async (eventId: string) => {
-    // Add your delete logic here
-    // You might want to show a confirmation dialog before deleting
-    router.push(`/timeline/${eventId}/delete`)
-  }
-
   const sortedEvents = [...events].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
   return (
-    <div>
+    <div className="pl-4">
       <div className="w-full">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -264,7 +234,8 @@ export function BusinessTimeline({
         </div>
 
         <div className="timeline-wrapper">
-          <div className="storybook-timeline bg-muted/50 rounded-none sm:rounded-xl sm:border border-border -mx-4 sm:mx-0 overflow-hidden"
+          <div 
+            className="storybook-timeline bg-muted/50 rounded-xl border border-border overflow-hidden"
             style={{ 
               color: color,
               '--timeline-color-rgb': `${hexToRgb(color)}`,
@@ -305,16 +276,13 @@ export function BusinessTimeline({
                           <Card 
                             className={cn(
                               "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
-                              "@media (hover: hover) { &:hover { shadow-lg border-primary/20 } }",
                               highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                             )}
                             onClick={(e) => handleCardClick(e, event)}
                           >
                             <CardContent className="p-4 pb-10 relative">
-                              {/* Simple separator line instead of gradient */}
                               <div className="absolute inset-x-0 top-0 h-px bg-border" />
                               
-                              {/* Add dropdown menu button */}
                               {!readOnly && (
                                 <div className="absolute top-2 right-2">
                                   <DropdownMenu>
@@ -387,7 +355,6 @@ export function BusinessTimeline({
                     ))}
                   </div>
                   
-                  {/* Navigation Arrows */}
                   {canScroll && isHovering && !isAtStart && (
                     <Button
                       variant="ghost"
@@ -395,10 +362,9 @@ export function BusinessTimeline({
                       className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
                       onClick={() => scrollTimeline('left')}
                     >
-                      <ChevronLeft className="h-4 w-4" style={{ color: color }} />
+                      <ChevronLeft className="h-4 w-4" />
                     </Button>
                   )}
-                  
                   {canScroll && isHovering && !isAtEnd && (
                     <Button
                       variant="ghost"
@@ -406,7 +372,7 @@ export function BusinessTimeline({
                       className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
                       onClick={() => scrollTimeline('right')}
                     >
-                      <ChevronRight className="h-4 w-4" style={{ color: color }} />
+                      <ChevronRight className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -414,24 +380,7 @@ export function BusinessTimeline({
             )}
           </div>
         </div>
-
-        {selectedEvent && (
-          <VideoViewingOverlay 
-            items={events.map(event => ({
-              id: event.id,
-              title: event.title,
-              description: event.description || undefined,
-              date: event.date,
-              video_playback_id: event.video_playback_id || '',
-              video_asset_id: event.video_asset_id || undefined,
-              thumbnail_url: event.thumbnail_url || undefined
-            }))}
-            currentId={selectedEvent.id}
-            onClose={() => setSelectedEvent(null)}
-            color={color}
-          />
-        )}
       </div>
     </div>
   )
-} 
+}

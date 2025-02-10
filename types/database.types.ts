@@ -10,7 +10,6 @@ export interface Database {
           is_published: boolean
           public_url_slug: string | null
           published_at: string | null
-          created_at: string
           place_id: string | null
         }
         Insert: {
@@ -416,4 +415,17 @@ export interface Database {
       // ... other tables
     }
   }
+}
+
+type BusinessWithPlace = {
+  id: string
+  name: string
+  brand_color: string
+  logo_url: string | null
+  place: {
+    formatted_address: string
+    phone_number: string | null
+    website: string | null
+    place_logo_url: string | null
+  }[] | null
 } 

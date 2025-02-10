@@ -293,6 +293,7 @@
   justify-content: center;
   min-height: 400px;
   height: 100%;
+  padding-left: 32px;
 }
 
 .timeline-connector {

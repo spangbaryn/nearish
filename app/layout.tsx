@@ -4,6 +4,7 @@ import "./styles/globals.css"
 import { RootLayoutClient } from "@/components/root-layout-client"
 import { Toaster } from 'sonner'
 import { Inter } from 'next/font/google'
+import { cn } from "@/lib/utils"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,9 +26,9 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover"
         />
       </head>
-      <body className={`${inter.className} min-h-screen bg-background`}>
+      <body>
         <Providers>
-          <RootLayoutClient>
+          <RootLayoutClient className={cn(inter.className, "min-h-screen bg-background")}>
             {children}
           </RootLayoutClient>
           <Toaster />
