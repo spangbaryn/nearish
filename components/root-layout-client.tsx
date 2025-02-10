@@ -7,11 +7,14 @@ import { useAuth } from "@/lib/auth-context"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { PublicHeader } from "@/components/public-header"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export function RootLayoutClient({
   children,
+  className,
 }: {
   children: React.ReactNode
+  className?: string
 }) {
   const { user, isLoading } = useAuth()
   const pathname = usePathname()
@@ -21,7 +24,7 @@ export function RootLayoutClient({
 
   if (isLoading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={cn(className, "flex items-center justify-center")}>
         <LoadingSpinner />
       </div>
     )
