@@ -11,6 +11,7 @@ export interface Database {
           public_url_slug: string | null
           published_at: string | null
           place_id: string | null
+          created_at: string
         }
         Insert: {
           name: string
