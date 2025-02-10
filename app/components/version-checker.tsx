@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from 'react'
-import { refreshSession, clearAuthCookies } from '@/lib/auth-helpers'
+import { refreshSession, clearAuthCookies } from '@/app/lib/auth-helpers'
 
 export function VersionChecker() {
   useEffect(() => {
