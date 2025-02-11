@@ -19,6 +19,7 @@ import { EmptyTimelineCard } from "./empty-timeline-card"
 import { VideoViewingOverlay } from "./video-viewing-overlay"
 import { EditStaffIntroDialog } from "../business/edit-staff-intro-dialog"
 import { TimelineSuggestions } from "./timeline-suggestions"
+import { AddTimelineEventDialog } from "./add-timeline-event-dialog"
 
 type TimelineEvent = {
   business_id: string
@@ -239,7 +240,7 @@ export function BusinessTimeline({
       .filter(e => e.video_playback_id)
       .map(e => ({
         id: e.id,
-        title: e.title,
+        title: e.emoji ? `${e.emoji} ${e.title}` : e.title,
         video_playback_id: e.video_playback_id!,
         thumbnail_url: e.thumbnail_url || undefined,
         date: e.date,
@@ -257,7 +258,7 @@ export function BusinessTimeline({
     if (event.title.toLowerCase().includes('staff intro') || event.title.toLowerCase().includes('team intro')) {
       setEditingStaffIntro(event)
     } else {
-      setEditingEvent(event.id)
+      router.push(`/timeline-events/${event.id}/edit`)
     }
     setSelectedVideo(null)
   }
@@ -304,148 +305,123 @@ export function BusinessTimeline({
         />
       )}
 
-      {events.length === 0 ? (
-        <EmptyTimelineCard businessId={businessId} readOnly={readOnly} />
-      ) : (
-        <div className="w-full">
-          <div className="relative">
-            <div className="timeline-connector" />
-            <div 
-              ref={timelineRef}
-              className="flex gap-3 overflow-x-auto overflow-y-visible py-24 px-2 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-            >
-              {sortedEvents.map((event, index) => (
-                <div 
-                  key={event.id} 
-                  data-event-id={event.id}
-                  className="relative"
-                >
-                  {shouldShowYear(event, index) && (
-                    <div className="timeline-year">
-                      {new Date(event.date).getFullYear()}
-                    </div>
-                  )}
-                  <div className={cn(
-                    "timeline-card-container",
-                    index % 2 === 0 ? "offset-up" : "offset-down"
-                  )}>
-                    <Card 
-                      className={cn(
-                        "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
-                        highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
-                      )}
-                      onClick={(e) => {
-                        const isDropdownClick = (e.target as HTMLElement).closest('.dropdown-trigger, .dropdown-content');
-                        if (!isDropdownClick && !isDragging && dragDistance < dragThreshold) {
-                          handleIntroClick(event);
-                        }
-                      }}
-                    >
-                      <CardContent className="p-4 pb-10 relative">
-                        <div className="absolute inset-x-0 top-0 h-px bg-border" />
-                        
-                        {!readOnly && (
-                          <div className="absolute top-2 right-2">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="dropdown-content" align="end">
-                                <DropdownMenuItem onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEdit(event);
-                                }}>
-                                  <Pencil className="h-4 w-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="text-destructive" 
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (confirm("Are you sure you want to delete this event?")) {
-                                      deleteEventMutation.mutate(event.id)
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        )}
-
-                        <h3 className="font-semibold text-card-foreground">
-                          {event.emoji && <span className="mr-2">{event.emoji}</span>}
-                          {event.title}
-                        </h3>
-                        <time className="text-xs text-muted-foreground/60 block mt-1">
-                          {new Date(event.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            year: 'numeric'
-                          })}
-                        </time>
-                        {event.thumbnail_url && (
-                          <div className="mt-2 relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-md ring-1 ring-black/5">
-                            <Image
-                              src={event.thumbnail_url}
-                              alt={`Thumbnail for ${event.title}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="absolute bottom-2 right-2">
-                          <Avatar className="h-6 w-6 ring-2 ring-background">
-                            <AvatarImage 
-                              src={event.created_by?.avatar_url || undefined} 
-                              alt={event.created_by?.first_name || 'User'} 
-                            />
-                            <AvatarFallback>
-                              {event.created_by?.first_name?.[0]?.toUpperCase() || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      </CardContent>
-                    </Card>
+      <div className="timeline-wrapper">
+        <div className="timeline-section">
+          <div className="timeline-connector" />
+          <div 
+            ref={timelineRef}
+            className="flex gap-3 overflow-x-auto overflow-y-visible py-24 px-2 sm:px-8 cursor-grab active:cursor-grabbing select-none scroll-smooth"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+          >
+            {sortedEvents.map((event, index) => (
+              <div 
+                key={event.id} 
+                data-event-id={event.id}
+                className="relative"
+              >
+                {shouldShowYear(event, index) && (
+                  <div className="timeline-year">
+                    {new Date(event.date).getFullYear()}
                   </div>
+                )}
+                <div className={cn(
+                  "timeline-card-container",
+                  index % 2 === 0 ? "offset-up" : "offset-down"
+                )}>
+                  <Card 
+                    className={cn(
+                      "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
+                      highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
+                    )}
+                    onClick={(e) => {
+                      const isDropdownClick = (e.target as HTMLElement).closest('.dropdown-trigger, .dropdown-content');
+                      if (!isDropdownClick && !isDragging && dragDistance < dragThreshold) {
+                        handleIntroClick(event);
+                      }
+                    }}
+                  >
+                    <CardContent className="p-4 pb-10 relative">
+                      <div className="absolute inset-x-0 top-0 h-px bg-border" />
+                      
+                      {!readOnly && (
+                        <div className="absolute top-2 right-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 edit-button opacity-0 group-hover:opacity-100 transition-opacity dropdown-trigger"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="dropdown-content" align="end">
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(event);
+                              }}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-destructive" 
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (confirm("Are you sure you want to delete this event?")) {
+                                    deleteEventMutation.mutate(event.id)
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
+
+                      <h3 className="font-semibold text-card-foreground">
+                        {event.emoji && <span className="mr-2">{event.emoji}</span>}
+                        {event.title}
+                      </h3>
+                      <time className="text-xs text-muted-foreground/60 block mt-1">
+                        {new Date(event.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </time>
+                      {event.thumbnail_url && (
+                        <div className="mt-2 relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-md ring-1 ring-black/5">
+                          <Image
+                            src={event.thumbnail_url}
+                            alt={`Thumbnail for ${event.title}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="absolute bottom-2 right-2">
+                        <Avatar className="h-6 w-6 ring-2 ring-background">
+                          <AvatarImage 
+                            src={event.created_by?.avatar_url || undefined} 
+                            alt={event.created_by?.first_name || 'User'} 
+                          />
+                          <AvatarFallback>
+                            {event.created_by?.first_name?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              ))}
-            </div>
-            
-            {canScroll && isHovering && !isAtStart && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
-                onClick={() => scrollTimeline('left')}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            )}
-            {canScroll && isHovering && !isAtEnd && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/80 hover:bg-background/90 shadow-md"
-                onClick={() => scrollTimeline('right')}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            )}
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
       {selectedVideo && (
         <VideoViewingOverlay
           items={selectedVideo.items}
@@ -484,6 +460,11 @@ export function BusinessTimeline({
           onOpenChange={() => setEditingEvent(null)}
         />
       )}
+      <AddTimelineEventDialog 
+        businessId={businessId}
+        open={showAddEventDialog}
+        onOpenChange={setShowAddEventDialog}
+      />
     </div>
   )
 }

@@ -47,6 +47,12 @@ const eventFormSchema = z.object({
 
 type EventFormValues = z.infer<typeof eventFormSchema>
 
+interface AddTimelineEventDialogProps {
+  businessId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
 function FormFieldsSkeleton() {
   return (
     <div className="space-y-4">
@@ -66,10 +72,9 @@ function FormFieldsSkeleton() {
   )
 }
 
-function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
+function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTimelineEventDialogProps) {
   const [step, setStep] = useState<'RECORD' | 'DETAILS'>('RECORD')
   const [videoData, setVideoData] = useState<VideoData | null>(null)
-  const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const form = useForm<EventFormValues>({
@@ -81,10 +86,10 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   })
 
   const resetStates = () => {
-    setOpen(false)
     setStep('RECORD')
     setVideoData(null)
     form.reset()
+    onOpenChange(false)
   }
 
   const createEventMutation = useMutation({
@@ -124,14 +129,8 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
     setStep('DETAILS')
   }
 
-  useEffect(() => {
-    return () => {
-      setOpen(false)
-    }
-  }, [])
-
   return (
-    <Dialog open={open} onOpenChange={resetStates}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plus className="w-4 h-4 mr-2" />
@@ -246,10 +245,10 @@ function AddTimelineEventDialogContent({ businessId }: { businessId: string }) {
   )
 }
 
-export function AddTimelineEventDialog(props: { businessId: string }) {
+export function AddTimelineEventDialog(props: AddTimelineEventDialogProps) {
   return (
     <ErrorBoundary>
-      <AddTimelineEventDialogContent businessId={props.businessId} />
+      <AddTimelineEventDialogContent {...props} />
     </ErrorBoundary>
   )
 } 

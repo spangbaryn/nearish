@@ -193,6 +193,25 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
     return () => setMounted(false)
   }, [])
 
+  const preloadNextVideo = (nextIndex: number) => {
+    if (!items[nextIndex]) return
+    
+    const preloadVideo = document.createElement('video')
+    preloadVideo.preload = 'metadata'
+    preloadVideo.src = `https://stream.mux.com/${items[nextIndex].video_playback_id}/low.mp4`
+    
+    // Clean up after 2 seconds or metadata load
+    const cleanup = () => preloadVideo.remove()
+    preloadVideo.addEventListener('loadedmetadata', cleanup)
+    setTimeout(cleanup, 2000)
+  }
+
+  // Use in your component
+  useEffect(() => {
+    const nextIndex = (currentIndex + 1) % items.length
+    preloadNextVideo(nextIndex)
+  }, [currentIndex, items])
+
   const overlay = (
     <div 
       className="fixed inset-0 bg-background flex flex-col" 
