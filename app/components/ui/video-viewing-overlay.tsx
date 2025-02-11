@@ -216,7 +216,7 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
     <div 
       className="fixed inset-0 bg-background flex flex-col" 
       style={{ 
-        zIndex: 99999,
+        zIndex: 100000,
         position: 'fixed',
         top: 0,
         left: 0,
@@ -229,7 +229,7 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
       role="dialog"
     >
       {showHeader && (
-        <div className="sticky top-0 flex justify-between items-center p-2 bg-background/50 backdrop-blur-sm z-50">
+        <div className="sticky top-0 flex justify-between items-center p-2 bg-background/50 backdrop-blur-sm z-[100001]">
           <Image
             src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
             alt="Nearish Logo"
