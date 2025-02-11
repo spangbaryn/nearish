@@ -25,7 +25,10 @@ interface NavigatorWithConnection extends Navigator {
 // Dynamically import the video player to avoid SSR
 const MuxPlayerComponent = dynamic(
   () => import('@mux/mux-player-react').then(mod => mod.default),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => null
+  }
 )
 
 interface MuxVideoPlayerProps {
@@ -52,20 +55,20 @@ interface MuxVideoPlayerProps {
 
 export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: ForwardedRef<any>) => {
   const playerRef = useRef<any>(null)
-  const [mounted, setMounted] = useState(false)
-  const [paused, setPaused] = useState(!props.autoPlay)
   const [hls, setHls] = useState<Hls | null>(null)
   const [sourceUrl] = useState(`https://stream.mux.com/${props.playbackId}.m3u8`)
+  const [hasMounted, setHasMounted] = useState(false)
+  const [paused, setPaused] = useState(true)
 
   useEffect(() => {
-    setMounted(true)
+    setHasMounted(true)
   }, [])
 
   useEffect(() => {
-    if (playerRef.current && mounted) {
+    if (playerRef.current && hasMounted) {
       MuxService.setPlayerStyles(playerRef.current)
     }
-  }, [mounted])
+  }, [hasMounted])
 
   useEffect(() => {
     if (playerRef.current) {
@@ -104,7 +107,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         playerRef.current.style.setProperty("--media-controls-display", "none")
       }
     }
-  }, [props.hidePlayButton, props.onTimeUpdate])
+  }, [props.hidePlayButton, props.onTimeUpdate, hasMounted])
 
   useEffect(() => {
     return () => {
@@ -118,7 +121,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         playerRef.current.remove()
       }
     }
-  }, [])
+  }, [hasMounted])
 
   useEffect(() => {
     const videoEl = playerRef.current?.querySelector("mux-video") as HTMLVideoElement | null
@@ -126,7 +129,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
       videoEl.src = sourceUrl
       videoEl.load()
     }
-  }, [props.playbackId, sourceUrl])
+  }, [props.playbackId, sourceUrl, hasMounted])
 
   const useNetworkQuality = () => {
     const [quality, setQuality] = useState(() => MuxService.getInitialQuality());
@@ -171,8 +174,8 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
           }
         }
         
-        if (props.onError && data.details && 
-            !data.details.includes('MANIFEST_LOAD_ERROR') && 
+        if (props.onError && data.fatal && data.details && 
+            !data.details.includes('bufferNudgeOnStall') && 
             !data.details.includes('BUFFER_STALLED_ERROR')) {
           props.onError(data)
         }
@@ -202,7 +205,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         setHls(null)
       }
     }
-  }, [sourceUrl, props.onError])
+  }, [sourceUrl, props.onError, hasMounted])
 
   const handleTogglePlayback = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -244,7 +247,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         muxPlayer.removeEventListener("pause", handlePause)
       }
     }
-  }, [props.onPausedChange])
+  }, [props.onPausedChange, hasMounted])
 
   useEffect(() => {
     const muxPlayer = playerRef.current
@@ -260,9 +263,9 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         return () => videoEl.removeEventListener("ended", handleEnded)
       }
     }
-  }, [props.onEnded])
+  }, [props.onEnded, hasMounted])
 
-  if (!mounted) {
+  if (!hasMounted) {
     return null
   }
 
@@ -298,7 +301,7 @@ export const MuxVideoPlayer = forwardRef((props: MuxVideoPlayerProps, ref: Forwa
         onTimeUpdate={props.onTimeUpdate}
         onLoadedMetadata={props.onLoadedMetadata}
       />
-      {!props.disableToggle && mounted && (
+      {!props.disableToggle && (
         <div
           className="absolute inset-0 z-20"
           onClick={handleTogglePlayback}

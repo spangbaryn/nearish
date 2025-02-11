@@ -53,17 +53,23 @@ export class MuxService {
 
     return {
       enableWorker: true,
-      startLevel: -1, // Let HLS.js choose initial quality
+      startLevel: -1,
       autoStartLoad: true,
-      maxBufferLength: 15,
-      maxMaxBufferLength: 45,
-      maxBufferSize: 30 * 1000 * 1000, // 30MB
-      maxBufferHole: 0.3,
-      lowLatencyMode: false,
+      maxBufferLength: 30,
+      maxMaxBufferLength: 60,
+      maxBufferSize: 60 * 1000 * 1000, // 60MB
+      maxBufferHole: 0.5,
+      maxSeekHole: 2,
+      nudgeMaxRetry: 0,
+      fragLoadingRetryDelay: 1000,
+      manifestLoadingMaxRetry: 3,
+      levelLoadingMaxRetry: 3,
+      fragLoadingMaxRetry: 3,
       abrEwmaDefaultEstimate: targetBitrate,
-      manifestLoadingMaxRetry: 2,
-      levelLoadingMaxRetry: 2,
-      fragLoadingMaxRetry: 2,
+      abrBandWidthFactor: 0.95,
+      abrBandWidthUpFactor: 0.7,
+      abrMaxWithRealBitrate: true,
+      lowLatencyMode: false,
       backBufferLength: 30
     }
   }

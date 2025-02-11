@@ -333,7 +333,7 @@ export function BusinessTimeline({
                 )}>
                   <Card 
                     className={cn(
-                      "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
+                      "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2 text-black",
                       highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                     )}
                     onClick={(e) => {
@@ -383,11 +383,11 @@ export function BusinessTimeline({
                         </div>
                       )}
 
-                      <h3 className="font-semibold text-card-foreground">
+                      <h3 className="font-semibold text-black">
                         {event.emoji && <span className="mr-2">{event.emoji}</span>}
                         {event.title}
                       </h3>
-                      <time className="text-xs text-muted-foreground/60 block mt-1">
+                      <time className="text-xs text-black/60 block mt-1">
                         {new Date(event.date).toLocaleDateString('en-US', {
                           month: 'short',
                           year: 'numeric'
