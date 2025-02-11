@@ -77,64 +77,66 @@ export function StaffIntroForm({ initialData, videoData, thumbnailUrl, onSubmit 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Video Preview */}
-        <div className="w-full max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
-          <MuxVideoPlayer 
-            playbackId={videoData.playbackId}
-            className="absolute inset-0 w-full h-full"
-            autoPlay={true}
-            muted={true}
-            loop={true}
-            controls={true}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="max-h-[80vh] overflow-y-auto">
+        <div className="space-y-6">
+          {/* Video Preview */}
+          <div className="w-full max-w-[280px] mx-auto aspect-[9/16] relative rounded-lg overflow-hidden">
+            <MuxVideoPlayer 
+              playbackId={videoData.playbackId}
+              className="absolute inset-0 w-full h-full"
+              autoPlay={true}
+              muted={true}
+              loop={true}
+              controls={true}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="first_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="favorite_spot"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Favorite Spot</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? "Saving..." : "Save"}
+          </Button>
         </div>
-
-        <FormField
-          control={form.control}
-          name="first_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="favorite_spot"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Favorite Spot</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Saving..." : "Save"}
-        </Button>
       </form>
     </Form>
   )
