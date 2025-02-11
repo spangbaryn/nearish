@@ -92,6 +92,7 @@ export function BusinessTimeline({
   const [editingStaffIntro, setEditingStaffIntro] = useState<TimelineEvent | null>(null)
   const [editingEvent, setEditingEvent] = useState<string | null>(null)
   const [showAddEventDialog, setShowAddEventDialog] = useState(false)
+  const [initialEventData, setInitialEventData] = useState<{ title?: string; emoji?: string } | null>(null)
 
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
@@ -275,7 +276,10 @@ export function BusinessTimeline({
         </div>
         {!readOnly && (
           <Button
-            onClick={() => setShowAddEventDialog(true)}
+            onClick={() => {
+              setInitialEventData(null)
+              setShowAddEventDialog(true)
+            }}
             variant="outline"
             className="gap-2"
           >
@@ -287,20 +291,11 @@ export function BusinessTimeline({
       {!readOnly && (
         <TimelineSuggestions 
           onSuggestionClick={(suggestion) => {
-            setSelectedEvent({
-              id: '',
-              business_id: businessId,
+            setInitialEventData({
               title: suggestion.label,
-              emoji: suggestion.emoji,
-              date: new Date().toISOString(),
-              description: null,
-              created_at: null,
-              created_by: undefined,
-              thumbnail_url: null,
-              video_asset_id: null,
-              video_playback_id: null
-            });
-            setShowAddEventDialog(true);
+              emoji: suggestion.emoji
+            })
+            setShowAddEventDialog(true)
           }}
         />
       )}
@@ -460,11 +455,14 @@ export function BusinessTimeline({
           onOpenChange={() => setEditingEvent(null)}
         />
       )}
-      <AddTimelineEventDialog 
-        businessId={businessId}
-        open={showAddEventDialog}
-        onOpenChange={setShowAddEventDialog}
-      />
+      {showAddEventDialog && (
+        <AddTimelineEventDialog
+          businessId={businessId}
+          open={showAddEventDialog}
+          onOpenChange={setShowAddEventDialog}
+          initialData={initialEventData || undefined}
+        />
+      )}
     </div>
   )
 }

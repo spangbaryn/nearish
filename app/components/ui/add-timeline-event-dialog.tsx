@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Plus } from "lucide-react"
+import { Plus, Smile } from "lucide-react"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MuxVideoPlayer } from "../ui/mux-video-player"
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 interface VideoData {
   assetId: string
@@ -33,9 +35,20 @@ interface VideoData {
   status: string | null
 }
 
+interface AddTimelineEventDialogProps {
+  businessId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialData?: {
+    title?: string
+    emoji?: string
+  }
+}
+
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   date: z.string().min(1, "Date is required"),
+  emoji: z.string().nullable(),
   video: z.object({
     assetId: z.string(),
     playbackId: z.string(),
@@ -46,12 +59,6 @@ const eventFormSchema = z.object({
 })
 
 type EventFormValues = z.infer<typeof eventFormSchema>
-
-interface AddTimelineEventDialogProps {
-  businessId: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
 
 function FormFieldsSkeleton() {
   return (
@@ -72,7 +79,7 @@ function FormFieldsSkeleton() {
   )
 }
 
-function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTimelineEventDialogProps) {
+function AddTimelineEventDialogContent({ businessId, open, onOpenChange, initialData }: AddTimelineEventDialogProps) {
   const [step, setStep] = useState<'RECORD' | 'DETAILS'>('RECORD')
   const [videoData, setVideoData] = useState<VideoData | null>(null)
   const queryClient = useQueryClient()
@@ -80,7 +87,8 @@ function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTi
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
-      title: "",
+      title: initialData?.title || "",
+      emoji: initialData?.emoji || null,
       date: new Date().toISOString().split('T')[0],
     }
   })
@@ -88,7 +96,11 @@ function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTi
   const resetStates = () => {
     setStep('RECORD')
     setVideoData(null)
-    form.reset()
+    form.reset({
+      title: initialData?.title || "",
+      emoji: initialData?.emoji || null,
+      date: new Date().toISOString().split('T')[0],
+    })
     onOpenChange(false)
   }
 
@@ -102,6 +114,7 @@ function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTi
         .insert([{
           business_id: businessId,
           title: data.title,
+          emoji: data.emoji,
           date: new Date(data.date).toISOString(),
           created_by: user.id,
           video_asset_id: data.video?.assetId,
@@ -159,6 +172,53 @@ function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTi
               </div>
 
               <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="emoji"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Emoji</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <div className="h-10 px-3 rounded-md border border-input flex items-center min-w-[4rem] bg-background">
+                            {field.value || "No emoji"}
+                          </div>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon"
+                                className="h-10 w-10"
+                              >
+                                <Smile className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent 
+                              className="p-0 w-[352px] border-none" 
+                              side="right" 
+                              align="start"
+                              sideOffset={5}
+                            >
+                              <div className="z-[60]">
+                                <Picker
+                                  data={data}
+                                  onEmojiSelect={(data: any) => {
+                                    console.log('Selected:', data);
+                                    field.onChange(data.native);
+                                  }}
+                                  theme="light"
+                                  set="native"
+                                />
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="title"
