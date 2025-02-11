@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { EmptyTimelineCard } from "./empty-timeline-card"
 import { VideoViewingOverlay } from "./video-viewing-overlay"
+import { EditStaffIntroDialog } from "../business/edit-staff-intro-dialog"
 
 type TimelineEvent = {
   business_id: string
@@ -85,6 +86,8 @@ export function BusinessTimeline({
     currentId: string
     onClose: () => void
   } | null>(null)
+  const [editingStaffIntro, setEditingStaffIntro] = useState<TimelineEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<string | null>(null)
 
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
@@ -223,6 +226,10 @@ export function BusinessTimeline({
   )
 
   const handleIntroClick = (event: TimelineEvent) => {
+    if (event.title.toLowerCase().includes('staff intro') || event.title.toLowerCase().includes('team intro')) {
+      return;
+    }
+    
     if (!event.video_playback_id) return
     
     const videoItems = sortedEvents
@@ -241,6 +248,15 @@ export function BusinessTimeline({
       currentId: event.id,
       onClose: () => setSelectedVideo(null)
     })
+  }
+
+  const handleEdit = (event: TimelineEvent) => {
+    if (event.title.toLowerCase().includes('staff intro') || event.title.toLowerCase().includes('team intro')) {
+      setEditingStaffIntro(event)
+    } else {
+      setEditingEvent(event.id)
+    }
+    setSelectedVideo(null)
   }
 
   return (
@@ -314,12 +330,10 @@ export function BusinessTimeline({
                               highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                             )}
                             onClick={(e) => {
-                              if (dragDistance > dragThreshold) {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                return
+                              const isDropdownClick = (e.target as HTMLElement).closest('.dropdown-trigger, .dropdown-content');
+                              if (!isDropdownClick && !isDragging && dragDistance < dragThreshold) {
+                                handleIntroClick(event);
                               }
-                              handleIntroClick(event)
                             }}
                           >
                             <CardContent className="p-4 pb-10 relative">
@@ -337,10 +351,10 @@ export function BusinessTimeline({
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuContent className="dropdown-content" align="end">
                                       <DropdownMenuItem onClick={(e) => {
-                                        e.stopPropagation()
-                                        router.push(`/timeline/${event.id}/edit`)
+                                        e.stopPropagation();
+                                        handleEdit(event);
                                       }}>
                                         <Pencil className="h-4 w-4 mr-2" />
                                         Edit
@@ -437,6 +451,28 @@ export function BusinessTimeline({
               })
             }
           }}
+        />
+      )}
+      {editingStaffIntro && (
+        <EditStaffIntroDialog
+          businessId={businessId}
+          intro={{
+            id: editingStaffIntro.id,
+            first_name: editingStaffIntro.title,
+            role: editingStaffIntro.description || '',
+            favorite_spot: null,
+            video_playback_id: editingStaffIntro.video_playback_id || '',
+            thumbnail_url: editingStaffIntro.thumbnail_url || ''
+          }}
+          open={true}
+          onOpenChange={() => setEditingStaffIntro(null)}
+        />
+      )}
+      {editingEvent && (
+        <EditTimelineEventDialog
+          event={events.find(e => e.id === editingEvent)!}
+          open={true}
+          onOpenChange={() => setEditingEvent(null)}
         />
       )}
     </div>

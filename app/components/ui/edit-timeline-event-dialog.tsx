@@ -34,10 +34,11 @@ interface EditTimelineEventDialogProps {
     date: string
   }
   className?: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function EditTimelineEventDialog({ event, className }: EditTimelineEventDialogProps) {
-  const [open, setOpen] = useState(false)
+export function EditTimelineEventDialog({ event, className, open, onOpenChange }: EditTimelineEventDialogProps) {
   const queryClient = useQueryClient()
   const supabase = createClientComponentClient()
 
@@ -63,7 +64,7 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
     },
     onSuccess: () => {
       toast.success("Event updated successfully")
-      setOpen(false)
+      onOpenChange(false)
       queryClient.invalidateQueries({ queryKey: ['business-timeline'] })
     },
     onError: (error: any) => {
@@ -106,7 +107,7 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
+          <DropdownMenuItem onClick={() => onOpenChange(true)}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
@@ -124,7 +125,7 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent 
           className="sm:max-w-[425px]"
           onClick={(e) => e.stopPropagation()}

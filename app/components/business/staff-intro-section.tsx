@@ -37,6 +37,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
   const avatarScrollRef = useRef<HTMLDivElement>(null)
   const mobileVideoRef = useRef<any>(null)
   const [selectedVideo, setSelectedVideo] = useState<any>(null)
+  const [editingEvent, setEditingEvent] = useState<string | null>(null)
 
   const { data: staffIntros, isLoading } = useQuery({
     queryKey: ['business-staff', businessId],
@@ -350,7 +351,14 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onSelect={() => setEditingIntro(intro.id)}>
+                                        <DropdownMenuItem 
+                                          onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            setEditingIntro(intro.id)
+                                            setSelectedVideo(null)
+                                          }}
+                                        >
                                           <Pencil className="h-4 w-4 mr-2" />
                                           Edit
                                         </DropdownMenuItem>
