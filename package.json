@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --detectOpenHandles --setupFiles dotenv/config",
-    "test:watch": "jest --watch --detectOpenHandles --setupFiles dotenv/config"
+    "test:watch": "jest --watch --detectOpenHandles --setupFiles dotenv/config",
+    "build:fresh": "sudo rm -rf .next && sudo rm -rf node_modules/.cache && npm install && cross-env NEXT_PUBLIC_VERSION=$(date +%s) next build --no-lint && cd services/transcription-api && npm install && npm run build",
+    "dev:fresh": "sudo rm -rf .next && next dev"
   },
   "dependencies": {
     "@elasticemail/elasticemail-client": "^4.0.23",
