@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { Button } from "@/components/ui/button"
 import { Smile } from "lucide-react"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -31,8 +31,9 @@ type EventFormValues = z.infer<typeof eventFormSchema>
 export default function EditTimelineEvent({ 
   params 
 }: { 
-  params: { id: string } 
+  params: Promise<{ id: string }> 
 }) {
+  const { id } = use(params)
   const router = useRouter()
   const supabase = createClientComponentClient()
   const [event, setEvent] = useState<EventFormValues | null>(null)
@@ -53,7 +54,7 @@ export default function EditTimelineEvent({
         const { data: event } = await supabase
           .from('business_timeline_events')
           .select('*')
-          .eq('id', params.id)
+          .eq('id', id)
           .single()
 
         if (event) {
@@ -73,7 +74,7 @@ export default function EditTimelineEvent({
       }
     }
     fetchEvent()
-  }, [params.id, form])
+  }, [id, form])
 
   const updateEventMutation = useMutation({
     mutationFn: async (values: EventFormValues) => {
@@ -84,7 +85,7 @@ export default function EditTimelineEvent({
           date: values.date,
           emoji: values.emoji,
         })
-        .eq('id', params.id)
+        .eq('id', id)
       
       if (error) throw error
     },
