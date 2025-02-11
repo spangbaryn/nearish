@@ -160,7 +160,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
           />
         </div>
 
-        <div className="mt-12 -mx-4">
+        <div className="mt-12">
           <BusinessTimeline 
             businessId={business.id} 
             events={timelineEventsData || timelineEvents}

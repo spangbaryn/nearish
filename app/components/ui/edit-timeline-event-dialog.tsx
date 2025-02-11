@@ -3,13 +3,18 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash, Smile } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
@@ -19,10 +24,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cn } from "@/lib/utils"
+import dynamic from 'next/dynamic'
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   date: z.string(),
+  emoji: z.string().nullable(),
 })
 
 type EventFormValues = z.infer<typeof eventFormSchema>
@@ -32,39 +41,44 @@ interface EditTimelineEventDialogProps {
     id: string
     title: string
     date: string
+    emoji?: string | null
   }
   className?: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function EditTimelineEventDialog({ event, className }: EditTimelineEventDialogProps) {
-  const [open, setOpen] = useState(false)
+export function EditTimelineEventDialog({ event, className, open, onOpenChange }: EditTimelineEventDialogProps) {
   const queryClient = useQueryClient()
   const supabase = createClientComponentClient()
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       title: event.title,
       date: new Date(event.date).toISOString().split('T')[0],
+      emoji: event.emoji || null,
     }
   })
 
   const updateEventMutation = useMutation({
-    mutationFn: async (data: EventFormValues) => {
+    mutationFn: async (values: EventFormValues) => {
       const { error } = await supabase
         .from('business_timeline_events')
         .update({
-          title: data.title,
-          date: new Date(data.date).toISOString(),
+          title: values.title,
+          date: values.date,
+          emoji: values.emoji,
         })
         .eq('id', event.id)
-
+      
       if (error) throw error
     },
     onSuccess: () => {
       toast.success("Event updated successfully")
-      setOpen(false)
       queryClient.invalidateQueries({ queryKey: ['business-timeline'] })
+      onOpenChange(false)
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to update event")
@@ -89,6 +103,10 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
     }
   })
 
+  function onSubmit(values: EventFormValues) {
+    updateEventMutation.mutate(values)
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -106,7 +124,7 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
+          <DropdownMenuItem onClick={() => onOpenChange(true)}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
@@ -124,11 +142,8 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent 
-          className="sm:max-w-[425px]"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Timeline Event</DialogTitle>
             <DialogDescription>
@@ -136,14 +151,54 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form 
-              onSubmit={(e) => {
-                e.stopPropagation()
-                form.handleSubmit((data) => updateEventMutation.mutate(data))(e)
-              }} 
-              className="space-y-4"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="emoji"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emoji (optional)</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <div className="h-10 px-3 rounded-md border border-input flex items-center min-w-[4rem] bg-background">
+                          {field.value || "No emoji"}
+                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="icon"
+                              className="h-10 w-10"
+                            >
+                              <Smile className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent 
+                            className="p-0 w-[352px] border-none" 
+                            side="right" 
+                            align="start"
+                            sideOffset={5}
+                          >
+                            <div className="z-[60]">
+                              <Picker
+                                data={data}
+                                onEmojiSelect={(data: any) => {
+                                  console.log('Selected:', data);
+                                  field.onChange(data.native);
+                                }}
+                                theme="light"
+                                set="native"
+                              />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="title"
@@ -151,7 +206,7 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input placeholder="Event title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -202,9 +257,11 @@ export function EditTimelineEventDialog({ event, className }: EditTimelineEventD
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={updateEventMutation.isPending}>
-                Save Changes
-              </Button>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={updateEventMutation.isPending}>
+                  {updateEventMutation.isPending ? "Saving..." : "Save changes"}
+                </Button>
+              </div>
             </form>
           </Form>
         </DialogContent>

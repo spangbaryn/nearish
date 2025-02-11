@@ -169,14 +169,48 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
   }, [items.length, onClose, currentIndex])
 
   const handleVideoError = (error: any) => {
-    setError(new Error(error.message || "Failed to load video"))
-    toast.error("Failed to load video. Please try again.")
+    // Only set error state and show toast for fatal errors
+    if (error.fatal) {
+      setError(new Error(error.message || "Failed to load video"))
+      
+      // Don't show toast for common non-fatal errors
+      if (error.type === "networkError") {
+        if (error.details !== "manifestLoadError") {
+          toast.error("Network error occurred. Retrying video playback...")
+        }
+      } else if (error.type === "mediaError") {
+        if (error.details !== "bufferStalledError") {
+          toast.error("Media error occurred. Attempting to recover...")
+        }
+      } else {
+        toast.error("Failed to load video. Please try again.")
+      }
+    }
   }
 
   useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
+
+  const preloadNextVideo = (nextIndex: number) => {
+    if (!items[nextIndex]) return
+    
+    const preloadVideo = document.createElement('video')
+    preloadVideo.preload = 'metadata'
+    preloadVideo.src = `https://stream.mux.com/${items[nextIndex].video_playback_id}/low.mp4`
+    
+    // Clean up after 2 seconds or metadata load
+    const cleanup = () => preloadVideo.remove()
+    preloadVideo.addEventListener('loadedmetadata', cleanup)
+    setTimeout(cleanup, 2000)
+  }
+
+  // Use in your component
+  useEffect(() => {
+    const nextIndex = (currentIndex + 1) % items.length
+    preloadNextVideo(nextIndex)
+  }, [currentIndex, items])
 
   const overlay = (
     <div 
@@ -195,13 +229,13 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
       role="dialog"
     >
       {showHeader && (
-        <div className="sticky top-0 flex justify-between items-center p-4 bg-background/50 backdrop-blur-sm z-50">
+        <div className="sticky top-0 flex justify-between items-center p-2 bg-background/50 backdrop-blur-sm z-50">
           <Image
             src={process.env.NEXT_PUBLIC_SUPABASE_URL + "/storage/v1/object/public/assets/logo/logo.svg"}
             alt="Nearish Logo"
             width={240}
             height={70}
-            className="h-20 w-auto"
+            className="h-12 w-auto"
             priority
           />
           <Button 
@@ -214,21 +248,25 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
             }}
             className="z-50"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
       )}
       <div className="flex-1 flex items-center justify-center">
         <div 
           id="fullscreenVideoContainer" 
-          className="relative w-[95%] md:w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 -mt-6 md:mt-0"
+          className="relative w-[95%] md:w-full max-w-md max-h-[85vh] aspect-[9/16] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 -mt-6 md:mt-0"
+          style={{
+            height: 'min(85vh, calc(100vw * (16/9)))',
+            maxWidth: 'min(85vh * (9/16), 24rem)'
+          }}
         >
           <MuxVideoPlayer
             ref={playerRef}
             playbackId={currentItem.video_playback_id}
             autoPlay
             color={color}
-            className="w-full h-full"
+            className="w-full h-full object-cover"
             onEnded={handleVideoEnded}
             onError={handleVideoError}
             onTimeUpdate={(e: Event) => {
