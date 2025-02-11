@@ -260,8 +260,8 @@ export function BusinessTimeline({
   }
 
   return (
-    <div className="-mx-4 pb-16">
-      <div className="w-full px-4">
+    <div>
+      <div className="w-full">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div 

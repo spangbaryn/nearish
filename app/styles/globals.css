@@ -335,9 +335,7 @@
     0 0 0 1px rgba(0,0,0,0.03),
     0 10px 15px -5px rgba(0,0,0,0.05);
   overflow: hidden;
-  margin-left: -1rem;
-  margin-right: -1rem;
-  width: calc(100% + 2rem);
+  width: 100%;
 }
 
 @media (min-width: 640px) {

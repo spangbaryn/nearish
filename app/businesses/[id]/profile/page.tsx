@@ -222,11 +222,11 @@ export default function BusinessProfilePage() {
           </div>
 
           {/* Story Section */}
-          <div className="mt-12 -mx-4">
+          <div className="mt-12">
             <BusinessTimeline 
               businessId={businessId} 
               events={timelineEvents || []}
-            color={business?.brand_color ?? "#000000"}
+              color={business?.brand_color ?? "#000000"}
             />
           </div>
         </div>

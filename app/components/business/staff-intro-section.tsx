@@ -182,7 +182,7 @@ export function StaffIntroSection({ businessId, color = "#000000", readOnly = fa
               style={{ backgroundColor: color || "#000000" }}
             />
             <h2 className="text-2xl font-bold text-black">
-              Team Intros
+              Get To Know Us
             </h2>
           </div>
           {!readOnly && (
