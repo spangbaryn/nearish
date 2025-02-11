@@ -169,8 +169,23 @@ export function VideoViewingOverlay({ items, currentId, onClose, onItemChange, s
   }, [items.length, onClose, currentIndex])
 
   const handleVideoError = (error: any) => {
-    setError(new Error(error.message || "Failed to load video"))
-    toast.error("Failed to load video. Please try again.")
+    // Only set error state and show toast for fatal errors
+    if (error.fatal) {
+      setError(new Error(error.message || "Failed to load video"))
+      
+      // Don't show toast for common non-fatal errors
+      if (error.type === "networkError") {
+        if (error.details !== "manifestLoadError") {
+          toast.error("Network error occurred. Retrying video playback...")
+        }
+      } else if (error.type === "mediaError") {
+        if (error.details !== "bufferStalledError") {
+          toast.error("Media error occurred. Attempting to recover...")
+        }
+      } else {
+        toast.error("Failed to load video. Please try again.")
+      }
+    }
   }
 
   useEffect(() => {

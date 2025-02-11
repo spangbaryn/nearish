@@ -128,25 +128,33 @@ export const MuxVideoPlayer = forwardRef(
         hls.attachMedia(videoEl)
 
         hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error("HLS error:", data)
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                toast.error("A network error occurred during video playback. Retrying...")
-                hls.startLoad()
-                break
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                toast.error("A media error occurred during video playback. Attempting recovery...")
-                hls.recoverMediaError()
-                break
-              default:
-                toast.error("A fatal error occurred during video playback. Please refresh the page.")
-                hls.destroy()
-                break
+          if (data.fatal || onError) {
+            console.error("HLS error:", data)
+            
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  if (data.details !== Hls.ErrorDetails.MANIFEST_LOAD_ERROR) {
+                    toast.error("A network error occurred during video playback. Retrying...")
+                  }
+                  hls.startLoad()
+                  break
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  if (data.details !== Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                    toast.error("A media error occurred during video playback. Attempting recovery...")
+                  }
+                  hls.recoverMediaError()
+                  break
+                default:
+                  toast.error("A fatal error occurred during video playback. Please refresh the page.")
+                  hls.destroy()
+                  break
+              }
             }
-          }
-          if (onError) {
-            onError(data)
+            
+            if (onError) {
+              onError(data)
+            }
           }
         })
 
