@@ -245,7 +245,7 @@ export function BusinessTimeline({
             onMouseLeave={() => setIsHovering(false)}
           >
             {events.length === 0 ? (
-              <EmptyTimelineCard businessId={businessId} />
+              <EmptyTimelineCard businessId={businessId} readOnly={readOnly} />
             ) : (
               <div className="w-full">
                 <div className="relative">

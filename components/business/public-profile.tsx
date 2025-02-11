@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useEffect, useState } from "react"
 
 interface PublicBusinessProfileProps {
   business: {
@@ -59,6 +60,12 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
     }
   })
 
+  const [timestamp, setTimestamp] = useState("")
+  
+  useEffect(() => {
+    setTimestamp(`?t=${Date.now()}`)
+  }, [])
+
   return (
     <div>
       <BusinessCover
@@ -69,7 +76,7 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-8 mb-12">
           <div className="relative -mt-12 mx-auto sm:mx-0 sm:-mt-8">
             <img
-              src={`${business.logo_url || business.place?.place_logo_url}?t=${Date.now()}`}
+              src={`${business.logo_url || business.place?.place_logo_url}${timestamp}`}
               alt={business.name}
               className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl border-4 border-background shadow-lg object-cover bg-white"
             />
@@ -145,14 +152,15 @@ export function PublicBusinessProfile({ business, timelineEvents = [] }: PublicB
             </div>
           </div>
         </div>
-        <div className="mt-8 mb-24">
+        <div className="mt-8">
           <StaffIntroSection 
             businessId={business.id} 
             color={business.brand_color ?? "#000000"}
             readOnly
           />
         </div>
-        <div className="mb-24">
+
+        <div className="mt-12 -mx-4">
           <BusinessTimeline 
             businessId={business.id} 
             events={timelineEventsData || timelineEvents}
