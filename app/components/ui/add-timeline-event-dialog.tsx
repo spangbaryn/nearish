@@ -131,12 +131,6 @@ function AddTimelineEventDialogContent({ businessId, open, onOpenChange }: AddTi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Event
-        </Button>
-      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Timeline Event</DialogTitle>

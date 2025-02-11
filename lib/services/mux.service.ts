@@ -59,7 +59,6 @@ export class MuxService {
       maxMaxBufferLength: 60,
       maxBufferSize: 60 * 1000 * 1000, // 60MB
       maxBufferHole: 0.5,
-      maxSeekHole: 2,
       nudgeMaxRetry: 0,
       fragLoadingRetryDelay: 1000,
       manifestLoadingMaxRetry: 3,
