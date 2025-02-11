@@ -107,6 +107,7 @@ export interface Database {
           created_by: string
           created_at: string
           updated_at?: string | null
+          emoji: string | null
         }
         Insert: {
           business_id: string
@@ -115,12 +116,14 @@ export interface Database {
           date: string
           media_url?: string | null
           created_by: string
+          emoji?: string | null
         }
         Update: {
           title?: string
           description?: string
           date?: string
           media_url?: string | null
+          emoji?: string | null
         }
         Relationships: [
           {

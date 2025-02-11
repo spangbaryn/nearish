@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 const eventFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   date: z.string(),
+  emoji: z.string().nullable(),
 })
 
 type EventFormValues = z.infer<typeof eventFormSchema>
@@ -32,6 +33,7 @@ interface EditTimelineEventDialogProps {
     id: string
     title: string
     date: string
+    emoji?: string | null
   }
   className?: string
   open: boolean
@@ -47,25 +49,27 @@ export function EditTimelineEventDialog({ event, className, open, onOpenChange }
     defaultValues: {
       title: event.title,
       date: new Date(event.date).toISOString().split('T')[0],
+      emoji: event.emoji || null,
     }
   })
 
   const updateEventMutation = useMutation({
-    mutationFn: async (data: EventFormValues) => {
+    mutationFn: async (values: EventFormValues) => {
       const { error } = await supabase
         .from('business_timeline_events')
         .update({
-          title: data.title,
-          date: new Date(data.date).toISOString(),
+          title: values.title,
+          date: values.date,
+          emoji: values.emoji,
         })
         .eq('id', event.id)
-
+      
       if (error) throw error
     },
     onSuccess: () => {
       toast.success("Event updated successfully")
-      onOpenChange(false)
       queryClient.invalidateQueries({ queryKey: ['business-timeline'] })
+      onOpenChange(false)
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to update event")
@@ -89,6 +93,10 @@ export function EditTimelineEventDialog({ event, className, open, onOpenChange }
       toast.error(error.message || "Failed to delete event")
     }
   })
+
+  function onSubmit(values: EventFormValues) {
+    updateEventMutation.mutate(values)
+  }
 
   return (
     <>
@@ -138,13 +146,28 @@ export function EditTimelineEventDialog({ event, className, open, onOpenChange }
           </DialogHeader>
           <Form {...form}>
             <form 
-              onSubmit={(e) => {
-                e.stopPropagation()
-                form.handleSubmit((data) => updateEventMutation.mutate(data))(e)
-              }} 
+              onSubmit={form.handleSubmit(onSubmit)} 
               className="space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
+              <FormField
+                control={form.control}
+                name="emoji"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emoji (optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Add an emoji (e.g. 🎉)" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="title"
@@ -152,7 +175,7 @@ export function EditTimelineEventDialog({ event, className, open, onOpenChange }
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input placeholder="Event title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,9 +226,11 @@ export function EditTimelineEventDialog({ event, className, open, onOpenChange }
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={updateEventMutation.isPending}>
-                Save Changes
-              </Button>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={updateEventMutation.isPending}>
+                  {updateEventMutation.isPending ? "Saving..." : "Save changes"}
+                </Button>
+              </div>
             </form>
           </Form>
         </DialogContent>
