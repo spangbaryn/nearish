@@ -35,6 +35,15 @@ type TimelineEvent = {
   video_playback_id: string | null
 }
 
+interface VideoItem {
+  id: string
+  title: string
+  video_playback_id: string
+  thumbnail_url?: string
+  date?: string
+  description?: string
+}
+
 interface BusinessTimelineProps {
   businessId: string
   events: TimelineEvent[]
@@ -71,6 +80,11 @@ export function BusinessTimeline({
   const searchParams = useSearchParams()
   const scrollToEventId = searchParams.get('scrollToEvent')
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null)
+  const [selectedVideo, setSelectedVideo] = useState<{
+    items: VideoItem[]
+    currentId: string
+    onClose: () => void
+  } | null>(null)
 
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
@@ -208,9 +222,30 @@ export function BusinessTimeline({
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
+  const handleIntroClick = (event: TimelineEvent) => {
+    if (!event.video_playback_id) return
+    
+    const videoItems = sortedEvents
+      .filter(e => e.video_playback_id)
+      .map(e => ({
+        id: e.id,
+        title: e.title,
+        video_playback_id: e.video_playback_id!,
+        thumbnail_url: e.thumbnail_url || undefined,
+        date: e.date,
+        description: e.description || undefined
+      }))
+
+    setSelectedVideo({
+      items: videoItems,
+      currentId: event.id,
+      onClose: () => setSelectedVideo(null)
+    })
+  }
+
   return (
-    <div className="pl-4">
-      <div className="w-full">
+    <div className="-mx-4 pb-16">
+      <div className="w-full px-4">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div 
@@ -235,7 +270,7 @@ export function BusinessTimeline({
 
         <div className="timeline-wrapper">
           <div 
-            className="storybook-timeline bg-muted/50 rounded-xl border border-border overflow-hidden"
+            className="storybook-timeline"
             style={{ 
               color: color,
               '--timeline-color-rgb': `${hexToRgb(color)}`,
@@ -278,7 +313,14 @@ export function BusinessTimeline({
                               "timeline-card w-[180px] sm:min-w-[200px] cursor-pointer transition-all duration-300 relative group border-2",
                               highlightedEventId === event.id && "ring-2 ring-primary ring-offset-2"
                             )}
-                            onClick={(e) => handleCardClick(e, event)}
+                            onClick={(e) => {
+                              if (dragDistance > dragThreshold) {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                return
+                              }
+                              handleIntroClick(event)
+                            }}
                           >
                             <CardContent className="p-4 pb-10 relative">
                               <div className="absolute inset-x-0 top-0 h-px bg-border" />
@@ -381,6 +423,22 @@ export function BusinessTimeline({
           </div>
         </div>
       </div>
+      {selectedVideo && (
+        <VideoViewingOverlay
+          items={selectedVideo.items}
+          currentId={selectedVideo.currentId}
+          onClose={selectedVideo.onClose}
+          onItemChange={(id) => {
+            const newItem = selectedVideo.items.find(item => item.id === id)
+            if (newItem) {
+              setSelectedVideo({
+                ...selectedVideo,
+                currentId: id
+              })
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
